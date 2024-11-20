@@ -1,0 +1,6 @@
+ * Added Saints to Jan 14
+ * Added Our Lady of Sorrows to Sep 15
+ * Fixed Event titles not showing the entire title
+ * Fixed Task Icon getting very large on multi-line tasks
+ * Updated Task Creation Layout
+ * Added setting for default task type
