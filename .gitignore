@@ -1,0 +1,15 @@
+*.iml
+*.aab
+.gradle
+local.properties
+.idea
+.editorconfig
+.DS_Store
+.github
+build
+core
+captures
+keystore.*
+fastlane
+Gemfile
+Gemfile.lock
