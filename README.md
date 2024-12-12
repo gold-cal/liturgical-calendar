@@ -13,14 +13,14 @@ Liturgical Calendar 2024 Features
 
 ## Features:
 ➕ No ads or annoying popups, truly great user experience!  
-➕ No internet access is needed, giving you more privacy, security, and stability 
+➕ No internet access is needed, giving you more privacy, security, and stability  
 ➕ Calendar Widget supports exporting & importing events via .ics files  
 ➕ Export settings to .txt files to import to another device  
 ➕ Flexible event creation – times, duration, reminders, powerful repetition rules  
 ➕ CalDAV support for syncing events via Google Calendar, Microsoft Outlook, Nextcloud, Exchange, etc
 
 
-<a href="https://github.com/gold-cal/fdroid"><img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="45" /></a>
+<a href="https://github.com/gold-cal/fdroid"><img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80" /></a>
 
 <div style="display:flex;">
 <img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenShots/1_en-US.png" width="30%">
