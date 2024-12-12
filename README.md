@@ -20,7 +20,7 @@ Liturgical Calendar 2024 Features
 ➕ CalDAV support for syncing events via Google Calendar, Microsoft Outlook, Nextcloud, Exchange, etc
 
 
-<a href='https://f-droid.org/packages/com.simplemobiletools.calendar.pro'><img src='https://simplemobiletools.com/images/button-f-droid.png' alt='Get it on F-Droid' height='45' /></a>
+<a href='https://github.com/gold-cal/fdroid'><img src='https://simplemobiletools.com/graphics/button-f-droid.png' alt='Get it on F-Droid' height='45' /></a>
 
 <div style="display:flex;">
 <img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_en-US.png" width="30%">
