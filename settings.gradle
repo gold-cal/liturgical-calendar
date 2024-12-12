@@ -1,0 +1,4 @@
+include ':app'
+include 'commons'
+
+project(':commons').projectDir = file( '/home/james/Projects/Secure-Commons/commons')

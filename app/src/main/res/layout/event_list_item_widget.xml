@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/event_item_holder"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/small_margin"
+    android:layout_marginEnd="@dimen/small_margin"
+    android:paddingTop="@dimen/tiny_margin"
+    android:paddingBottom="@dimen/tiny_margin">
+
+    <ImageView
+        android:id="@+id/event_item_color_bar"
+        android:layout_width="8dp"
+        android:layout_height="match_parent"
+        android:layout_alignTop="@id/event_text_holder"
+        android:layout_alignBottom="@id/event_text_holder"
+        android:src="@drawable/event_list_color_bar"
+        android:paddingTop="@dimen/tiny_margin"
+        android:scaleType="fitXY" />
+
+    <RelativeLayout
+        android:id="@+id/event_text_holder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/small_margin"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:layout_toEndOf="@id/event_item_color_bar">
+
+        <ImageView
+            android:id="@+id/event_item_task_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/task_image_mask"
+            android:layout_alignBottom="@id/task_image_mask"
+            android:contentDescription="@string/task"
+            android:src="@drawable/ic_task_vector" />
+
+        <TextView
+            android:id="@+id/event_item_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/event_item_task_image"
+            android:ellipsize="end"
+            android:paddingStart="@dimen/tiny_margin"
+            android:includeFontPadding="false"
+            android:textSize="@dimen/day_text_size"
+            tools:text="Event title" />
+
+        <TextView
+            android:id="@+id/task_image_mask"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/event_item_task_image"
+            android:includeFontPadding="false"
+            android:textSize="@dimen/day_text_size"
+            android:textColor="@color/divider_transparent"
+            android:text="Mask"/>
+
+        <!-- <ImageView
+            android:id="@+id/event_item_divider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/event_item_title"
+            android:layout_alignBottom="@id/event_item_time"
+            android:background="@drawable/divider_transparent"/> -->
+
+        <TextView
+            android:id="@+id/event_item_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/event_item_title"
+            android:alpha="0.8"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:paddingStart="@dimen/tiny_margin"
+            android:maxLines="3"
+            android:textSize="@dimen/normal_text_size"
+            tools:text="13:00" />
+    </RelativeLayout>
+</RelativeLayout>

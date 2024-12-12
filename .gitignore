@@ -6,10 +6,11 @@ local.properties
 .editorconfig
 .DS_Store
 .github
+INFO.md
+ignore.txt
 build
 core
 captures
 keystore.*
-fastlane
 Gemfile
 Gemfile.lock

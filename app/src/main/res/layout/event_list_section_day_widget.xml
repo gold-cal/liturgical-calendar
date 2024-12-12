@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/event_section_holder"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/small_margin"
+    android:layout_marginEnd="@dimen/small_margin"
+    android:paddingTop="@dimen/tiny_margin"
+    android:paddingBottom="@dimen/tiny_margin">
+
+    <ImageView
+        android:id="@+id/event_section_background"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/event_section_title"
+        android:layout_alignBottom="@id/event_section_title"
+        android:src="@drawable/event_list_widget_day_bg" />
+
+    <TextView
+        android:id="@+id/event_section_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:paddingStart="@dimen/big_margin"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+</RelativeLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="red_text">@color/md_red_400_dark</color>
+    <color name="default_liturgical_color">#FFC2C2C2</color>
+    <color name="default_holy_day_color">#FF987C00</color>
+    <color name="default_birthdays_color">@color/md_blue_800</color>
+    <color name="default_holidays_color">@color/md_green_700</color>
+    <color name="default_anniversaries_color">#8E0000</color>
+</resources>
