@@ -12,7 +12,6 @@ import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SplashActivity
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.services.WidgetService
-import com.liturgical.calendar.services.WidgetServiceEmpty
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.ensureBackgroundThread
 import org.joda.time.DateTime
@@ -23,8 +22,6 @@ class MyWidgetListProvider : AppWidgetProvider() {
     private val LAUNCH_CAL = "launch_cal"
     //private val GO_TO_TODAY = "go_to_today"
     private val SCROLL_TO_TODAY = "scroll_to_today"
-
-    val ACTION_AUTO_UPDATE: String = "com.liturgical.calendar.AUTO_UPDATE"
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         performUpdate(context)
@@ -85,7 +82,7 @@ class MyWidgetListProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             ACTION_AUTO_UPDATE -> performUpdate(context)//context.updateListWidget()
-            UPDATE_CAL -> performUpdate(context) //updateCalendar(context) //context.launchNewEventOrTaskActivity()
+            UPDATE_CAL -> updateCalendar(context) //context.launchNewEventOrTaskActivity()
             LAUNCH_CAL -> launchCalenderInDefaultView(context)
             SCROLL_TO_TODAY -> scrollToToday(context) //goToToday(context)
             else -> super.onReceive(context, intent)
@@ -121,8 +118,8 @@ class MyWidgetListProvider : AppWidgetProvider() {
         }
     }
 
-    /*private fun updateCalendar(context: Context) {
-        val appWidgetManager = AppWidgetManager.getInstance(context) ?: return
+    private fun updateCalendar(context: Context) {
+        /*val appWidgetManager = AppWidgetManager.getInstance(context) ?: return
         appWidgetManager.getAppWidgetIds(getComponentName(context)).forEach {
             val views = RemoteViews(context.packageName, R.layout.widget_event_list)
             Intent(context, WidgetServiceEmpty::class.java).apply {
@@ -131,10 +128,10 @@ class MyWidgetListProvider : AppWidgetProvider() {
             }
 
             appWidgetManager.updateAppWidget(it, views)
-        }
-
+        }*/
+        context.scheduleListWidgetRefresh(true)
         performUpdate(context)
-    }*/
+    }
 
     private fun scrollToToday(context: Context) {
         val appWidgetManager = AppWidgetManager.getInstance(context) ?: return

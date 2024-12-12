@@ -12,7 +12,6 @@ import android.graphics.drawable.Icon
 import android.graphics.drawable.LayerDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
 import android.provider.ContactsContract.CommonDataKinds
 import android.provider.ContactsContract.Contacts
 import android.provider.ContactsContract.Data
@@ -98,9 +97,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 if (fab_extended_overlay.isVisible()) {
                     openNewEvent()
 
-                    Handler().postDelayed({
+                    /*Handler().postDelayed({
                         hideExtendedFab()
-                    }, 300)
+                    }, 300)*/
                 } else {
                     showExtendedFab()
                 }
@@ -118,9 +117,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         fab_task_icon.setOnClickListener {
             openNewTask()
 
-            Handler().postDelayed({
+            /*Handler().postDelayed({
                 hideExtendedFab()
-            }, 300)
+            }, 300)*/
         }
 
         storeStateVariables()
@@ -639,22 +638,21 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     }
 
     private fun tryAddBirthdays() {
-        handlePermission(PERMISSION_READ_CONTACTS) {
-            if (it) {
-                SetRemindersDialog(this, BIRTHDAY_EVENT) {
-                    val reminders = it
+        handlePermission(PERMISSION_READ_CONTACTS) { isTrue ->
+            if (isTrue) {
+                SetRemindersDialog(this, BIRTHDAY_EVENT) { birthdayReminders ->
                     val privateCursor = getMyContactsCursor(false, false)
-
                     ensureBackgroundThread {
                         val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-                        addPrivateEvents(true, privateContacts, reminders) { eventsFound, eventsAdded ->
-                            addContactEvents(true, false, reminders, eventsFound, eventsAdded) {
+                        addPrivateEvents(true, privateContacts, birthdayReminders) { eventsFound, eventsAdded ->
+                            addContactEvents(true, false, birthdayReminders, eventsFound, eventsAdded) {
                                 when {
                                     it > 0 -> {
                                         toast(R.string.birthdays_added)
                                         updateViewPager()
                                         setupQuickFilter()
                                     }
+
                                     it == -1 -> toast(R.string.no_new_birthdays)
                                     else -> toast(R.string.no_birthdays)
                                 }
@@ -669,22 +667,22 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     }
 
     private fun tryAddAnniversaries() {
-        handlePermission(PERMISSION_READ_CONTACTS) {
-            if (it) {
-                SetRemindersDialog(this, ANNIVERSARY_EVENT) {
-                    val reminders = it
+        handlePermission(PERMISSION_READ_CONTACTS) { isTrue ->
+            if (isTrue) {
+                SetRemindersDialog(this, ANNIVERSARY_EVENT) { anniversaryReminders ->
                     val privateCursor = getMyContactsCursor(false, false)
 
                     ensureBackgroundThread {
                         val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-                        addPrivateEvents(false, privateContacts, reminders) { eventsFound, eventsAdded ->
-                            addContactEvents(false, false, reminders, eventsFound, eventsAdded) {
+                        addPrivateEvents(false, privateContacts, anniversaryReminders) { eventsFound, eventsAdded ->
+                            addContactEvents(false, false, anniversaryReminders, eventsFound, eventsAdded) {
                                 when {
                                     it > 0 -> {
                                         toast(R.string.anniversaries_added)
                                         updateViewPager()
                                         setupQuickFilter()
                                     }
+
                                     it == -1 -> toast(R.string.no_new_anniversaries)
                                     else -> toast(R.string.no_anniversaries)
                                 }
@@ -860,7 +858,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                         }
                     }
                     break
-                } catch (e: Exception) {
+                } catch (ignore: Exception) {
                 }
             }
         }
@@ -1047,19 +1045,34 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         calendar_fab.setImageDrawable(newDrawable)
     }
 
-    private fun openNewEvent() {
+    /** Combined the 2 functions below this one into one **/
+    private fun openNewEventOrTask(isTask: Boolean) {
+        hideKeyboard()
+        hideExtendedFab()
+        val lastFragment = currentFragments.last()
+        val allowChangingDay = lastFragment !is DayFragmentsHolder && lastFragment !is MonthDayFragmentsHolder
+        if (isTask) {
+            launchNewTaskIntent(lastFragment.getNewEventDayCode(), allowChangingDay)
+        } else {
+            launchNewEventIntent(lastFragment.getNewEventDayCode(), allowChangingDay)
+        }
+    }
+
+    private fun openNewEvent() = openNewEventOrTask(false)
+        /*{
         hideKeyboard()
         val lastFragment = currentFragments.last()
         val allowChangingDay = lastFragment !is DayFragmentsHolder && lastFragment !is MonthDayFragmentsHolder
         launchNewEventIntent(lastFragment.getNewEventDayCode(), allowChangingDay)
-    }
+    }*/
 
-    private fun openNewTask() {
+    private fun openNewTask() = openNewEventOrTask(true)
+        /*{
         hideKeyboard()
         val lastFragment = currentFragments.last()
         val allowChangingDay = lastFragment !is DayFragmentsHolder && lastFragment !is MonthDayFragmentsHolder
         launchNewTaskIntent(lastFragment.getNewEventDayCode(), allowChangingDay)
-    }
+    }*/
 
     fun openMonthFromYearly(dateTime: DateTime) {
         if (currentFragments.last() is MonthFragmentsHolder) {
@@ -1090,7 +1103,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         try {
             supportFragmentManager.beginTransaction().add(R.id.fragments_holder, fragment).commitNow()
             showBackNavigationArrow()
-        } catch (e: Exception) {
+        } catch (ignore: Exception) {
         }
     }
 
@@ -1168,9 +1181,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     }
 
     private fun tryImportEventsFromFile(uri: Uri) {
-        when {
-            uri.scheme == "file" -> showImportEventsDialog(uri.path!!)
-            uri.scheme == "content" -> {
+        when (uri.scheme) {
+            "file" -> showImportEventsDialog(uri.path!!)
+            "content" -> {
                 val tempFile = getTempFile()
                 if (tempFile == null) {
                     toast(R.string.unknown_error_occurred)
@@ -1373,7 +1386,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
 
                 val eventTypeId = eventsHelper.getLiturgicalEventTypeId()
-                val result = IcsImporter(this).importEvents(true, "tlc.ics", eventTypeId, 0, false, null)
+                //val result =
+                IcsImporter(this).importEvents(true, "tlc.ics", eventTypeId, 0, false, null)
                 //handleLiturgicalParseResult(result)
                 /*if (result == ImportResult.IMPORT_FAIL) {
                     runOnUiThread {
@@ -1663,11 +1677,12 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 //add(Release(9, R.string.release_9))
                 //add(Release(10, R.string.release_10))
                 //add(Release(11, R.string.release_11))
-                add(Release(12, R.string.release_12))
+                //add(Release(12, R.string.release_12))
                 add(Release(14, R.string.release_14))
                 add(Release(15, R.string.release_15))
                 add(Release(16, R.string.release_16))
                 add(Release(17, R.string.release_17))
+                add(Release(18, R.string.release_18))
 
                 checkWhatsNew(this, BuildConfig.VERSION_CODE)
             }

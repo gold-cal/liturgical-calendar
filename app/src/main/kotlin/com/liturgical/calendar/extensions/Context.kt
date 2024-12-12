@@ -38,7 +38,6 @@ import com.liturgical.calendar.interfaces.WidgetsDao
 import com.liturgical.calendar.models.*
 import com.liturgical.calendar.receivers.CalDAVSyncReceiver
 import com.liturgical.calendar.receivers.NotificationReceiver
-import com.liturgical.calendar.receivers.AppUpdateReceiver
 import com.liturgical.calendar.services.MarkCompletedService
 import com.liturgical.calendar.services.SnoozeService
 import com.secure.commons.extensions.*
@@ -99,12 +98,19 @@ fun Context.updateDateWidget() {
 }
 
 fun Context.scheduleListWidgetRefresh(activate: Boolean) {
-    val updateIntent = Intent(applicationContext, MyWidgetListProvider::class.java)
+    val widgetIDs = AppWidgetManager.getInstance(applicationContext)?.getAppWidgetIds(ComponentName(applicationContext,
+        MyWidgetListProvider::class.java)) ?: return
+
+    val updateIntent = if (widgetIDs.isNotEmpty()) Intent(applicationContext, MyWidgetListProvider::class.java).apply {
+        action = ACTION_AUTO_UPDATE
+        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIDs)
+    } else return
+
     val pendingIntent = PendingIntent.getBroadcast(
         applicationContext,
         SCHEDULE_WIDGET_REQUEST_CODE,
         updateIntent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE //or PendingIntent.FLAG_CANCEL_CURRENT
     )
     val alarmManager = getAlarmManager()
     alarmManager.cancel(pendingIntent)
@@ -515,7 +521,7 @@ fun Context.addDayEvents(day: DayMonthly, linearLayout: LinearLayout, res: Resou
             it.endTS
         }
     }.thenBy { it.title }).forEach {
-        val backgroundDrawable = res.getDrawable(R.drawable.day_monthly_event_background)
+        val backgroundDrawable = res.getDrawable(R.drawable.day_monthly_event_background, null)
         backgroundDrawable.applyColorFilter(it.color)
         eventLayoutParams.setMargins(dividerMargin, 0, dividerMargin, dividerMargin)
 
@@ -695,11 +701,11 @@ fun Context.getDatesWeekDateTime(date: DateTime): String {
 
         // not great, not terrible
         val useHours = if (currentOffsetHours >= 10) 8 else 12
-        var thisweek = date.withZone(DateTimeZone.UTC).withDayOfWeek(1).withHourOfDay(useHours).minusDays(if (config.isSundayFirst) 1 else 0)
-        if (date.minusDays(7).seconds() > thisweek.seconds()) {
-            thisweek = thisweek.plusDays(7)
+        var thisWeek = date.withZone(DateTimeZone.UTC).withDayOfWeek(1).withHourOfDay(useHours).minusDays(if (config.isSundayFirst) 1 else 0)
+        if (date.minusDays(7).seconds() > thisWeek.seconds()) {
+            thisWeek = thisWeek.plusDays(7)
         }
-        thisweek.toString()
+        thisWeek.toString()
     } else {
         date.withZone(DateTimeZone.UTC).toString()
     }

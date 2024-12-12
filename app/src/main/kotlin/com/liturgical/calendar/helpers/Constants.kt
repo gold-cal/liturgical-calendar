@@ -8,6 +8,7 @@ const val ROW_COUNT = 6
 const val COLUMN_COUNT = 7
 const val SCHEDULE_CALDAV_REQUEST_CODE = 10000
 const val SCHEDULE_WIDGET_REQUEST_CODE = 20000
+const val ACTION_AUTO_UPDATE = "com.liturgical.calendar.AUTO_UPDATE"
 
 const val DAY_CODE = "day_code"
 const val YEAR_LABEL = "year"
