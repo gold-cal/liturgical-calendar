@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="min_widget_width">320dp</dimen>
-    <dimen name="min_widget_height">320dp</dimen>
+    <dimen name="min_widget_width">280dp</dimen>
+    <dimen name="min_widget_height">280dp</dimen>
 
     <dimen name="monthly_day_height">60dp</dimen>
 

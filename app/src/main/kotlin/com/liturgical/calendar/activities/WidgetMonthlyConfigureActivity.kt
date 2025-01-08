@@ -8,13 +8,12 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.TextView
-import com.liturgical.calendar.R
+import com.liturgical.calendar.databinding.DayMonthlyNumberViewBinding
+import com.liturgical.calendar.databinding.WidgetConfigMonthlyBinding
 import com.liturgical.calendar.extensions.addDayEvents
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.helpers.MonthlyCalendarImpl
@@ -25,15 +24,12 @@ import com.liturgical.calendar.models.DayMonthly
 import com.secure.commons.dialogs.ColorPickerDialog
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.LOWER_ALPHA
-import kotlinx.android.synthetic.main.day_monthly_number_view.view.*
-import kotlinx.android.synthetic.main.first_row.*
-import kotlinx.android.synthetic.main.top_navigation.*
-import kotlinx.android.synthetic.main.widget_config_monthly.*
 import org.joda.time.DateTime
 
 class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
     private var mDays: List<DayMonthly>? = null
     private var dayLabelHeight = 0
+    private val binding by viewBinding(WidgetConfigMonthlyBinding::inflate)
 
     private var mBgAlpha = 0f
     private var mWidgetId = 0
@@ -50,7 +46,7 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
         useDynamicTheme = false
         super.onCreate(savedInstanceState)
         setResult(Activity.RESULT_CANCELED)
-        setContentView(R.layout.widget_config_monthly)
+        setContentView(binding.root)
         initVariables()
 
         val extras = intent.extras
@@ -60,15 +56,15 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
         if (mWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
             finish()
 
-        config_save.setOnClickListener { saveConfig() }
-        config_bg_color.setOnClickListener { pickBackgroundColor() }
-        config_text_color.setOnClickListener { pickTextColor() }
-        config_bg_seekbar.setColors(mTextColor, mPrimaryColor, mPrimaryColor)
+        binding.configSave.setOnClickListener { saveConfig() }
+        binding.configBgColor.setOnClickListener { pickBackgroundColor() }
+        binding.configTextColor.setOnClickListener { pickTextColor() }
+        binding.configBgSeekbar.setColors(mTextColor, mPrimaryColor, mPrimaryColor)
     }
 
     override fun onResume() {
         super.onResume()
-        setupToolbar(config_toolbar)
+        setupToolbar(binding.configToolbar)
     }
 
     private fun initVariables() {
@@ -79,8 +75,8 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
         mBgAlpha = Color.alpha(mBgColor) / 255.toFloat()
 
         mBgColorWithoutTransparency = Color.rgb(Color.red(mBgColor), Color.green(mBgColor), Color.blue(mBgColor))
-        config_bg_seekbar.setOnSeekBarChangeListener(bgSeekbarChangeListener)
-        config_bg_seekbar.progress = (mBgAlpha * 100).toInt()
+        binding.configBgSeekbar.setOnSeekBarChangeListener(bgSeekbarChangeListener)
+        binding.configBgSeekbar.progress = (mBgAlpha * 100).toInt()
         updateBgColor()
 
         MonthlyCalendarImpl(this, applicationContext).updateMonthlyCalendar(DateTime().withDayOfMonth(1))
@@ -124,7 +120,8 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
     }
 
     private fun requestWidgetUpdate() {
-        Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null, this, MyWidgetMonthlyProvider::class.java).apply {
+        Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null, this,
+            MyWidgetMonthlyProvider::class.java).apply {
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(mWidgetId))
             sendBroadcast(this)
         }
@@ -137,28 +134,30 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
         mWeekendsTextColor = config.highlightWeekendsColor
         mHighlightWeekends = config.highlightWeekends
 
-        top_left_arrow.applyColorFilter(mTextColor)
-        top_right_arrow.applyColorFilter(mTextColor)
-        top_value.setTextColor(mTextColor)
-        config_text_color.setFillWithStroke(mTextColor, mTextColor)
+        binding.configCalendar.topNav.topLeftArrow.applyColorFilter(mTextColor)
+        binding.configCalendar.topNav.topRightArrow.applyColorFilter(mTextColor)
+        binding.configCalendar.topNav.topValue.setTextColor(mTextColor)
+        binding.configTextColor.setFillWithStroke(mTextColor, mTextColor)
         updateLabels()
-        config_save.backgroundTintList = ColorStateList.valueOf(getProperPrimaryColor())
-        config_save.setTextColor(getProperPrimaryColor().getContrastColor())
+        binding.configSave.backgroundTintList = ColorStateList.valueOf(getProperPrimaryColor())
+        binding.configSave.setTextColor(getProperPrimaryColor().getContrastColor())
     }
 
     private fun updateBgColor() {
         mBgColor = mBgColorWithoutTransparency.adjustAlpha(mBgAlpha)
-        config_calendar.background.applyColorFilter(mBgColor)
-        config_bg_color.setFillWithStroke(mBgColor, mBgColor)
+        //config_calendar.background.applyColorFilter(mBgColor)
+        binding.configCalendar.monthCalendarHolder.background.applyColorFilter(mBgColor)
+        binding.configBgColor.setFillWithStroke(mBgColor, mBgColor)
     }
 
     private fun updateDays() {
         val len = mDays!!.size
 
         if (applicationContext.config.showWeekNumbers) {
-            week_num.setTextColor(mTextColor)
-            week_num.beVisible()
+            binding.configCalendar.firstRow.weekNum.setTextColor(mTextColor)
+            binding.configCalendar.firstRow.weekNum.beVisible()
 
+            // TODO: need to change this function for viewBinding
             for (i in 0..5) {
                 findViewById<TextView>(resources.getIdentifier("week_num_$i", "id", packageName)).apply {
                     text = "${mDays!![i * 7 + 3].weekOfYear}:"
@@ -169,6 +168,7 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
         }
 
         val dividerMargin = resources.displayMetrics.density.toInt()
+        // TODO: need to convert to viewBinding
         for (i in 0 until len) {
             findViewById<LinearLayout>(resources.getIdentifier("day_$i", "id", packageName)).apply {
                 val day = mDays!![i]
@@ -186,26 +186,28 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
         }
     }
 
-    private fun addDayNumber(rawTextColor: Int, day: DayMonthly, linearLayout: LinearLayout, dayLabelHeight: Int, callback: (Int) -> Unit) {
+    private fun addDayNumber(rawTextColor: Int, day: DayMonthly, linearLayout: LinearLayout,
+                             dayLabelHeight: Int, callback: (Int) -> Unit) {
         var textColor = rawTextColor
         if (!day.isThisMonth) {
             textColor = textColor.adjustAlpha(LOWER_ALPHA)
         }
 
-        (View.inflate(applicationContext, R.layout.day_monthly_number_view, null) as RelativeLayout).apply {
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            linearLayout.addView(this)
+        //(View.inflate(applicationContext, R.layout.day_monthly_number_view, null) as RelativeLayout).apply
+        DayMonthlyNumberViewBinding.inflate(layoutInflater).apply {
+            root.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            linearLayout.addView(this.root)
 
-            day_monthly_number_background.beVisibleIf(day.isToday)
-            day_monthly_number_id.apply {
+            dayMonthlyNumberBackground.beVisibleIf(day.isToday)
+            dayMonthlyNumberId.apply {
                 setTextColor(textColor)
                 text = day.value.toString()
                 gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             }
 
             if (day.isToday) {
-                day_monthly_number_background.setColorFilter(getProperPrimaryColor())
-                day_monthly_number_id.setTextColor(getProperPrimaryColor().getContrastColor())
+                dayMonthlyNumberBackground.setColorFilter(getProperPrimaryColor())
+                dayMonthlyNumberId.setTextColor(getProperPrimaryColor().getContrastColor())
             }
         }
     }
@@ -221,10 +223,11 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
         override fun onStopTrackingTouch(seekBar: SeekBar) {}
     }
 
-    override fun updateMonthlyCalendar(context: Context, month: String, days: ArrayList<DayMonthly>, checkedEvents: Boolean, currTargetDate: DateTime) {
+    override fun updateMonthlyCalendar(context: Context, month: String, days: ArrayList<DayMonthly>,
+                                       checkedEvents: Boolean, currTargetDate: DateTime) {
         runOnUiThread {
             mDays = days
-            top_value.text = month
+                binding.configCalendar.topNav.topValue.text = month
             updateDays()
         }
     }

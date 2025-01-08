@@ -6,10 +6,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.MainActivity
+import com.liturgical.calendar.databinding.FragmentMonthBinding
+import com.liturgical.calendar.databinding.TopNavigationBinding
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.getViewBitmap
 import com.liturgical.calendar.extensions.printBitmap
@@ -24,8 +25,6 @@ import com.secure.commons.extensions.applyColorFilter
 import com.secure.commons.extensions.beGone
 import com.secure.commons.extensions.beVisible
 import com.secure.commons.extensions.getProperTextColor
-import kotlinx.android.synthetic.main.fragment_month.view.*
-import kotlinx.android.synthetic.main.top_navigation.view.*
 import org.joda.time.DateTime
 
 class MonthFragment : Fragment(), MonthlyCalendar {
@@ -40,14 +39,15 @@ class MonthFragment : Fragment(), MonthlyCalendar {
     var listener: NavigationListener? = null
 
     lateinit var mRes: Resources
-    lateinit var mHolder: RelativeLayout
+    private lateinit var mHolder: FragmentMonthBinding
+    private lateinit var mTopNav: TopNavigationBinding
     lateinit var mConfig: Config
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_month, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        mHolder = FragmentMonthBinding.inflate(inflater, container, false)
+        mTopNav = TopNavigationBinding.bind(mHolder.root)
         mRes = resources
         mPackageName = requireActivity().packageName
-        mHolder = view.month_calendar_holder
         mDayCode = requireArguments().getString(DAY_CODE)!!
         mConfig = requireContext().config
         storeStateVariables()
@@ -55,7 +55,7 @@ class MonthFragment : Fragment(), MonthlyCalendar {
         setupButtons()
         mCalendar = MonthlyCalendarImpl(this, requireContext())
 
-        return view
+        return mHolder.root
     }
 
     override fun onPause() {
@@ -98,7 +98,7 @@ class MonthFragment : Fragment(), MonthlyCalendar {
         mLastHash = newHash
 
         activity?.runOnUiThread {
-            mHolder.top_value.apply {
+            mTopNav.topValue.apply {
                 text = month
                 contentDescription = text
 
@@ -113,31 +113,33 @@ class MonthFragment : Fragment(), MonthlyCalendar {
     private fun setupButtons() {
         mTextColor = requireContext().getProperTextColor()
 
-        mHolder.top_left_arrow.apply {
+        mTopNav.topLeftArrow.apply {
             applyColorFilter(mTextColor)
             background = null
             setOnClickListener {
                 listener?.goLeft()
             }
 
+            // TODO: convert this to ResourcesAppCompat
             val pointerLeft = requireContext().getDrawable(R.drawable.ic_chevron_left_vector)
             pointerLeft?.isAutoMirrored = true
             setImageDrawable(pointerLeft)
         }
 
-        mHolder.top_right_arrow.apply {
+        mTopNav.topRightArrow.apply {
             applyColorFilter(mTextColor)
             background = null
             setOnClickListener {
                 listener?.goRight()
             }
 
+            // TODO: convert this to ResourcesAppCompat
             val pointerRight = requireContext().getDrawable(R.drawable.ic_chevron_right_vector)
             pointerRight?.isAutoMirrored = true
             setImageDrawable(pointerRight)
         }
 
-        mHolder.top_value.apply {
+        mTopNav.topValue.apply {
             setTextColor(requireContext().getProperTextColor())
             setOnClickListener {
                 (activity as MainActivity).showGoToDateDialog()
@@ -146,24 +148,24 @@ class MonthFragment : Fragment(), MonthlyCalendar {
     }
 
     private fun updateDays(days: ArrayList<DayMonthly>) {
-        mHolder.month_view_wrapper.updateDays(days, true) {
+        mHolder.monthViewWrapper.updateDays(days, true) {
             (activity as MainActivity).openDayFromMonthly(Formatter.getDateTimeFromCode(it.code))
         }
     }
 
     fun printCurrentView() {
         mHolder.apply {
-            top_left_arrow.beGone()
-            top_right_arrow.beGone()
-            top_value.setTextColor(resources.getColor(R.color.theme_light_text_color))
-            month_view_wrapper.togglePrintMode()
+            mTopNav.topLeftArrow.beGone()
+            mTopNav.topRightArrow.beGone()
+            mTopNav.topValue.setTextColor(resources.getColor(R.color.theme_light_text_color, null))
+            monthViewWrapper.togglePrintMode()
 
-            requireContext().printBitmap(month_calendar_holder.getViewBitmap())
+            requireContext().printBitmap(monthCalendarHolder.getViewBitmap())
 
-            top_left_arrow.beVisible()
-            top_right_arrow.beVisible()
-            top_value.setTextColor(requireContext().getProperTextColor())
-            month_view_wrapper.togglePrintMode()
+            mTopNav.topLeftArrow.beVisible()
+            mTopNav.topRightArrow.beVisible()
+            mTopNav.topValue.setTextColor(requireContext().getProperTextColor())
+            monthViewWrapper.togglePrintMode()
         }
     }
 }

@@ -1,33 +1,32 @@
 package com.liturgical.calendar.dialogs
 
-import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
+import com.liturgical.calendar.databinding.DialogEditRepeatingEventBinding
 import com.secure.commons.extensions.getAlertDialogBuilder
 import com.secure.commons.extensions.hideKeyboard
 import com.secure.commons.extensions.setupDialogStuff
-import kotlinx.android.synthetic.main.dialog_edit_repeating_event.view.*
 
 class EditRepeatingEventDialog(val activity: SimpleActivity, val isTask: Boolean = false, val callback: (allOccurrences: Int) -> Unit) {
     private var dialog: AlertDialog? = null
 
     init {
-        val view = (activity.layoutInflater.inflate(R.layout.dialog_edit_repeating_event, null) as ViewGroup).apply {
-            edit_repeating_event_one_only.setOnClickListener { sendResult(0) }
-            edit_repeating_event_this_and_future_occurences.setOnClickListener { sendResult(1) }
-            edit_repeating_event_all_occurrences.setOnClickListener { sendResult(2) }
+        val binding = DialogEditRepeatingEventBinding.inflate(activity.layoutInflater).apply {
+            editRepeatingEventOneOnly.setOnClickListener { sendResult(0) }
+            editRepeatingEventThisAndFutureOccurences.setOnClickListener { sendResult(1) }
+            editRepeatingEventAllOccurrences.setOnClickListener { sendResult(2) }
 
             if (isTask) {
-                edit_repeating_event_title.setText(R.string.task_is_repeatable)
+                editRepeatingEventTitle.setText(R.string.task_is_repeatable)
             } else {
-                edit_repeating_event_title.setText(R.string.event_is_repeatable)
+                editRepeatingEventTitle.setText(R.string.event_is_repeatable)
             }
         }
 
         activity.getAlertDialogBuilder()
             .apply {
-                activity.setupDialogStuff(view, this) { alertDialog ->
+                activity.setupDialogStuff(binding.root, this) { alertDialog ->
                     dialog = alertDialog
                     alertDialog.hideKeyboard()
                 }

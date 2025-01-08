@@ -20,12 +20,14 @@ import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import androidx.core.content.res.ResourcesCompat
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.liturgical.calendar.R
 import com.liturgical.calendar.adapters.AutoCompleteTextViewAdapter
+import com.liturgical.calendar.databinding.ActivityEventBinding
+import com.liturgical.calendar.databinding.ItemAttendeeBinding
 import com.liturgical.calendar.dialogs.*
-//import com.liturgical.calendar.dialogs.InformationDialog
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.helpers.Formatter
@@ -36,13 +38,11 @@ import com.secure.commons.extensions.*
 import com.secure.commons.helpers.*
 import com.secure.commons.models.RadioItem
 import com.secure.commons.views.MyAutoCompleteTextView
-import kotlinx.android.synthetic.main.activity_event.*
-import kotlinx.android.synthetic.main.activity_event.view.*
-import kotlinx.android.synthetic.main.item_attendee.view.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.math.pow
 
 class EventActivity : SimpleActivity() {
     private val LAT_LON_PATTERN = "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)([,;])\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)\$"
@@ -75,6 +75,8 @@ class EventActivity : SimpleActivity() {
     private var mOriginalStartTS = 0L
     private var mOriginalEndTS = 0L
     private var mIsNewEvent = true
+    
+    private val binding by viewBinding(ActivityEventBinding::inflate)
 
     private lateinit var mEventStartDateTime: DateTime
     private lateinit var mEventEndDateTime: DateTime
@@ -84,7 +86,7 @@ class EventActivity : SimpleActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_event)
+        setContentView(binding.root)
         setupOptionsMenu()
         refreshMenuItems()
 
@@ -116,7 +118,7 @@ class EventActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupToolbar(event_toolbar, NavigationIcon.Arrow)
+        setupToolbar(binding.eventToolbar, NavigationIcon.Arrow)
     }
 
     private fun gotEvent(savedInstanceState: Bundle?, localEventType: EventType?, event: Event?) {
@@ -141,7 +143,7 @@ class EventActivity : SimpleActivity() {
 
             if (intent.getBooleanExtra(IS_DUPLICATE_INTENT, false)) {
                 mEvent.id = null
-                event_toolbar.title = getString(R.string.new_event)
+                binding.eventToolbar.title = getString(R.string.new_event)
             } else {
                 cancelNotification(mEvent.id!!)
             }
@@ -170,19 +172,19 @@ class EventActivity : SimpleActivity() {
             updateCalDAVCalendar()
         }
 
-        event_show_on_map.setOnClickListener { showOnMap() }
-        event_type_holder.setOnClickListener { showEventTypeDialog() }
-        event_start_date.setOnClickListener { setupStartDate() }
-        event_end_date.setOnClickListener { setupEndDate() }
-        event_start_time.setOnClickListener { setupStartTime() }
-        event_end_time.setOnClickListener { setupEndTime() }
-        event_time_zone.setOnClickListener { setupTimeZone() }
-        event_all_day.setOnCheckedChangeListener { compoundButton, isChecked -> toggleAllDay(isChecked) }
-        event_repetition.setOnClickListener { showRepeatIntervalDialog() }
-        event_repetition_rule_holder.setOnClickListener { showRepetitionRuleDialog() }
-        event_repetition_limit_holder.setOnClickListener { showRepetitionTypePicker() }
+        binding.eventShowOnMap.setOnClickListener { showOnMap() }
+        binding.eventTypeHolder.setOnClickListener { showEventTypeDialog() }
+        binding.eventStartDate.setOnClickListener { setupStartDate() }
+        binding.eventEndDate.setOnClickListener { setupEndDate() }
+        binding.eventStartTime.setOnClickListener { setupStartTime() }
+        binding.eventEndTime.setOnClickListener { setupEndTime() }
+        binding.eventTimeZone.setOnClickListener { setupTimeZone() }
+        binding.eventAllDay.setOnCheckedChangeListener { compoundButton, isChecked -> toggleAllDay(isChecked) }
+        binding.eventRepetition.setOnClickListener { showRepeatIntervalDialog() }
+        binding.eventRepetitionRuleHolder.setOnClickListener { showRepetitionRuleDialog() }
+        binding.eventRepetitionLimitHolder.setOnClickListener { showRepetitionTypePicker() }
 
-        event_reminder_1.setOnClickListener {
+        binding.eventReminder1.setOnClickListener {
             handleNotificationAvailability {
                 if (config.wasAlarmWarningShown) {
                     showReminder1Dialog()
@@ -195,31 +197,31 @@ class EventActivity : SimpleActivity() {
             }
         }
 
-        event_reminder_2.setOnClickListener { showReminder2Dialog() }
-        event_reminder_3.setOnClickListener { showReminder3Dialog() }
+        binding.eventReminder2.setOnClickListener { showReminder2Dialog() }
+        binding.eventReminder3.setOnClickListener { showReminder3Dialog() }
 
-        event_reminder_1_type.setOnClickListener {
+        binding.eventReminder1Type.setOnClickListener {
             showReminderTypePicker(mReminder1Type) {
                 mReminder1Type = it
-                updateReminderTypeImage(event_reminder_1_type, Reminder(mReminder1Minutes, mReminder1Type))
+                updateReminderTypeImage(binding.eventReminder1Type, Reminder(mReminder1Minutes, mReminder1Type))
             }
         }
 
-        event_reminder_2_type.setOnClickListener {
+        binding.eventReminder2Type.setOnClickListener {
             showReminderTypePicker(mReminder2Type) {
                 mReminder2Type = it
-                updateReminderTypeImage(event_reminder_2_type, Reminder(mReminder2Minutes, mReminder2Type))
+                updateReminderTypeImage(binding.eventReminder2Type, Reminder(mReminder2Minutes, mReminder2Type))
             }
         }
 
-        event_reminder_3_type.setOnClickListener {
+        binding.eventReminder3Type.setOnClickListener {
             showReminderTypePicker(mReminder3Type) {
                 mReminder3Type = it
-                updateReminderTypeImage(event_reminder_3_type, Reminder(mReminder3Minutes, mReminder3Type))
+                updateReminderTypeImage(binding.eventReminder3Type, Reminder(mReminder3Minutes, mReminder3Type))
             }
         }
 
-        event_availability.setOnClickListener {
+        binding.eventAvailability.setOnClickListener {
             showAvailabilityPicker(mAvailability) {
                 mAvailability = it
                 updateAvailabilityText()
@@ -227,23 +229,23 @@ class EventActivity : SimpleActivity() {
             }
         }
 
-        event_all_day_holder.setOnClickListener { event_all_day.toggle() }
-        event_all_day.apply {
+        binding.eventAllDayHolder.setOnClickListener { binding.eventAllDay.toggle() }
+        binding.eventAllDay.apply {
             isChecked = mEvent.flags and FLAG_ALL_DAY != 0
             jumpDrawablesToCurrentState()
         }
 
-        updateTextColors(event_scrollview)
+        updateTextColors(binding.eventScrollview)
         updateIconColors()
         refreshMenuItems()
-        event_time_zone_divider.beVisibleIf(config.allowChangingTimeZones)
-        event_time_zone_image.beVisibleIf(config.allowChangingTimeZones)
-        event_time_zone.beVisibleIf(config.allowChangingTimeZones)
+        binding.eventTimeZoneDivider.beVisibleIf(config.allowChangingTimeZones)
+        binding.eventTimeZoneImage.beVisibleIf(config.allowChangingTimeZones)
+        binding.eventTimeZone.beVisibleIf(config.allowChangingTimeZones)
     }
 
     private fun refreshMenuItems() {
         if (::mEvent.isInitialized) {
-            event_toolbar.menu.apply {
+            binding.eventToolbar.menu.apply {
                 findItem(R.id.delete).isVisible = mEvent.id != null
                 findItem(R.id.share).isVisible = mEvent.id != null
                 findItem(R.id.duplicate).isVisible = mEvent.id != null
@@ -252,7 +254,7 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun setupOptionsMenu() {
-        event_toolbar.setOnMenuItemClickListener { menuItem ->
+        binding.eventToolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.save -> saveCurrentEvent()
                 R.id.delete -> deleteEvent()
@@ -307,10 +309,10 @@ class EventActivity : SimpleActivity() {
         }
 
         val reminders = getReminders()
-        return event_title.text.toString() != mEvent.title ||
-                event_location.text.toString() != mEvent.location ||
-                event_description.text.toString() != mEvent.description ||
-                event_time_zone.text != mEvent.getTimeZoneString() ||
+        return binding.eventTitle.text.toString() != mEvent.title ||
+                binding.eventLocation.text.toString() != mEvent.location ||
+                binding.eventDescription.text.toString() != mEvent.description ||
+                binding.eventTimeZone.text != mEvent.getTimeZoneString() ||
                 reminders != mEvent.getReminders() ||
                 mRepeatInterval != mEvent.repeatInterval ||
                 mRepeatRule != mEvent.repeatRule ||
@@ -319,6 +321,7 @@ class EventActivity : SimpleActivity() {
                 hasTimeChanged
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (System.currentTimeMillis() - mLastSavePromptTS > SAVE_DISCARD_PROMPT_INTERVAL && isEventChanged()) {
             mLastSavePromptTS = System.currentTimeMillis()
@@ -439,7 +442,7 @@ class EventActivity : SimpleActivity() {
 
     //** Update the parameters for a special event
     private fun setSpecialEvent() {
-        event_all_day.isChecked = true
+        binding.eventAllDay.isChecked = true
         toggleAllDay(true)
         setRepeatInterval(YEAR)
     }
@@ -449,8 +452,8 @@ class EventActivity : SimpleActivity() {
 
         if (newEvent) {
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
-            event_title.requestFocus()
-            event_toolbar.title = getString(R.string.new_event)
+            binding.eventTitle.requestFocus()
+            binding.eventToolbar.title = getString(R.string.new_event)
 
             val startTS = intent.getLongExtra(NEW_EVENT_START_TS, 0L)
             val dateTime = Formatter.getDateTimeFromTS(startTS)
@@ -459,20 +462,20 @@ class EventActivity : SimpleActivity() {
 
             mEventCalendarId = STORED_LOCALLY_ONLY
             mEvent.flags = FLAG_ALL_DAY
-            event_all_day.isChecked = true
+            binding.eventAllDay.isChecked = true
 
-            event_title.setText(intent.getStringExtra("title"))
-            event_location.setText(intent.getStringExtra("eventLocation"))
-            event_description.setText(intent.getStringExtra("description"))
+            binding.eventTitle.setText(intent.getStringExtra("title"))
+            binding.eventLocation.setText(intent.getStringExtra("eventLocation"))
+            binding.eventDescription.setText(intent.getStringExtra("description"))
 
             addDefValuesToNewEvent()
             setRepeatInterval(YEAR)
         } else {
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
-            event_toolbar.title = getString(R.string.edit_event)
-            event_title.setText(mEvent.title)
-            event_location.setText(mEvent.location)
-            event_description.setText(mEvent.description)
+            binding.eventToolbar.title = getString(R.string.edit_event)
+            binding.eventTitle.setText(mEvent.title)
+            binding.eventLocation.setText(mEvent.location)
+            binding.eventDescription.setText(mEvent.description)
 
             mEventStartDateTime = Formatter.getDateTimeFromTS(mEvent.startTS)
             mEventEndDateTime = mEventStartDateTime
@@ -509,7 +512,7 @@ class EventActivity : SimpleActivity() {
         mOriginalEndTS = realStart + duration
 
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
-        event_toolbar.title = getString(R.string.edit_event)
+        binding.eventToolbar.title = getString(R.string.edit_event)
         mOriginalTimeZone = mEvent.timeZone
         if (config.allowChangingTimeZones) {
             try {
@@ -525,9 +528,9 @@ class EventActivity : SimpleActivity() {
             mEventEndDateTime = Formatter.getDateTimeFromTS(realStart + duration)
         }
 
-        event_title.setText(mEvent.title)
-        event_location.setText(mEvent.location)
-        event_description.setText(mEvent.description)
+        binding.eventTitle.setText(mEvent.title)
+        binding.eventLocation.setText(mEvent.location)
+        binding.eventDescription.setText(mEvent.description)
 
         mReminder1Minutes = mEvent.reminder1Minutes
         mReminder2Minutes = mEvent.reminder2Minutes
@@ -551,8 +554,8 @@ class EventActivity : SimpleActivity() {
 
     private fun setupNewEvent() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
-        event_title.requestFocus()
-        event_toolbar.title = getString(R.string.new_event)
+        binding.eventTitle.requestFocus()
+        binding.eventToolbar.title = getString(R.string.new_event)
         if (config.defaultEventTypeId != -1L) {
             config.lastUsedCaldavCalendarId = mStoredEventTypes.firstOrNull { it.id == config.defaultEventTypeId }?.caldavCalendarId ?: 0
         }
@@ -569,15 +572,15 @@ class EventActivity : SimpleActivity() {
 
             if (intent.getBooleanExtra("allDay", false)) {
                 mEvent.flags = mEvent.flags or FLAG_ALL_DAY
-                event_all_day.isChecked = true
+                binding.eventAllDay.isChecked = true
                 toggleAllDay(true)
             }
 
-            event_title.setText(intent.getStringExtra("title"))
-            event_location.setText(intent.getStringExtra("eventLocation"))
-            event_description.setText(intent.getStringExtra("description"))
-            if (event_description.value.isNotEmpty()) {
-                event_description.movementMethod = LinkMovementMethod.getInstance()
+            binding.eventTitle.setText(intent.getStringExtra("title"))
+            binding.eventLocation.setText(intent.getStringExtra("eventLocation"))
+            binding.eventDescription.setText(intent.getStringExtra("description"))
+            if (binding.eventDescription.value.isNotEmpty()) {
+                binding.eventDescription.movementMethod = LinkMovementMethod.getInstance()
             }
         } else {
             val startTS = intent.getLongExtra(NEW_EVENT_START_TS, 0L)
@@ -665,17 +668,17 @@ class EventActivity : SimpleActivity() {
         checkRepeatTexts(mRepeatInterval)
 
         when {
-            mRepeatInterval.isXWeeklyRepetition() -> setRepeatRule(Math.pow(2.0, (mEventStartDateTime.dayOfWeek - 1).toDouble()).toInt())
+            mRepeatInterval.isXWeeklyRepetition() -> setRepeatRule(2.0.pow((mEventStartDateTime.dayOfWeek - 1).toDouble()).toInt())
             mRepeatInterval.isXMonthlyRepetition() -> setRepeatRule(REPEAT_SAME_DAY)
             mRepeatInterval.isXYearlyRepetition() -> setRepeatRule(REPEAT_SAME_DAY)
         }
     }
 
     private fun checkRepeatTexts(limit: Int) {
-        event_repetition_limit_holder.beGoneIf(limit == 0)
+        binding.eventRepetitionLimitHolder.beGoneIf(limit == 0)
         checkRepetitionLimitText()
 
-        event_repetition_rule_holder.beVisibleIf(mRepeatInterval.isXWeeklyRepetition() || mRepeatInterval.isXMonthlyRepetition() || mRepeatInterval.isXYearlyRepetition())
+        binding.eventRepetitionRuleHolder.beVisibleIf(mRepeatInterval.isXWeeklyRepetition() || mRepeatInterval.isXMonthlyRepetition() || mRepeatInterval.isXYearlyRepetition())
         checkRepetitionRuleText()
     }
 
@@ -692,18 +695,18 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun checkRepetitionLimitText() {
-        event_repetition_limit.text = when {
+        binding.eventRepetitionLimit.text = when {
             mRepeatLimit == 0L -> {
-                event_repetition_limit_label.text = getString(R.string.repeat)
+                binding.eventRepetitionLimitLabel.text = getString(R.string.repeat)
                 resources.getString(R.string.forever)
             }
             mRepeatLimit > 0 -> {
-                event_repetition_limit_label.text = getString(R.string.repeat_till)
+                binding.eventRepetitionLimitLabel.text = getString(R.string.repeat_till)
                 val repeatLimitDateTime = Formatter.getDateTimeFromTS(mRepeatLimit)
                 Formatter.getFullDate(this, repeatLimitDateTime)
             }
             else -> {
-                event_repetition_limit_label.text = getString(R.string.repeat)
+                binding.eventRepetitionLimitLabel.text = getString(R.string.repeat)
                 "${-mRepeatLimit} ${getString(R.string.times)}"
             }
         }
@@ -835,21 +838,21 @@ class EventActivity : SimpleActivity() {
     private fun checkRepetitionRuleText() {
         when {
             mRepeatInterval.isXWeeklyRepetition() -> {
-                event_repetition_rule.text = if (mRepeatRule == EVERY_DAY_BIT) getString(R.string.every_day) else getSelectedDaysString(mRepeatRule)
+                binding.eventRepetitionRule.text = if (mRepeatRule == EVERY_DAY_BIT) getString(R.string.every_day) else getSelectedDaysString(mRepeatRule)
             }
             mRepeatInterval.isXMonthlyRepetition() -> {
                 val repeatString = if (mRepeatRule == REPEAT_ORDER_WEEKDAY_USE_LAST || mRepeatRule == REPEAT_ORDER_WEEKDAY)
                     R.string.repeat else R.string.repeat_on
 
-                event_repetition_rule_label.text = getString(repeatString)
-                event_repetition_rule.text = getMonthlyRepetitionRuleText()
+                binding.eventRepetitionRuleLabel.text = getString(repeatString)
+                binding.eventRepetitionRule.text = getMonthlyRepetitionRuleText()
             }
             mRepeatInterval.isXYearlyRepetition() -> {
                 val repeatString = if (mRepeatRule == REPEAT_ORDER_WEEKDAY_USE_LAST || mRepeatRule == REPEAT_ORDER_WEEKDAY)
                     R.string.repeat else R.string.repeat_on
 
-                event_repetition_rule_label.text = getString(repeatString)
-                event_repetition_rule.text = getYearlyRepetitionRuleText()
+                binding.eventRepetitionRuleLabel.text = getString(repeatString)
+                binding.eventRepetitionRule.text = getYearlyRepetitionRuleText()
             }
         }
     }
@@ -881,12 +884,12 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun updateReminder1Text() {
-        event_reminder_1.text = getFormattedMinutes(mReminder1Minutes)
+        binding.eventReminder1.text = getFormattedMinutes(mReminder1Minutes)
     }
 
     private fun updateReminder2Text() {
-        event_reminder_2.apply {
-            beGoneIf(event_reminder_2.isGone() && mReminder1Minutes == REMINDER_OFF)
+        binding.eventReminder2.apply {
+            beGoneIf(binding.eventReminder2.isGone() && mReminder1Minutes == REMINDER_OFF)
             if (mReminder2Minutes == REMINDER_OFF) {
                 text = resources.getString(R.string.add_another_reminder)
                 alpha = 0.4f
@@ -898,8 +901,8 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun updateReminder3Text() {
-        event_reminder_3.apply {
-            beGoneIf(event_reminder_3.isGone() && (mReminder2Minutes == REMINDER_OFF || mReminder1Minutes == REMINDER_OFF))
+        binding.eventReminder3.apply {
+            beGoneIf(binding.eventReminder3.isGone() && (mReminder2Minutes == REMINDER_OFF || mReminder1Minutes == REMINDER_OFF))
             if (mReminder3Minutes == REMINDER_OFF) {
                 text = resources.getString(R.string.add_another_reminder)
                 alpha = 0.4f
@@ -931,19 +934,19 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun updateReminderTypeImages() {
-        updateReminderTypeImage(event_reminder_1_type, Reminder(mReminder1Minutes, mReminder1Type))
-        updateReminderTypeImage(event_reminder_2_type, Reminder(mReminder2Minutes, mReminder2Type))
-        updateReminderTypeImage(event_reminder_3_type, Reminder(mReminder3Minutes, mReminder3Type))
+        updateReminderTypeImage(binding.eventReminder1Type, Reminder(mReminder1Minutes, mReminder1Type))
+        updateReminderTypeImage(binding.eventReminder2Type, Reminder(mReminder2Minutes, mReminder2Type))
+        updateReminderTypeImage(binding.eventReminder3Type, Reminder(mReminder3Minutes, mReminder3Type))
     }
 
     private fun updateCalDAVVisibility() {
         val isSyncedEvent = mEventCalendarId != STORED_LOCALLY_ONLY
-        event_attendees_image.beVisibleIf(isSyncedEvent)
-        event_attendees_holder.beVisibleIf(isSyncedEvent)
-        event_attendees_divider.beVisibleIf(isSyncedEvent)
-        event_availability_divider.beVisibleIf(isSyncedEvent)
-        event_availability_image.beVisibleIf(isSyncedEvent)
-        event_availability.beVisibleIf(isSyncedEvent)
+        binding.eventAttendeesImage.beVisibleIf(isSyncedEvent)
+        binding.eventAttendeesHolder.beVisibleIf(isSyncedEvent)
+        binding.eventAttendeesDivider.beVisibleIf(isSyncedEvent)
+        binding.eventAvailabilityDivider.beVisibleIf(isSyncedEvent)
+        binding.eventAvailabilityImage.beVisibleIf(isSyncedEvent)
+        binding.eventAvailability.beVisibleIf(isSyncedEvent)
     }
 
     private fun updateReminderTypeImage(view: ImageView, reminder: Reminder) {
@@ -956,15 +959,15 @@ class EventActivity : SimpleActivity() {
     private fun updateAvailabilityImage() {
         val drawable = if (mAvailability == Attendees.AVAILABILITY_FREE) R.drawable.ic_event_available_vector else R.drawable.ic_event_busy_vector
         val icon = resources.getColoredDrawableWithColor(drawable, getProperTextColor())
-        event_availability_image.setImageDrawable(icon)
+        binding.eventAvailabilityImage.setImageDrawable(icon)
     }
 
     private fun updateAvailabilityText() {
-        event_availability.text = if (mAvailability == Attendees.AVAILABILITY_FREE) getString(R.string.status_free) else getString(R.string.status_busy)
+        binding.eventAvailability.text = if (mAvailability == Attendees.AVAILABILITY_FREE) getString(R.string.status_free) else getString(R.string.status_busy)
     }
 
     private fun updateRepetitionText() {
-        event_repetition.text = getRepetitionText(mRepeatInterval)
+        binding.eventRepetition.text = getRepetitionText(mRepeatInterval)
     }
 
     private fun updateEventType() {
@@ -972,8 +975,8 @@ class EventActivity : SimpleActivity() {
             val eventType = eventTypesDB.getEventTypeWithId(mEventTypeId)
             if (eventType != null) {
                 runOnUiThread {
-                    event_type.text = eventType.title
-                    event_type_color.setFillWithStroke(eventType.color, getProperBackgroundColor())
+                    binding.eventType.text = eventType.title
+                    binding.eventTypeColor.setFillWithStroke(eventType.color, getProperBackgroundColor())
                 }
             }
         }
@@ -994,16 +997,16 @@ class EventActivity : SimpleActivity() {
 
     private fun updateCalDAVCalendar() {
         if (config.caldavSync) {
-            event_caldav_calendar_image.beVisible()
-            event_caldav_calendar_holder.beVisible()
-            event_caldav_calendar_divider.beVisible()
+            binding.eventCaldavCalendarImage.beVisible()
+            binding.eventCaldavCalendarHolder.beVisible()
+            binding.eventCaldavCalendarDivider.beVisible()
 
             val calendars = calDAVHelper.getCalDAVCalendars("", true).filter {
                 it.canWrite() && config.getSyncedCalendarIdsAsList().contains(it.id)
             }
             updateCurrentCalendarInfo(if (mEventCalendarId == STORED_LOCALLY_ONLY) null else getCalendarWithId(calendars, getCalendarId()))
 
-            event_caldav_calendar_holder.setOnClickListener {
+            binding.eventCaldavCalendarHolder.setOnClickListener {
                 hideKeyboard()
                 SelectEventCalendarDialog(this, calendars, mEventCalendarId) {
                     if (mEventCalendarId != STORED_LOCALLY_ONLY && it == STORED_LOCALLY_ONLY) {
@@ -1030,37 +1033,37 @@ class EventActivity : SimpleActivity() {
     private fun getCalendarWithId(calendars: List<CalDAVCalendar>, calendarId: Int) = calendars.firstOrNull { it.id == calendarId }
 
     private fun updateCurrentCalendarInfo(currentCalendar: CalDAVCalendar?) {
-        event_type_image.beVisibleIf(currentCalendar == null)
-        event_type_holder.beVisibleIf(currentCalendar == null)
-        event_caldav_calendar_divider.beVisibleIf(currentCalendar == null)
-        event_caldav_calendar_email.beGoneIf(currentCalendar == null)
-        event_caldav_calendar_color.beGoneIf(currentCalendar == null)
+        binding.eventTypeImage.beVisibleIf(currentCalendar == null)
+        binding.eventTypeHolder.beVisibleIf(currentCalendar == null)
+        binding.eventCaldavCalendarDivider.beVisibleIf(currentCalendar == null)
+        binding.eventCaldavCalendarEmail.beGoneIf(currentCalendar == null)
+        binding.eventCaldavCalendarColor.beGoneIf(currentCalendar == null)
 
         if (currentCalendar == null) {
             mEventCalendarId = STORED_LOCALLY_ONLY
             val mediumMargin = resources.getDimension(R.dimen.medium_margin).toInt()
-            event_caldav_calendar_name.apply {
+            binding.eventCaldavCalendarName.apply {
                 text = getString(R.string.store_locally_only)
                 setPadding(paddingLeft, paddingTop, paddingRight, mediumMargin)
             }
 
-            event_caldav_calendar_holder.apply {
+            binding.eventCaldavCalendarHolder.apply {
                 setPadding(paddingLeft, mediumMargin, paddingRight, mediumMargin)
             }
         } else {
-            event_caldav_calendar_email.text = currentCalendar.accountName
+            binding.eventCaldavCalendarEmail.text = currentCalendar.accountName
 
             ensureBackgroundThread {
                 val calendarColor = eventsHelper.getEventTypeWithCalDAVCalendarId(currentCalendar.id)?.color ?: currentCalendar.color
 
                 runOnUiThread {
-                    event_caldav_calendar_color.setFillWithStroke(calendarColor, getProperBackgroundColor())
-                    event_caldav_calendar_name.apply {
+                    binding.eventCaldavCalendarColor.setFillWithStroke(calendarColor, getProperBackgroundColor())
+                    binding.eventCaldavCalendarName.apply {
                         text = currentCalendar.displayName
                         setPadding(paddingLeft, paddingTop, paddingRight, resources.getDimension(R.dimen.tiny_margin).toInt())
                     }
 
-                    event_caldav_calendar_holder.apply {
+                    binding.eventCaldavCalendarHolder.apply {
                         setPadding(paddingLeft, 0, paddingRight, 0)
                     }
                 }
@@ -1085,14 +1088,14 @@ class EventActivity : SimpleActivity() {
         if (!mIsSpecialEvent) {
             mIsAllDayEvent = isChecked
             hideKeyboard()
-            event_start_time.beGoneIf(isChecked)
-            event_end_time.beGoneIf(isChecked)
+            binding.eventStartTime.beGoneIf(isChecked)
+            binding.eventEndTime.beGoneIf(isChecked)
             resetTime()
         } else {
             mIsAllDayEvent = true
             hideKeyboard()
-            event_start_time.beGoneIf(isChecked)
-            event_end_time.beGoneIf(isChecked)
+            binding.eventStartTime.beGoneIf(isChecked)
+            binding.eventEndTime.beGoneIf(isChecked)
             resetTime()
         }
     }
@@ -1150,11 +1153,11 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun saveEvent() {
-        val newTitle = event_title.value
+        val newTitle = binding.eventTitle.value
         if (newTitle.isEmpty()) {
             toast(R.string.title_empty)
             runOnUiThread {
-                event_title.requestFocus()
+                binding.eventTitle.requestFocus()
             }
             return
         }
@@ -1206,7 +1209,7 @@ class EventActivity : SimpleActivity() {
         }
 
         val reminders = getReminders()
-        if (!event_all_day.isChecked) {
+        if (!binding.eventAllDay.isChecked) {
             if ((reminders.getOrNull(2)?.minutes ?: 0) < -1) {
                 reminders.removeAt(2)
             }
@@ -1240,7 +1243,7 @@ class EventActivity : SimpleActivity() {
             startTS = newStartTS
             endTS = newEndTS
             title = newTitle
-            description = event_description.value
+            description = binding.eventDescription.value
             reminder1Minutes = reminder1.minutes
             reminder2Minutes = reminder2.minutes
             reminder3Minutes = reminder3.minutes
@@ -1250,14 +1253,14 @@ class EventActivity : SimpleActivity() {
             repeatInterval = mRepeatInterval
             importId = newImportId
             timeZone = if (mEvent.timeZone.isEmpty()) TimeZone.getDefault().id else timeZone
-            flags = mEvent.flags.addBitIf(event_all_day.isChecked, FLAG_ALL_DAY)
+            flags = mEvent.flags.addBitIf(binding.eventAllDay.isChecked, FLAG_ALL_DAY)
             repeatLimit = if (repeatInterval == 0) 0 else mRepeatLimit
             repeatRule = mRepeatRule
             attendees = if (mEventCalendarId == STORED_LOCALLY_ONLY) "" else getAllAttendees(true)
             eventType = newEventType
             lastUpdated = System.currentTimeMillis()
             source = newSource
-            location = event_location.value
+            location = binding.eventLocation.value
             availability = mAvailability
         }
 
@@ -1360,12 +1363,12 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun updateStartDateText() {
-        event_start_date.text = Formatter.getFullDate(this, mEventStartDateTime)
+        binding.eventStartDate.text = Formatter.getFullDate(this, mEventStartDateTime)
         checkStartEndValidity()
     }
 
     private fun updateStartTimeText() {
-        event_start_time.text = Formatter.getTime(this, mEventStartDateTime)
+        binding.eventStartTime.text = Formatter.getTime(this, mEventStartDateTime)
         checkStartEndValidity()
     }
 
@@ -1375,33 +1378,34 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun updateEndDateText() {
-        event_end_date.text = Formatter.getFullDate(this, mEventEndDateTime)
+        binding.eventEndDate.text = Formatter.getFullDate(this, mEventEndDateTime)
         checkStartEndValidity()
     }
 
     private fun updateEndTimeText() {
-        event_end_time.text = Formatter.getTime(this, mEventEndDateTime)
+        binding.eventEndTime.text = Formatter.getTime(this, mEventEndDateTime)
         checkStartEndValidity()
     }
 
     private fun updateTimeZoneText() {
-        event_time_zone.text = mEvent.getTimeZoneString()
+        binding.eventTimeZone.text = mEvent.getTimeZoneString()
     }
 
     private fun checkStartEndValidity() {
-        val textColor = if (mEventStartDateTime.isAfter(mEventEndDateTime)) resources.getColor(R.color.red_text) else getProperTextColor()
-        event_end_date.setTextColor(textColor)
-        event_end_time.setTextColor(textColor)
+        val textColor = if (mEventStartDateTime.isAfter(mEventEndDateTime))
+            resources.getColor(R.color.red_text, null) else getProperTextColor()
+        binding.eventEndDate.setTextColor(textColor)
+        binding.eventEndTime.setTextColor(textColor)
     }
 
     private fun showOnMap() {
-        if (event_location.value.isEmpty()) {
+        if (binding.eventLocation.value.isEmpty()) {
             toast(R.string.please_fill_location)
             return
         }
 
         val pattern = Pattern.compile(LAT_LON_PATTERN)
-        val locationValue = event_location.value
+        val locationValue = binding.eventLocation.value
         val uri = if (pattern.matcher(locationValue).find()) {
             val delimiter = if (locationValue.contains(';')) ";" else ","
             val parts = locationValue.split(delimiter)
@@ -1577,22 +1581,23 @@ class EventActivity : SimpleActivity() {
             }
             addAttendee()
 
-            val imageHeight = event_repetition_image.height
+            val imageHeight = binding.eventRepetitionImage.height
             if (imageHeight > 0) {
-                event_attendees_image.layoutParams.height = imageHeight
+                binding.eventAttendeesImage.layoutParams.height = imageHeight
             } else {
-                event_repetition_image.onGlobalLayout {
-                    event_attendees_image.layoutParams.height = event_repetition_image.height
+                binding.eventRepetitionImage.onGlobalLayout {
+                    binding.eventAttendeesImage.layoutParams.height = binding.eventRepetitionImage.height
                 }
             }
         }
     }
 
     private fun addAttendee(attendee: Attendee? = null) {
-        val attendeeHolder = layoutInflater.inflate(R.layout.item_attendee, event_attendees_holder, false) as RelativeLayout
-        val autoCompleteView = attendeeHolder.event_attendee
-        val selectedAttendeeHolder = attendeeHolder.event_contact_attendee
-        val selectedAttendeeDismiss = attendeeHolder.event_contact_dismiss
+        val attendeeHolder = ItemAttendeeBinding.inflate(layoutInflater)
+            //layoutInflater.inflate(R.layout.item_attendee, binding.eventAttendeesHolder, false) as RelativeLayout
+        val autoCompleteView = attendeeHolder.eventAttendee
+        //val selectedAttendeeHolder = attendeeHolder.eventContactAttendee
+        //val selectedAttendeeDismiss = attendeeHolder.eventContactDismiss
 
         mAttendeeAutoCompleteViews.add(autoCompleteView)
         autoCompleteView.onTextChangeListener {
@@ -1606,17 +1611,21 @@ class EventActivity : SimpleActivity() {
             }
         }
 
-        event_attendees_holder.addView(attendeeHolder)
+        binding.eventAttendeesHolder.addView(attendeeHolder.root)
 
         val textColor = getProperTextColor()
         autoCompleteView.setColors(textColor, getProperPrimaryColor(), getProperBackgroundColor())
-        selectedAttendeeHolder.event_contact_name.setColors(textColor, getProperPrimaryColor(), getProperBackgroundColor())
-        selectedAttendeeHolder.event_contact_me_status.setColors(textColor, getProperPrimaryColor(), getProperBackgroundColor())
-        selectedAttendeeDismiss.applyColorFilter(textColor)
+        attendeeHolder.eventContactName.setColors(textColor, getProperPrimaryColor(), getProperBackgroundColor())
+        //selectedAttendeeHolder.
+        
+        attendeeHolder.eventContactMeStatus.setColors(textColor, getProperPrimaryColor(), getProperBackgroundColor())
+        //selectedAttendeeDismiss.applyColorFilter(textColor)
+        attendeeHolder.eventContactDismiss.applyColorFilter(textColor)
 
-        selectedAttendeeDismiss.setOnClickListener {
-            attendeeHolder.beGone()
-            mSelectedContacts = mSelectedContacts.filter { it.toString() != selectedAttendeeDismiss.tag }.toMutableList() as ArrayList<Attendee>
+        //selectedAttendeeDismiss.setOnClickListener 
+        attendeeHolder.eventContactDismiss.setOnClickListener {
+            attendeeHolder.root.beGone()
+            mSelectedContacts = mSelectedContacts.filter { it.toString() != attendeeHolder.eventContactDismiss.tag }.toMutableList() as ArrayList<Attendee>
         }
 
         val adapter = AutoCompleteTextViewAdapter(this, mAvailableContacts)
@@ -1625,58 +1634,60 @@ class EventActivity : SimpleActivity() {
         autoCompleteView.setOnItemClickListener { parent, view, position, id ->
             val currAttendees = (autoCompleteView.adapter as AutoCompleteTextViewAdapter).resultList
             val selectedAttendee = currAttendees[position]
-            addSelectedAttendee(selectedAttendee, autoCompleteView, selectedAttendeeHolder)
+            addSelectedAttendee(selectedAttendee, autoCompleteView, attendeeHolder)
         }
 
         if (attendee != null) {
-            addSelectedAttendee(attendee, autoCompleteView, selectedAttendeeHolder)
+            addSelectedAttendee(attendee, autoCompleteView, attendeeHolder)
         }
     }
 
-    private fun addSelectedAttendee(attendee: Attendee, autoCompleteView: MyAutoCompleteTextView, selectedAttendeeHolder: RelativeLayout) {
+    private fun addSelectedAttendee(attendee: Attendee, autoCompleteView: MyAutoCompleteTextView,
+                                    attendeeHolder: ItemAttendeeBinding) { // RelativeLayout) {
         mSelectedContacts.add(attendee)
 
         autoCompleteView.beGone()
         autoCompleteView.focusSearch(View.FOCUS_DOWN)?.requestFocus()
 
-        selectedAttendeeHolder.apply {
+        attendeeHolder.eventContactAttendee.apply{
             beVisible()
 
-            val attendeeStatusBackground = resources.getDrawable(R.drawable.attendee_status_circular_background)
+            val attendeeStatusBackground = ResourcesCompat.getDrawable(resources, R.drawable.attendee_status_circular_background, null)
+                //resources.getDrawable(R.drawable.attendee_status_circular_background)
             (attendeeStatusBackground as LayerDrawable).findDrawableByLayerId(R.id.attendee_status_circular_background)
                 .applyColorFilter(getProperBackgroundColor())
-            event_contact_status_image.apply {
+            attendeeHolder.eventContactStatusImage.apply {
                 background = attendeeStatusBackground
                 setImageDrawable(getAttendeeStatusImage(attendee))
                 beVisibleIf(attendee.showStatusImage())
             }
 
-            event_contact_name.text = if (attendee.isMe) getString(R.string.my_status) else attendee.getPublicName()
+            attendeeHolder.eventContactName.text = if (attendee.isMe) getString(R.string.my_status) else attendee.getPublicName()
             if (attendee.isMe) {
-                (event_contact_name.layoutParams as RelativeLayout.LayoutParams).addRule(RelativeLayout.START_OF, event_contact_me_status.id)
+                (attendeeHolder.eventContactName.layoutParams as RelativeLayout.LayoutParams).addRule(RelativeLayout.START_OF, attendeeHolder.eventContactMeStatus.id)
             }
 
-            val placeholder = BitmapDrawable(resources, SimpleContactsHelper(context).getContactLetterIcon(event_contact_name.value))
-            event_contact_image.apply {
+            val placeholder = BitmapDrawable(resources, SimpleContactsHelper(context).getContactLetterIcon(attendeeHolder.eventContactName.value))
+            attendeeHolder.eventContactImage.apply {
                 attendee.updateImage(this@EventActivity, this, placeholder)
                 beVisible()
             }
 
-            event_contact_dismiss.apply {
+            attendeeHolder.eventContactDismiss.apply {
                 tag = attendee.toString()
                 beGoneIf(attendee.isMe)
             }
 
             if (attendee.isMe) {
-                updateAttendeeMe(this, attendee)
+                updateAttendeeMe(attendeeHolder, attendee)
             }
 
-            event_contact_me_status.apply {
+            attendeeHolder.eventContactMeStatus.apply {
                 beVisibleIf(attendee.isMe)
             }
 
             if (attendee.isMe) {
-                event_contact_attendee.setOnClickListener {
+                attendeeHolder.eventContactAttendee.setOnClickListener {
                     val items = arrayListOf(
                         RadioItem(Attendees.ATTENDEE_STATUS_ACCEPTED, getString(R.string.going)),
                         RadioItem(Attendees.ATTENDEE_STATUS_DECLINED, getString(R.string.not_going)),
@@ -1685,7 +1696,7 @@ class EventActivity : SimpleActivity() {
 
                     RadioGroupDialog(this@EventActivity, items, attendee.status) {
                         attendee.status = it as Int
-                        updateAttendeeMe(this, attendee)
+                        updateAttendeeMe(attendeeHolder, attendee)
                     }
                 }
             }
@@ -1693,18 +1704,18 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun getAttendeeStatusImage(attendee: Attendee): Drawable {
-        return resources.getDrawable(
+        return ResourcesCompat.getDrawable(resources,
             when (attendee.status) {
                 Attendees.ATTENDEE_STATUS_ACCEPTED -> R.drawable.ic_check_green
                 Attendees.ATTENDEE_STATUS_DECLINED -> R.drawable.ic_cross_red
                 else -> R.drawable.ic_question_yellow
-            }
-        )
+            } , null
+        )!!
     }
 
-    private fun updateAttendeeMe(holder: RelativeLayout, attendee: Attendee) {
+    private fun updateAttendeeMe(holder: ItemAttendeeBinding, attendee: Attendee) {
         holder.apply {
-            event_contact_me_status.text = getString(
+            eventContactMeStatus.text = getString(
                 when (attendee.status) {
                     Attendees.ATTENDEE_STATUS_ACCEPTED -> R.string.going
                     Attendees.ATTENDEE_STATUS_DECLINED -> R.string.not_going
@@ -1713,7 +1724,7 @@ class EventActivity : SimpleActivity() {
                 }
             )
 
-            event_contact_status_image.apply {
+            eventContactStatusImage.apply {
                 beVisibleIf(attendee.showStatusImage())
                 setImageDrawable(getAttendeeStatusImage(attendee))
             }
@@ -1781,7 +1792,8 @@ class EventActivity : SimpleActivity() {
             val names = arrayListOf(prefix, firstName, middleName, surname, suffix).filter { it.trim().isNotEmpty() }
             val fullName = TextUtils.join(" ", names).trim()
             if (fullName.isNotEmpty() || photoUri.isNotEmpty()) {
-                val contact = Attendee(id, fullName, "", Attendees.ATTENDEE_STATUS_NONE, photoUri, false, Attendees.RELATIONSHIP_NONE)
+                val contact = Attendee(id, fullName, "", Attendees.ATTENDEE_STATUS_NONE, 
+                    photoUri, false, Attendees.RELATIONSHIP_NONE)
                 contacts.add(contact)
             }
         }
@@ -1799,7 +1811,8 @@ class EventActivity : SimpleActivity() {
         queryCursor(uri, projection) { cursor ->
             val id = cursor.getIntValue(Data.CONTACT_ID)
             val email = cursor.getStringValue(CommonDataKinds.Email.DATA) ?: return@queryCursor
-            val contact = Attendee(id, "", email, Attendees.ATTENDEE_STATUS_NONE, "", false, Attendees.RELATIONSHIP_NONE)
+            val contact = Attendee(id, "", email, Attendees.ATTENDEE_STATUS_NONE, "",
+                false, Attendees.RELATIONSHIP_NONE)
             contacts.add(contact)
         }
 
@@ -1807,18 +1820,20 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun updateIconColors() {
-        event_show_on_map.applyColorFilter(getProperAccentColor())
+        binding.eventShowOnMap.applyColorFilter(getProperAccentColor())
         val textColor = getProperTextColor()
         arrayOf(
-            event_time_image, event_time_zone_image, event_repetition_image, event_reminder_image, event_type_image, event_caldav_calendar_image,
-            event_reminder_1_type, event_reminder_2_type, event_reminder_3_type, event_attendees_image, event_availability_image
+            binding.eventTimeImage, binding.eventTimeZoneImage, binding.eventRepetitionImage, 
+            binding.eventReminderImage, binding.eventTypeImage, binding.eventCaldavCalendarImage,
+            binding.eventReminder1Type, binding.eventReminder2Type, binding.eventReminder3Type, 
+            binding.eventAttendeesImage, binding.eventAvailabilityImage
         ).forEach {
             it.applyColorFilter(textColor)
         }
     }
 
     private fun updateActionBarTitle() {
-        event_toolbar.title = if (mIsNewEvent) {
+        binding.eventToolbar.title = if (mIsNewEvent) {
             getString(R.string.new_event)
         } else {
             getString(R.string.edit_event)

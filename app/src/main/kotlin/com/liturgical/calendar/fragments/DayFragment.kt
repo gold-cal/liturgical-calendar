@@ -3,15 +3,17 @@ package com.liturgical.calendar.fragments
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.MainActivity
 import com.liturgical.calendar.activities.SimpleActivity
 import com.liturgical.calendar.adapters.DayEventsAdapter
+import com.liturgical.calendar.databinding.FragmentDayBinding
+import com.liturgical.calendar.databinding.TopNavigationBinding
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.extensions.getViewBitmap
@@ -20,8 +22,6 @@ import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.interfaces.NavigationListener
 import com.liturgical.calendar.models.Event
 import com.secure.commons.extensions.*
-import kotlinx.android.synthetic.main.fragment_day.view.*
-import kotlinx.android.synthetic.main.top_navigation.view.*
 
 class DayFragment : Fragment() {
     var mListener: NavigationListener? = null
@@ -29,15 +29,16 @@ class DayFragment : Fragment() {
     private var mDayCode = ""
     private var lastHash = 0
 
-    private lateinit var mHolder: RelativeLayout
+    private lateinit var mHolder: FragmentDayBinding
+    private lateinit var mTopNav: TopNavigationBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_day, container, false)
-        mHolder = view.day_holder
+        mHolder = FragmentDayBinding.inflate(inflater, container,false)
+        mTopNav = TopNavigationBinding.bind(mHolder.root)
 
         mDayCode = requireArguments().getString(DAY_CODE)!!
         setupButtons()
-        return view
+        return mHolder.root
     }
 
     override fun onResume() {
@@ -48,7 +49,7 @@ class DayFragment : Fragment() {
     private fun setupButtons() {
         mTextColor = requireContext().getProperTextColor()
 
-        mHolder.top_left_arrow.apply {
+        mTopNav.topLeftArrow.apply {
             applyColorFilter(mTextColor)
             background = null
             setOnClickListener {
@@ -60,7 +61,7 @@ class DayFragment : Fragment() {
             setImageDrawable(pointerLeft)
         }
 
-        mHolder.top_right_arrow.apply {
+        mTopNav.topRightArrow.apply {
             applyColorFilter(mTextColor)
             background = null
             setOnClickListener {
@@ -73,7 +74,7 @@ class DayFragment : Fragment() {
         }
 
         val day = Formatter.getDayTitle(requireContext(), mDayCode)
-        mHolder.top_value.apply {
+        mTopNav.topValue.apply {
             text = day
             contentDescription = text
             setOnClickListener {
@@ -112,14 +113,14 @@ class DayFragment : Fragment() {
         if (activity == null)
             return
 
-        DayEventsAdapter(activity as SimpleActivity, events, mHolder.day_events, mDayCode) {
+        DayEventsAdapter(activity as SimpleActivity, events, mHolder.dayEvents, mDayCode) {
             editEvent(it as Event)
         }.apply {
-            mHolder.day_events.adapter = this
+            mHolder.dayEvents.adapter = this
         }
 
         if (requireContext().areSystemAnimationsEnabled) {
-            mHolder.day_events.scheduleLayoutAnimation()
+            mHolder.dayEvents.scheduleLayoutAnimation()
         }
     }
 
@@ -133,20 +134,20 @@ class DayFragment : Fragment() {
     }
 
     fun printCurrentView() {
-        mHolder.apply {
-            top_left_arrow.beGone()
-            top_right_arrow.beGone()
-            top_value.setTextColor(resources.getColor(R.color.theme_light_text_color))
-            (day_events.adapter as? DayEventsAdapter)?.togglePrintMode()
+        mTopNav.apply {
+            topLeftArrow.beGone()
+            topRightArrow.beGone()
+            topValue.setTextColor(resources.getColor(R.color.theme_light_text_color))
+            (mHolder.dayEvents.adapter as? DayEventsAdapter)?.togglePrintMode()
 
-            Handler().postDelayed({
-                requireContext().printBitmap(day_holder.getViewBitmap())
+            Handler(Looper.getMainLooper()).postDelayed({
+                requireContext().printBitmap(mHolder.dayHolder.getViewBitmap())
 
-                Handler().postDelayed({
-                    top_left_arrow.beVisible()
-                    top_right_arrow.beVisible()
-                    top_value.setTextColor(requireContext().getProperTextColor())
-                    (day_events.adapter as? DayEventsAdapter)?.togglePrintMode()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    topLeftArrow.beVisible()
+                    topRightArrow.beVisible()
+                    topValue.setTextColor(requireContext().getProperTextColor())
+                    (mHolder.dayEvents.adapter as? DayEventsAdapter)?.togglePrintMode()
                 }, 1000)
             }, 1000)
         }

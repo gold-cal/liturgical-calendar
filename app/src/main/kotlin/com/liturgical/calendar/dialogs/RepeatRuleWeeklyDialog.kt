@@ -2,21 +2,23 @@ package com.liturgical.calendar.dialogs
 
 import android.app.Activity
 import com.liturgical.calendar.R
+import com.liturgical.calendar.databinding.DialogVerticalLinearLayoutBinding
+import com.liturgical.calendar.databinding.MyCheckboxBinding
 import com.liturgical.calendar.extensions.config
 import com.secure.commons.extensions.getAlertDialogBuilder
 import com.secure.commons.extensions.setupDialogStuff
 import com.secure.commons.views.MyAppCompatCheckbox
-import kotlinx.android.synthetic.main.dialog_vertical_linear_layout.view.*
+import kotlin.math.pow
 
 class RepeatRuleWeeklyDialog(val activity: Activity, val curRepeatRule: Int, val callback: (repeatRule: Int) -> Unit) {
-    private val view = activity.layoutInflater.inflate(R.layout.dialog_vertical_linear_layout, null)
+    private val binding = DialogVerticalLinearLayoutBinding.inflate(activity.layoutInflater)
 
     init {
         val days = activity.resources.getStringArray(R.array.week_days)
         val checkboxes = ArrayList<MyAppCompatCheckbox>(7)
         for (i in 0..6) {
-            val pow = Math.pow(2.0, i.toDouble()).toInt()
-            (activity.layoutInflater.inflate(R.layout.my_checkbox, null) as MyAppCompatCheckbox).apply {
+            val pow = 2.0.pow(i.toDouble()).toInt()
+            MyCheckboxBinding.inflate(activity.layoutInflater).root.apply {
                 isChecked = curRepeatRule and pow != 0
                 text = days[i]
                 id = pow
@@ -29,22 +31,22 @@ class RepeatRuleWeeklyDialog(val activity: Activity, val curRepeatRule: Int, val
         }
 
         checkboxes.forEach {
-            view.dialog_vertical_linear_layout.addView(it)
+            binding.dialogVerticalLinearLayout.addView(it)
         }
 
         activity.getAlertDialogBuilder()
             .setPositiveButton(R.string.ok) { dialog, which -> callback(getRepeatRuleSum()) }
             .setNegativeButton(R.string.cancel, null)
             .apply {
-                activity.setupDialogStuff(view, this)
+                activity.setupDialogStuff(binding.root, this)
             }
     }
 
     private fun getRepeatRuleSum(): Int {
         var sum = 0
-        val cnt = view.dialog_vertical_linear_layout.childCount
+        val cnt = binding.dialogVerticalLinearLayout.childCount
         for (i in 0 until cnt) {
-            val child = view.dialog_vertical_linear_layout.getChildAt(i)
+            val child = binding.dialogVerticalLinearLayout.getChildAt(i)
             if (child is MyAppCompatCheckbox) {
                 if (child.isChecked)
                     sum += child.id

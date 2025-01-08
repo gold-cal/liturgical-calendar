@@ -11,12 +11,13 @@ import androidx.viewpager.widget.ViewPager
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.MainActivity
 import com.liturgical.calendar.adapters.MyYearPagerAdapter
+import com.liturgical.calendar.databinding.DatePickerBinding
+import com.liturgical.calendar.databinding.FragmentYearsHolderBinding
 import com.liturgical.calendar.helpers.Formatter
 import com.liturgical.calendar.helpers.YEARLY_VIEW
 import com.liturgical.calendar.helpers.YEAR_TO_OPEN
 import com.secure.commons.extensions.*
 import com.secure.commons.views.MyViewPager
-import kotlinx.android.synthetic.main.fragment_years_holder.view.*
 import org.joda.time.DateTime
 import kotlin.text.toInt
 
@@ -38,13 +39,13 @@ class YearFragmentsHolder : MyFragmentHolder() {
         todayYear = DateTime().toString(Formatter.YEAR_PATTERN).toInt()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_years_holder, container, false)
-        view.background = ColorDrawable(requireContext().getProperBackgroundColor())
-        viewPager = view.fragment_years_viewpager
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val view = FragmentYearsHolderBinding.inflate(inflater, container, false)
+        view.root.background = ColorDrawable(requireContext().getProperBackgroundColor())
+        viewPager = view.fragmentYearsViewpager
         viewPager!!.id = (System.currentTimeMillis() % 100000).toInt()
         setupFragment()
-        return view
+        return view.root
     }
 
     private fun setupFragment() {
@@ -92,19 +93,20 @@ class YearFragmentsHolder : MyFragmentHolder() {
 
     override fun showGoToDateDialog() {
         requireActivity().setTheme(requireContext().getDatePickerDialogTheme())
-        val view = layoutInflater.inflate(R.layout.date_picker, null)
-        val datePicker = view.findViewById<DatePicker>(R.id.date_picker)
-        datePicker.findViewById<View>(Resources.getSystem().getIdentifier("day", "id", "android")).beGone()
-        datePicker.findViewById<View>(Resources.getSystem().getIdentifier("month", "id", "android")).beGone()
+        val view = DatePickerBinding.inflate(layoutInflater)
+        //val datePicker = view.findViewById<DatePicker>(R.id.date_picker)
+        // TODO: get rid of findViewById
+        view.datePicker.findViewById<View>(Resources.getSystem().getIdentifier("day", "id", "android")).beGone()
+        view.datePicker.findViewById<View>(Resources.getSystem().getIdentifier("month", "id", "android")).beGone()
 
         val dateTime = DateTime(Formatter.getDateTimeFromCode("${currentYear}0523").toString())
-        datePicker.init(dateTime.year, dateTime.monthOfYear - 1, 1, null)
+        view.datePicker.init(dateTime.year, dateTime.monthOfYear - 1, 1, null)
 
         activity?.getAlertDialogBuilder()!!
             .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { dialog, which -> datePicked(datePicker) }
+            .setPositiveButton(R.string.ok) { dialog, which -> datePicked(view.datePicker) }
             .apply {
-                activity?.setupDialogStuff(view, this)
+                activity?.setupDialogStuff(view.root, this)
             }
     }
 

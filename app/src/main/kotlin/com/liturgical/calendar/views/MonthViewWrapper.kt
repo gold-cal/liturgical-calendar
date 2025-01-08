@@ -5,12 +5,12 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import com.liturgical.calendar.R
+import com.liturgical.calendar.databinding.MonthViewBinding
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.helpers.COLUMN_COUNT
 import com.liturgical.calendar.helpers.ROW_COUNT
 import com.liturgical.calendar.models.DayMonthly
 import com.secure.commons.extensions.onGlobalLayout
-import kotlinx.android.synthetic.main.month_view.view.month_view
 
 // used in the Monthly view fragment, 1 view per screen
 class MonthViewWrapper(context: Context, attrs: AttributeSet, defStyle: Int) : FrameLayout(context, attrs, defStyle) {
@@ -32,7 +32,7 @@ class MonthViewWrapper(context: Context, attrs: AttributeSet, defStyle: Int) : F
         weekDaysLetterHeight = 2 * normalTextSize.toInt()
 
         inflater = LayoutInflater.from(context)
-        monthView = inflater.inflate(R.layout.month_view, this).month_view
+        monthView = MonthViewBinding.inflate(inflater, this, true).monthView
         setupHorizontalOffset()
 
         onGlobalLayout {
@@ -108,7 +108,7 @@ class MonthViewWrapper(context: Context, attrs: AttributeSet, defStyle: Int) : F
 
     private fun addClickableBackgrounds() {
         removeAllViews()
-        monthView = inflater.inflate(R.layout.month_view, this).month_view
+        monthView = MonthViewBinding.inflate(inflater, this, true).monthView
         wereViewsAdded = true
         var curId = 0
         for (y in 0 until ROW_COUNT) {

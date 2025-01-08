@@ -3,29 +3,32 @@ package com.liturgical.calendar.activities
 import android.os.Bundle
 import com.liturgical.calendar.R
 import com.liturgical.calendar.adapters.ManageEventTypesAdapter
+import com.liturgical.calendar.databinding.ActivityManageEventTypesBinding
 import com.liturgical.calendar.dialogs.EditEventTypeDialog
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.interfaces.DeleteEventTypesListener
 import com.liturgical.calendar.models.EventType
 import com.secure.commons.extensions.toast
 import com.secure.commons.extensions.updateTextColors
+import com.secure.commons.extensions.viewBinding
 import com.secure.commons.helpers.NavigationIcon
 import com.secure.commons.helpers.ensureBackgroundThread
-import kotlinx.android.synthetic.main.activity_manage_event_types.*
 
 class ManageEventTypesActivity : SimpleActivity(), DeleteEventTypesListener {
+    private val binding by viewBinding(ActivityManageEventTypesBinding::inflate)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_manage_event_types)
+        setContentView(binding.root)
         setupOptionsMenu()
 
         getEventTypes()
-        updateTextColors(manage_event_types_list)
+        updateTextColors(binding.manageEventTypesList)
     }
 
     override fun onResume() {
         super.onResume()
-        setupToolbar(manage_event_types_toolbar, NavigationIcon.Arrow)
+        setupToolbar(binding.manageEventTypesToolbar, NavigationIcon.Arrow)
     }
 
     private fun showEventTypeDialog(eventType: EventType? = null) {
@@ -35,16 +38,16 @@ class ManageEventTypesActivity : SimpleActivity(), DeleteEventTypesListener {
     }
 
     private fun getEventTypes() {
-        eventsHelper.getEventTypes(this, false) {
-            val adapter = ManageEventTypesAdapter(this, it, this, manage_event_types_list) {
+        eventsHelper.getEventTypes(this, false) { eventTypes ->
+            val adapter = ManageEventTypesAdapter(this, eventTypes, this, binding.manageEventTypesList) {
                 showEventTypeDialog(it as EventType)
             }
-            manage_event_types_list.adapter = adapter
+            binding.manageEventTypesList.adapter = adapter
         }
     }
 
     private fun setupOptionsMenu() {
-        manage_event_types_toolbar.setOnMenuItemClickListener { menuItem ->
+        binding.manageEventTypesToolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.add_event_type -> showEventTypeDialog()
                 else -> return@setOnMenuItemClickListener false

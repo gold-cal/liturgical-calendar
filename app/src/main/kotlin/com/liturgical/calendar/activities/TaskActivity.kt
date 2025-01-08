@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import com.liturgical.calendar.R
+import com.liturgical.calendar.databinding.ActivityTaskBinding
 import com.liturgical.calendar.dialogs.*
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.*
@@ -20,7 +21,6 @@ import com.secure.commons.dialogs.RadioGroupDialog
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.*
 import com.secure.commons.models.RadioItem
-import kotlinx.android.synthetic.main.activity_task.*
 import org.joda.time.DateTime
 import java.util.*
 import kotlin.math.pow
@@ -29,6 +29,8 @@ class TaskActivity : SimpleActivity() {
     private var mTaskTypeId = REGULAR_EVENT_TYPE_ID
     private lateinit var mTaskDateTime: DateTime
     private lateinit var mTask: Event
+    
+    private val binding by viewBinding(ActivityTaskBinding::inflate)
 
     private var mReminder1Minutes = REMINDER_OFF
     private var mReminder2Minutes = REMINDER_OFF
@@ -47,7 +49,7 @@ class TaskActivity : SimpleActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_task)
+        setContentView(binding.root)
         setupOptionsMenu()
         refreshMenuItems()
 
@@ -78,12 +80,12 @@ class TaskActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupToolbar(task_toolbar, NavigationIcon.Arrow)
+        setupToolbar(binding.taskToolbar, NavigationIcon.Arrow)
     }
 
     private fun refreshMenuItems() {
         if (::mTask.isInitialized) {
-            task_toolbar.menu.apply {
+            binding.taskToolbar.menu.apply {
                 findItem(R.id.delete).isVisible = mTask.id != null
                 findItem(R.id.duplicate).isVisible = mTask.id != null
             }
@@ -91,7 +93,7 @@ class TaskActivity : SimpleActivity() {
     }
 
     private fun setupOptionsMenu() {
-        task_toolbar.setOnMenuItemClickListener { menuItem ->
+        binding.taskToolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.save -> saveCurrentTask()
                 R.id.delete -> deleteTask()
@@ -116,8 +118,8 @@ class TaskActivity : SimpleActivity() {
 
         val reminders = getReminders()
         val originalReminders = mTask.getReminders()
-        return task_title.text.toString() != mTask.title ||
-                task_description.text.toString() != mTask.description ||
+        return binding.taskTitle.text.toString() != mTask.title ||
+                binding.taskDescription.text.toString() != mTask.description ||
                 reminders != originalReminders ||
                 mRepeatInterval != mTask.repeatInterval ||
                 mRepeatRule != mTask.repeatRule ||
@@ -215,7 +217,7 @@ class TaskActivity : SimpleActivity() {
 
             if (intent.getBooleanExtra(IS_DUPLICATE_INTENT, false)) {
                 mTask.id = null
-                task_toolbar.title = getString(R.string.new_task)
+                binding.taskToolbar.title = getString(R.string.new_task)
             }
         } else {
             mTask = Event(null)
@@ -230,19 +232,19 @@ class TaskActivity : SimpleActivity() {
             }
         }
 
-        task_all_day.setOnCheckedChangeListener { _, isChecked -> toggleAllDay(isChecked) }
-        task_all_day_holder.setOnClickListener {
-            task_all_day.toggle()
+        binding.taskAllDay.setOnCheckedChangeListener { _, isChecked -> toggleAllDay(isChecked) }
+        binding.taskAllDayHolder.setOnClickListener {
+            binding.taskAllDay.toggle()
         }
 
-        task_date.setOnClickListener { setupDate() }
-        task_time.setOnClickListener { setupTime() }
-        task_type_holder.setOnClickListener { showTaskTypeDialog() }
-        task_repetition.setOnClickListener { showRepeatIntervalDialog() }
-        task_repetition_rule_holder.setOnClickListener { showRepetitionRuleDialog() }
-        task_repetition_limit_holder.setOnClickListener { showRepetitionTypePicker() }
+        binding.taskDate.setOnClickListener { setupDate() }
+        binding.taskTime.setOnClickListener { setupTime() }
+        binding.taskTypeHolder.setOnClickListener { showTaskTypeDialog() }
+        binding.taskRepetition.setOnClickListener { showRepeatIntervalDialog() }
+        binding.taskRepetitionRuleHolder.setOnClickListener { showRepetitionRuleDialog() }
+        binding.taskRepetitionLimitHolder.setOnClickListener { showRepetitionTypePicker() }
 
-        task_reminder_1.setOnClickListener {
+        binding.taskReminder1.setOnClickListener {
             handleNotificationAvailability {
                 if (config.wasAlarmWarningShown) {
                     showReminder1Dialog()
@@ -255,8 +257,8 @@ class TaskActivity : SimpleActivity() {
             }
         }
 
-        task_reminder_2.setOnClickListener { showReminder2Dialog() }
-        task_reminder_3.setOnClickListener { showReminder3Dialog() }
+        binding.taskReminder2.setOnClickListener { showReminder2Dialog() }
+        binding.taskReminder3.setOnClickListener { showReminder3Dialog() }
         refreshMenuItems()
         setupMarkCompleteButton()
 
@@ -272,7 +274,7 @@ class TaskActivity : SimpleActivity() {
         mOriginalStartTS = realStart
         mTaskDateTime = Formatter.getDateTimeFromTS(realStart)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
-        task_toolbar.title = getString(R.string.edit_task)
+        binding.taskToolbar.title = getString(R.string.edit_task)
 
         mTaskTypeId = mTask.eventType
         mReminder1Minutes = mTask.reminder1Minutes
@@ -285,9 +287,9 @@ class TaskActivity : SimpleActivity() {
         mRepeatLimit = mTask.repeatLimit
         mRepeatRule = mTask.repeatRule
 
-        task_title.setText(mTask.title)
-        task_description.setText(mTask.description)
-        task_all_day.isChecked = mTask.getIsAllDay()
+        binding.taskTitle.setText(mTask.title)
+        binding.taskDescription.setText(mTask.description)
+        binding.taskAllDay.isChecked = mTask.getIsAllDay()
         toggleAllDay(mTask.getIsAllDay())
         checkRepeatTexts(mRepeatInterval)
     }
@@ -298,8 +300,8 @@ class TaskActivity : SimpleActivity() {
         mTaskDateTime = dateTime
 
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
-        task_title.requestFocus()
-        task_toolbar.title = getString(R.string.new_task)
+        binding.taskTitle.requestFocus()
+        binding.taskToolbar.title = getString(R.string.new_task)
 
         mTask.apply {
             this.startTS = mTaskDateTime.seconds()
@@ -330,11 +332,11 @@ class TaskActivity : SimpleActivity() {
     }
 
     private fun saveTask() {
-        val newTitle = task_title.value
+        val newTitle = binding.taskTitle.value
         if (newTitle.isEmpty()) {
             toast(R.string.title_empty)
             runOnUiThread {
-                task_title.requestFocus()
+                binding.taskTitle.requestFocus()
             }
             return
         }
@@ -342,7 +344,7 @@ class TaskActivity : SimpleActivity() {
         val wasRepeatable = mTask.repeatInterval > 0
 
         val reminders = getReminders()
-        if (!task_all_day.isChecked) {
+        if (!binding.taskAllDay.isChecked) {
             if ((reminders.getOrNull(2)?.minutes ?: 0) < -1) {
                 reminders.removeAt(2)
             }
@@ -373,7 +375,7 @@ class TaskActivity : SimpleActivity() {
             startTS = mTaskDateTime.withSecondOfMinute(0).withMillisOfSecond(0).seconds()
             endTS = startTS
             title = newTitle
-            description = task_description.value
+            description = binding.taskDescription.value
 
             // migrate completed task to the new completed tasks db
             if (!wasRepeatable && mTask.isTaskCompleted()) {
@@ -382,7 +384,7 @@ class TaskActivity : SimpleActivity() {
                     updateTaskCompletion(copy(startTS = mOriginalStartTS), true)
                 }
             }
-            flags = mTask.flags.addBitIf(task_all_day.isChecked, FLAG_ALL_DAY)
+            flags = mTask.flags.addBitIf(binding.taskAllDay.isChecked, FLAG_ALL_DAY)
             lastUpdated = System.currentTimeMillis()
             eventType = mTaskTypeId
             type = TYPE_TASK
@@ -576,21 +578,21 @@ class TaskActivity : SimpleActivity() {
 
 
     private fun updateDateText() {
-        task_date.text = Formatter.getDate(this, mTaskDateTime)
+        binding.taskDate.text = Formatter.getDate(this, mTaskDateTime)
     }
 
     private fun updateTimeText() {
-        task_time.text = Formatter.getTime(this, mTaskDateTime)
+        binding.taskTime.text = Formatter.getTime(this, mTaskDateTime)
     }
 
     private fun toggleAllDay(isChecked: Boolean) {
         hideKeyboard()
-        task_time.beGoneIf(isChecked)
+        binding.taskTime.beGoneIf(isChecked)
     }
 
     private fun setupMarkCompleteButton() {
-        toggle_mark_complete.setOnClickListener { toggleCompletion() }
-        toggle_mark_complete.beVisibleIf(mTask.id != null)
+        binding.toggleMarkComplete.setOnClickListener { toggleCompletion() }
+        binding.toggleMarkComplete.beVisibleIf(mTask.id != null)
         updateTaskCompletedButton()
         ensureBackgroundThread {
             // the stored value might be incorrect so update it (e.g. user completed the task via notification action before editing)
@@ -603,16 +605,16 @@ class TaskActivity : SimpleActivity() {
 
     private fun updateTaskCompletedButton() {
         if (mTaskCompleted) {
-            toggle_mark_complete.background = ContextCompat.getDrawable(this, R.drawable.button_background_stroke)
-            toggle_mark_complete.setText(R.string.mark_incomplete)
-            toggle_mark_complete.setTextColor(getProperTextColor())
+            binding.toggleMarkComplete.background = ContextCompat.getDrawable(this, R.drawable.button_background_stroke)
+            binding.toggleMarkComplete.setText(R.string.mark_incomplete)
+            binding.toggleMarkComplete.setTextColor(getProperTextColor())
         } else {
             val markCompleteBgColor = if (isWhiteTheme()) {
                 Color.WHITE
             } else {
                 getProperPrimaryColor()
             }
-            toggle_mark_complete.setTextColor(markCompleteBgColor.getContrastColor())
+            binding.toggleMarkComplete.setTextColor(markCompleteBgColor.getContrastColor())
         }
     }
 
@@ -632,12 +634,12 @@ class TaskActivity : SimpleActivity() {
     }
 
     private fun updateReminder1Text() {
-        task_reminder_1.text = getFormattedMinutes(mReminder1Minutes)
+        binding.taskReminder1.text = getFormattedMinutes(mReminder1Minutes)
     }
 
     private fun updateReminder2Text() {
-        task_reminder_2.apply {
-            beGoneIf(task_reminder_2.isGone() && mReminder1Minutes == REMINDER_OFF)
+        binding.taskReminder2.apply {
+            beGoneIf(binding.taskReminder2.isGone() && mReminder1Minutes == REMINDER_OFF)
             if (mReminder2Minutes == REMINDER_OFF) {
                 text = resources.getString(R.string.add_another_reminder)
                 alpha = 0.4f
@@ -649,8 +651,8 @@ class TaskActivity : SimpleActivity() {
     }
 
     private fun updateReminder3Text() {
-        task_reminder_3.apply {
-            beGoneIf(task_reminder_3.isGone() && (mReminder2Minutes == REMINDER_OFF || mReminder1Minutes == REMINDER_OFF))
+        binding.taskReminder3.apply {
+            beGoneIf(binding.taskReminder3.isGone() && (mReminder2Minutes == REMINDER_OFF || mReminder1Minutes == REMINDER_OFF))
             if (mReminder3Minutes == REMINDER_OFF) {
                 text = resources.getString(R.string.add_another_reminder)
                 alpha = 0.4f
@@ -712,18 +714,18 @@ class TaskActivity : SimpleActivity() {
             val taskType = eventTypesDB.getEventTypeWithId(mTaskTypeId)
             if (taskType != null) {
                 runOnUiThread {
-                    task_type.text = taskType.title
-                    task_type_color.setFillWithStroke(taskType.color, getProperBackgroundColor())
+                    binding.taskType.text = taskType.title
+                    binding.taskTypeColor.setFillWithStroke(taskType.color, getProperBackgroundColor())
                 }
             }
         }
     }
 
     private fun updateColors() {
-        updateTextColors(task_scrollview)
+        updateTextColors(binding.taskScrollview)
         val textColor = getProperTextColor()
         arrayOf(
-            task_time_image, task_reminder_image, task_type_image, task_repetition_image
+            binding.taskTimeImage, binding.taskReminderImage, binding.taskTypeImage, binding.taskRepetitionImage
         ).forEach {
             it.applyColorFilter(textColor)
         }
@@ -749,10 +751,10 @@ class TaskActivity : SimpleActivity() {
     }
 
     private fun checkRepeatTexts(limit: Int) {
-        task_repetition_limit_holder.beGoneIf(limit == 0)
+        binding.taskRepetitionLimitHolder.beGoneIf(limit == 0)
         checkRepetitionLimitText()
 
-        task_repetition_rule_holder.beVisibleIf(mRepeatInterval.isXWeeklyRepetition() || mRepeatInterval.isXMonthlyRepetition() || mRepeatInterval.isXYearlyRepetition())
+        binding.taskRepetitionRuleHolder.beVisibleIf(mRepeatInterval.isXWeeklyRepetition() || mRepeatInterval.isXMonthlyRepetition() || mRepeatInterval.isXYearlyRepetition())
         checkRepetitionRuleText()
     }
 
@@ -769,18 +771,18 @@ class TaskActivity : SimpleActivity() {
     }
 
     private fun checkRepetitionLimitText() {
-        task_repetition_limit.text = when {
+        binding.taskRepetitionLimit.text = when {
             mRepeatLimit == 0L -> {
-                task_repetition_limit_label.text = getString(R.string.repeat)
+                binding.taskRepetitionLimitLabel.text = getString(R.string.repeat)
                 resources.getString(R.string.forever)
             }
             mRepeatLimit > 0 -> {
-                task_repetition_limit_label.text = getString(R.string.repeat_till)
+                binding.taskRepetitionLimitLabel.text = getString(R.string.repeat_till)
                 val repeatLimitDateTime = Formatter.getDateTimeFromTS(mRepeatLimit)
                 Formatter.getFullDate(this, repeatLimitDateTime)
             }
             else -> {
-                task_repetition_limit_label.text = getString(R.string.repeat)
+                binding.taskRepetitionLimitLabel.text = getString(R.string.repeat)
                 "${-mRepeatLimit} ${getString(R.string.times)}"
             }
         }
@@ -912,21 +914,21 @@ class TaskActivity : SimpleActivity() {
     private fun checkRepetitionRuleText() {
         when {
             mRepeatInterval.isXWeeklyRepetition() -> {
-                task_repetition_rule.text = if (mRepeatRule == EVERY_DAY_BIT) getString(R.string.every_day) else getSelectedDaysString(mRepeatRule)
+                binding.taskRepetitionRule.text = if (mRepeatRule == EVERY_DAY_BIT) getString(R.string.every_day) else getSelectedDaysString(mRepeatRule)
             }
             mRepeatInterval.isXMonthlyRepetition() -> {
                 val repeatString = if (mRepeatRule == REPEAT_ORDER_WEEKDAY_USE_LAST || mRepeatRule == REPEAT_ORDER_WEEKDAY)
                     R.string.repeat else R.string.repeat_on
 
-                task_repetition_rule_label.text = getString(repeatString)
-                task_repetition_rule.text = getMonthlyRepetitionRuleText()
+                binding.taskRepetitionRuleLabel.text = getString(repeatString)
+                binding.taskRepetitionRule.text = getMonthlyRepetitionRuleText()
             }
             mRepeatInterval.isXYearlyRepetition() -> {
                 val repeatString = if (mRepeatRule == REPEAT_ORDER_WEEKDAY_USE_LAST || mRepeatRule == REPEAT_ORDER_WEEKDAY)
                     R.string.repeat else R.string.repeat_on
 
-                task_repetition_rule_label.text = getString(repeatString)
-                task_repetition_rule.text = getYearlyRepetitionRuleText()
+                binding.taskRepetitionRuleLabel.text = getString(repeatString)
+                binding.taskRepetitionRule.text = getYearlyRepetitionRuleText()
             }
         }
     }
@@ -943,11 +945,11 @@ class TaskActivity : SimpleActivity() {
     }
 
     private fun updateRepetitionText() {
-        task_repetition.text = getRepetitionText(mRepeatInterval)
+        binding.taskRepetition.text = getRepetitionText(mRepeatInterval)
     }
 
     private fun updateActionBarTitle() {
-        task_toolbar.title = if (mIsNewTask) {
+        binding.taskToolbar.title = if (mIsNewTask) {
             getString(R.string.new_task)
         } else {
             getString(R.string.edit_task)

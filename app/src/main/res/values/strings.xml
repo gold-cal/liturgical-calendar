@@ -214,6 +214,7 @@
     <string name="replace_description_with_location">Replace event description with location</string>
     <string name="display_description_or_location">Display description or location</string>
     <string name="show_birth_ann_description">Show label for Birthdays &amp; Anniversaries</string>
+    <string name="show_widget_description">Show event description</string>
     <string name="delete_all_events">Delete all events</string>
     <string name="delete_all_events_confirmation">Are you sure you want to delete all events? This will leave your event types and other settings intact.</string>
     <string name="show_a_grid">Show a grid</string>
@@ -243,6 +244,8 @@
     <string name="show_whats_new">Show whats new dialog</string>
     <string name="highlight_weekends_color">Color of highlighted weekends</string>
     <string name="allow_changing_time_zones">Allow changing event time zones</string>
+    <string name="sync_contact_birthdays">Sync contact Birthdays</string>
+    <string name="sync_contact_anniversaries">Sync contact Anniversaries</string>
     <string name="manage_quick_filter_event_types">Manage quick filter event types</string>
     <string name="allow_creating_tasks">Allow creating tasks</string>
     <string name="default_task_type">Default Task Type</string>

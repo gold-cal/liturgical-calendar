@@ -4,6 +4,7 @@ import android.view.*
 import android.widget.PopupMenu
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
+import com.liturgical.calendar.databinding.ItemEventTypeBinding
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.helpers.LITURGICAL_EVENT_TYPE_ID
 import com.liturgical.calendar.helpers.REGULAR_EVENT_TYPE_ID
@@ -15,7 +16,6 @@ import com.secure.commons.dialogs.RadioGroupDialog
 import com.secure.commons.extensions.*
 import com.secure.commons.models.RadioItem
 import com.secure.commons.views.MyRecyclerView
-import kotlinx.android.synthetic.main.item_event_type.view.*
 
 class ManageEventTypesAdapter(
     activity: SimpleActivity, val eventTypes: ArrayList<EventType>, val listener: DeleteEventTypesListener?, recyclerView: MyRecyclerView,
@@ -56,7 +56,9 @@ class ManageEventTypesAdapter(
 
     override fun onActionModeDestroyed() {}
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = createViewHolder(R.layout.item_event_type, parent)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyRecyclerViewAdapter.ViewHolder {
+        return createViewHolder(ItemEventTypeBinding.inflate(layoutInflater, parent, false).root)
+    }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val eventType = eventTypes[position]
@@ -73,22 +75,22 @@ class ManageEventTypesAdapter(
     private fun getSelectedItems() = eventTypes.filter { selectedKeys.contains(it.id?.toInt()) } as ArrayList<EventType>
 
     private fun setupView(view: View, eventType: EventType) {
-        view.apply {
-            event_item_frame.isSelected = selectedKeys.contains(eventType.id?.toInt())
-            event_type_title.text = eventType.getDisplayTitle()
-            event_type_color.setFillWithStroke(eventType.color, activity.getProperBackgroundColor())
-            event_type_title.setTextColor(textColor)
+        ItemEventTypeBinding.bind(view).apply {
+            eventItemFrame.isSelected = selectedKeys.contains(eventType.id?.toInt())
+            eventTypeTitle.text = eventType.getDisplayTitle()
+            eventTypeColor.setFillWithStroke(eventType.color, activity.getProperBackgroundColor())
+            eventTypeTitle.setTextColor(textColor)
             if (eventType.title == "TLC") {
-                reload_menu_item.beVisible()
+                reloadMenuItem.beVisible()
             }
 
-            overflow_menu_icon.drawable.apply {
+            overflowMenuIcon.drawable.apply {
                 mutate()
                 setTint(activity.getProperTextColor())
             }
 
-            overflow_menu_icon.setOnClickListener {
-                showPopupMenu(overflow_menu_anchor, eventType)
+            overflowMenuIcon.setOnClickListener {
+                showPopupMenu(overflowMenuAnchor, eventType)
             }
         }
     }
@@ -176,7 +178,7 @@ class ManageEventTypesAdapter(
 
         if (listener?.deleteEventTypes(eventTypesToDelete, deleteEvents) == true) {
             val positions = getSelectedItemPositions()
-            eventTypes.removeAll(eventTypesToDelete)
+            eventTypes.removeAll(eventTypesToDelete.toSet())
             removeSelectedItems(positions)
         }
     }

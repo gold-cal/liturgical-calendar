@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.widget.SeekBar
 import com.liturgical.calendar.R
 import com.liturgical.calendar.adapters.WidgetConfigAdapter
+import com.liturgical.calendar.databinding.WidgetConfigListBinding
 import com.liturgical.calendar.dialogs.CustomPeriodPickerDialog
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.EVENT_PERIOD_CUSTOM
@@ -24,7 +25,6 @@ import com.secure.commons.dialogs.RadioGroupDialog
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.*
 import com.secure.commons.models.RadioItem
-import kotlinx.android.synthetic.main.widget_config_list.*
 import org.joda.time.DateTime
 import java.util.*
 
@@ -39,12 +39,13 @@ class WidgetListConfigureActivity : SimpleActivity() {
     private var mTextColorWithoutTransparency = 0
     private var mTextColor = 0
     private var selectedPeriodOption = 0
+    private val binding by viewBinding(WidgetConfigListBinding::inflate)
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         useDynamicTheme = false
         super.onCreate(savedInstanceState)
         setResult(Activity.RESULT_CANCELED)
-        setContentView(R.layout.widget_config_list)
+        setContentView(binding.root)
         initVariables()
 
         val isCustomizingColors = intent.extras?.getBoolean(IS_CUSTOMIZING_COLORS) ?: false
@@ -54,24 +55,24 @@ class WidgetListConfigureActivity : SimpleActivity() {
             finish()
         }
 
-        WidgetConfigAdapter(this, getListItems(), false, null, config_events_list) {}.apply {
+        WidgetConfigAdapter(this, getListItems(), false, null, binding.configEventsList) {}.apply {
             updateTextColor(mTextColor)
-            config_events_list.adapter = this
+            binding.configEventsList.adapter = this
         }
 
         //period_picker_holder.background = ColorDrawable(getProperBackgroundColor())
-        period_picker_holder.background.applyColorFilter(getProperBackgroundColor())
-        period_picker_value.setOnClickListener { showPeriodSelector() }
+        binding.periodPickerHolder.background.applyColorFilter(getProperBackgroundColor())
+        binding.periodPickerValue.setOnClickListener { showPeriodSelector() }
 
-        config_save.setOnClickListener { saveConfig() }
-        config_bg_color.setOnClickListener { pickBackgroundColor() }
-        config_day_color.setOnClickListener { pickDayColor() }
-        config_text_color.setOnClickListener { pickTextColor() }
+        binding.configSave.setOnClickListener { saveConfig() }
+        binding.configBgColor.setOnClickListener { pickBackgroundColor() }
+        binding.configDayColor.setOnClickListener { pickDayColor() }
+        binding.configTextColor.setOnClickListener { pickTextColor() }
 
-        period_picker_holder.beGoneIf(isCustomizingColors)
+        binding.periodPickerHolder.beGoneIf(isCustomizingColors)
 
         val primaryColor = getProperPrimaryColor()
-        config_bg_seekbar.setColors(mTextColor, primaryColor, primaryColor)
+        binding.configBgSeekbar.setColors(mTextColor, primaryColor, primaryColor)
         //config_day_seekbar.setColors(mTextColor, primaryColor, primaryColor)
 
         updateSelectedPeriod(config.lastUsedEventSpan)
@@ -79,8 +80,8 @@ class WidgetListConfigureActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        updateTextColors(config_list_holder)
-        setupToolbar(config_toolbar)
+        updateTextColors(binding.configListHolder)
+        setupToolbar(binding.configToolbar)
     }
 
     private fun initVariables() {
@@ -94,9 +95,9 @@ class WidgetListConfigureActivity : SimpleActivity() {
 
         mBgColorWithoutTransparency = Color.rgb(Color.red(mBgColor), Color.green(mBgColor), Color.blue(mBgColor))
         mDayColorWithoutTransparency = Color.rgb(Color.red(mDayColor), Color.green(mDayColor), Color.blue(mDayColor))
-        config_bg_seekbar.setOnSeekBarChangeListener(bgSeekbarChangeListener)
+        binding.configBgSeekbar.setOnSeekBarChangeListener(bgSeekbarChangeListener)
         //config_day_seekbar.setOnSeekBarChangeListener(daySeekbarChangeListener)
-        config_bg_seekbar.progress = (mBgAlpha * 100).toInt()
+        binding.configBgSeekbar.progress = (mBgAlpha * 100).toInt()
         //config_day_seekbar.progress = (mDayAlpha * 100).toInt()
 
         updateBgColor()
@@ -149,8 +150,8 @@ class WidgetListConfigureActivity : SimpleActivity() {
 
         items.add(RadioItem(EVENT_PERIOD_CUSTOM, getString(R.string.within_the_next)))
 
-        RadioGroupDialog(this, items, selectedIndex, showOKButton = true, cancelCallback = null) {
-            val option = it as Int
+        RadioGroupDialog(this, items, selectedIndex, showOKButton = true, cancelCallback = null) { any ->
+            val option = any as Int
             if (option == EVENT_PERIOD_CUSTOM) {
                 CustomPeriodPickerDialog(this) {
                     updateSelectedPeriod(it)
@@ -166,10 +167,10 @@ class WidgetListConfigureActivity : SimpleActivity() {
         when (selectedPeriod) {
             0 -> {
                 selectedPeriodOption = YEAR_SECONDS
-                period_picker_value.setText(R.string.within_the_next_one_year)
+                binding.periodPickerValue.setText(R.string.within_the_next_one_year)
             }
-            EVENT_PERIOD_TODAY -> period_picker_value.setText(R.string.today_only)
-            else -> period_picker_value.text = getFormattedSeconds(selectedPeriodOption)
+            EVENT_PERIOD_TODAY -> binding.periodPickerValue.setText(R.string.today_only)
+            else -> binding.periodPickerValue.text = getFormattedSeconds(selectedPeriodOption)
         }
     }
 
@@ -228,22 +229,22 @@ class WidgetListConfigureActivity : SimpleActivity() {
 
     private fun updateColors() {
         mTextColor = mTextColorWithoutTransparency
-        (config_events_list.adapter as? WidgetConfigAdapter)?.updateTextColor(mTextColor)
-        config_text_color.setFillWithStroke(mTextColor, mTextColor)
-        config_save.setTextColor(getProperPrimaryColor().getContrastColor())
+        (binding.configEventsList.adapter as? WidgetConfigAdapter)?.updateTextColor(mTextColor)
+        binding.configTextColor.setFillWithStroke(mTextColor, mTextColor)
+        binding.configSave.setTextColor(getProperPrimaryColor().getContrastColor())
     }
 
     private fun updateBgColor() {
         mBgColor = mBgColorWithoutTransparency.adjustAlpha(mBgAlpha)
-        config_events_list.background.applyColorFilter(mBgColor)
-        config_bg_color.setFillWithStroke(mBgColor, mBgColor)
-        config_save.backgroundTintList = ColorStateList.valueOf(getProperPrimaryColor())
+        binding.configEventsList.background.applyColorFilter(mBgColor)
+        binding.configBgColor.setFillWithStroke(mBgColor, mBgColor)
+        binding.configSave.backgroundTintList = ColorStateList.valueOf(getProperPrimaryColor())
     }
 
     private fun updateDayColor() {
         mDayColor = mDayColorWithoutTransparency.adjustAlpha(mBgAlpha)
-        (config_events_list.adapter as? WidgetConfigAdapter)?.updateDaybg(mDayColor)
-        config_day_color.setFillWithStroke(mDayColor, mDayColor)
+        (binding.configEventsList.adapter as? WidgetConfigAdapter)?.updateDaybg(mDayColor)
+        binding.configDayColor.setFillWithStroke(mDayColor, mDayColor)
     }
 
     private fun getListItems(): ArrayList<ListItem> {

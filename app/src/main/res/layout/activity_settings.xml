@@ -6,6 +6,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/settings_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginStart="@dimen/medium_margin"
+        android:layout_marginEnd="@dimen/medium_margin"
+        android:layout_marginTop="@dimen/tiny_margin"
+        android:background="@drawable/search_menu_background"
+        android:backgroundTint="@color/color_primary"
+        app:title="@string/settings"/> -->
+
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/settings_app_bar_layout"
         android:layout_width="match_parent"
@@ -25,9 +42,10 @@
     <androidx.core.widget.NestedScrollView
         android:id="@+id/settings_nested_scrollview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:fillViewport="true"
         android:scrollbars="none"
+        android:layout_below="@id/settings_toolbar"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -927,6 +945,22 @@
                 </RelativeLayout>
 
                 <RelativeLayout
+                    android:id="@+id/settings_show_widget_description_holder"
+                    style="@style/SettingsHolderTextViewStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ripple_background">
+
+                    <com.secure.commons.views.MyAppCompatCheckbox
+                        android:id="@+id/settings_show_widget_description"
+                        style="@style/SettingsCheckboxStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/show_widget_description"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
                     android:id="@+id/settings_list_widget_view_to_open_holder"
                     style="@style/SettingsHolderTextViewStyle"
                     android:layout_width="match_parent"
@@ -996,6 +1030,38 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/allow_changing_time_zones" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/settings_sync_contact_birthdays_holder"
+                    style="@style/SettingsHolderCheckboxStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ripple_background">
+
+                    <com.secure.commons.views.MyAppCompatCheckbox
+                        android:id="@+id/settings_sync_contact_birthdays"
+                        style="@style/SettingsCheckboxStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sync_contact_birthdays"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/settings_sync_contact_anniversaries_holder"
+                    style="@style/SettingsHolderCheckboxStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ripple_background">
+
+                    <com.secure.commons.views.MyAppCompatCheckbox
+                        android:id="@+id/settings_sync_contact_anniversaries"
+                        style="@style/SettingsCheckboxStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sync_contact_anniversaries"/>
 
                 </RelativeLayout>
 
@@ -1139,4 +1205,5 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+    <!-- </RelativeLayout> -->
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

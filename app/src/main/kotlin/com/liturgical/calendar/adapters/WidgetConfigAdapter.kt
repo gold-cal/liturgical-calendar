@@ -1,14 +1,17 @@
 package com.liturgical.calendar.adapters
 
-/* This adapter sets up the view for configuring the widget colors */
+/* This adapter sets up the view for configuring the widget colors
+* TODO: Make this view and normal list view use the same item_event.xml
+*/
 
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import androidx.constraintlayout.widget.ConstraintLayout
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
-//import com.liturgical.calendar.dialogs.DeleteEventDialog
+import com.liturgical.calendar.databinding.EventListItemWidgetBinding
+import com.liturgical.calendar.databinding.EventListSectionDayWidgetBinding
+import com.liturgical.calendar.databinding.EventListSectionMonthWidgetBinding
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.models.ListEvent
@@ -18,11 +21,8 @@ import com.liturgical.calendar.models.ListSectionMonth
 import com.secure.commons.adapters.MyRecyclerViewAdapter
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.MEDIUM_ALPHA
-//import com.secure.commons.helpers.ensureBackgroundThread
 import com.secure.commons.interfaces.RefreshRecyclerViewListener
 import com.secure.commons.views.MyRecyclerView
-import kotlinx.android.synthetic.main.event_list_item_widget.view.*
-import kotlinx.android.synthetic.main.event_list_section_day_widget.view.*
 
 class WidgetConfigAdapter(
     activity: SimpleActivity, var listItems: ArrayList<ListItem>, val allowLongClick: Boolean, val listener: RefreshRecyclerViewListener?,
@@ -56,7 +56,7 @@ class WidgetConfigAdapter(
 
     override fun actionItemPressed(id: Int) {}
 
-    override fun getSelectableItemCount() = listItems.filter { it is ListEvent }.size
+    override fun getSelectableItemCount() = listItems.filterIsInstance<ListEvent>().size
 
     override fun getIsItemSelectable(position: Int) = listItems[position] is ListEvent
 
@@ -70,11 +70,11 @@ class WidgetConfigAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyRecyclerViewAdapter.ViewHolder {
         val layoutId = when (viewType) {
-            ITEM_SECTION_DAY -> R.layout.event_list_section_day_widget
-            ITEM_SECTION_MONTH -> R.layout.event_list_section_month_widget
-            else -> R.layout.event_list_item_widget
+            ITEM_SECTION_DAY -> EventListSectionDayWidgetBinding.inflate(layoutInflater, parent, false).root
+            ITEM_SECTION_MONTH -> EventListSectionMonthWidgetBinding.inflate(layoutInflater, parent, false).root
+            else -> EventListItemWidgetBinding.inflate(layoutInflater, parent, false).root
         }
-        return createViewHolder(layoutId, parent)
+        return createViewHolder(layoutId)
     }
 
     override fun onBindViewHolder(holder: MyRecyclerViewAdapter.ViewHolder, position: Int) {
@@ -123,27 +123,27 @@ class WidgetConfigAdapter(
     }*/
 
     private fun setupListEvent(view: View, listEvent: ListEvent) {
-        view.apply {
-            event_item_holder.isSelected = selectedKeys.contains(listEvent.hashCode())
-            event_item_title.text = listEvent.title
-            event_item_title.checkViewStrikeThrough(listEvent.isTaskCompleted)
-            event_item_time.text = if (listEvent.isAllDay) "" else Formatter.getTimeFromTS(context, listEvent.startTS)
-            if (listEvent.isAllDay) event_item_time.beGone()
+        EventListItemWidgetBinding.bind(view).apply {
+            eventItemHolder.isSelected = selectedKeys.contains(listEvent.hashCode())
+            eventItemTitle.text = listEvent.title
+            eventItemTitle.checkViewStrikeThrough(listEvent.isTaskCompleted)
+            eventItemTime.text = if (listEvent.isAllDay) "" else Formatter.getTimeFromTS(root.context, listEvent.startTS)
+            if (listEvent.isAllDay) eventItemTime.beGone()
             if (listEvent.startTS != listEvent.endTS) {
                 if (!listEvent.isAllDay) {
-                    event_item_time.text = "${event_item_time.text} - ${Formatter.getTimeFromTS(context, listEvent.endTS)}"
+                    eventItemTime.text = "${eventItemTime.text} - ${Formatter.getTimeFromTS(root.context, listEvent.endTS)}"
                 }
 
                 val startCode = Formatter.getDayCodeFromTS(listEvent.startTS)
                 val endCode = Formatter.getDayCodeFromTS(listEvent.endTS)
                 if (startCode != endCode) {
-                    event_item_time.text = "${event_item_time.text} (${Formatter.getDateDayTitle(endCode)})"
+                    eventItemTime.text = "${eventItemTime.text} (${Formatter.getDateDayTitle(endCode)})"
                 }
             }
 
             //event_item_description.text = if (replaceDescription) listEvent.location else listEvent.description.replace("\n", " ")
             //event_item_description.beVisibleIf(displayDescription && event_item_description.text.isNotEmpty())
-            event_item_color_bar.applyColorFilter(listEvent.color)
+            eventItemColorBar.applyColorFilter(listEvent.color)
 
             var newTextColor = textColor
             if (listEvent.isAllDay || listEvent.startTS <= now && listEvent.endTS <= now) {
@@ -163,27 +163,27 @@ class WidgetConfigAdapter(
                 newTextColor = properAccentColor
             }
 
-            event_item_time.setTextColor(newTextColor)
-            event_item_title.setTextColor(newTextColor)
+            eventItemTime.setTextColor(newTextColor)
+            eventItemTitle.setTextColor(newTextColor)
             //event_item_description.setTextColor(newTextColor)
-            event_item_task_image.applyColorFilter(newTextColor)
-            event_item_task_image.beVisibleIf(listEvent.isTask)
+            eventItemTaskImage.applyColorFilter(newTextColor)
+            eventItemTaskImage.beVisibleIf(listEvent.isTask)
         }
     }
 
     private fun setupListSectionDay(view: View, listSectionDay: ListSectionDay) {
-        view.event_section_title.apply {
-            text = listSectionDay.title
+        EventListSectionDayWidgetBinding.bind(view).apply {
+            eventSectionTitle.text = listSectionDay.title
             val dayColor = if (listSectionDay.isToday) properPrimaryColor else textColor
-            setTextColor(dayColor)
+            eventSectionTitle.setTextColor(dayColor)
+            eventSectionBackground.applyColorFilter(dayBackgroundColor)
         }
-        view.event_section_background.applyColorFilter(dayBackgroundColor)
     }
 
     private fun setupListSectionMonth(view: View, listSectionMonth: ListSectionMonth) {
-        view.event_section_title.apply {
-            text = listSectionMonth.title
-            setTextColor(properAccentColor)
+        EventListSectionMonthWidgetBinding.bind(view).apply {
+            eventSectionTitle.text = listSectionMonth.title
+            eventSectionTitle.setTextColor(properAccentColor)
         }
     }
 

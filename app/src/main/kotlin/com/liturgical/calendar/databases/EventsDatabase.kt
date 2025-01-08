@@ -84,7 +84,7 @@ abstract class EventsDatabase : RoomDatabase() {
                 val liturgicalEvent = context.resources.getString(R.string.liturgical_event)
                 val eventType = EventType(LITURGICAL_EVENT_TYPE_ID,
                     liturgicalEvent,
-                    context.resources.getColor(R.color.default_liturgical_color),
+                    context.resources.getColor(R.color.default_liturgical_color, null),
                     caldavCalendarId = 0,
                     type = LITURGICAL_EVENT)
                 db!!.EventTypesDao().insertOrUpdate(eventType)

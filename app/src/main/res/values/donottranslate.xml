@@ -37,4 +37,7 @@
                               Fixed bug in the liturgical calendar refresh</string>
     <string name="release_17">Squashed some bugs and fixed some formatting issues</string>
     <string name="release_18">More bugs squashed!</string>
+    <string name="release_19">Compressed some resources to make smaller app size and improved performance\n
+                              Added option to show description in widget view\n
+                              Added option to unsync contact birthdays/anniversaries</string>
 </resources>

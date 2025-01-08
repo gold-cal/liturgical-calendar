@@ -4,13 +4,13 @@ import android.app.Activity
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import com.liturgical.calendar.R
+import com.liturgical.calendar.databinding.DialogEventTypeBinding
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.helpers.OTHER_EVENT
 import com.liturgical.calendar.models.EventType
 import com.secure.commons.dialogs.ColorPickerDialog
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.ensureBackgroundThread
-import kotlinx.android.synthetic.main.dialog_event_type.view.*
 
 class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = null, val callback: (eventType: EventType) -> Unit) {
     private var isNewEvent = eventType == null
@@ -20,21 +20,21 @@ class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = nu
             eventType = EventType(null, "", activity.getProperPrimaryColor())
         }
 
-        val view = activity.layoutInflater.inflate(R.layout.dialog_event_type, null).apply {
-            setupColor(type_color)
-            type_title.setText(eventType!!.title)
-            type_color.setOnClickListener {
+        val binding = DialogEventTypeBinding.inflate(activity.layoutInflater).apply {
+            setupColor(typeColor)
+            typeTitle.setText(eventType!!.title)
+            typeColor.setOnClickListener {
                 if (eventType?.caldavCalendarId == 0) {
                     ColorPickerDialog(activity, eventType!!.color) { wasPositivePressed, color ->
                         if (wasPositivePressed) {
                             eventType!!.color = color
-                            setupColor(type_color)
+                            setupColor(typeColor)
                         }
                     }
                 } else {
                     SelectEventTypeColorDialog(activity, eventType!!) {
                         eventType!!.color = it
-                        setupColor(type_color)
+                        setupColor(typeColor)
                     }
                 }
             }
@@ -44,11 +44,11 @@ class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = nu
             .setPositiveButton(R.string.ok, null)
             .setNegativeButton(R.string.cancel, null)
             .apply {
-                activity.setupDialogStuff(view, this, if (isNewEvent) R.string.add_new_type else R.string.edit_type) { alertDialog ->
-                    alertDialog.showKeyboard(view.type_title)
+                activity.setupDialogStuff(binding.root, this, if (isNewEvent) R.string.add_new_type else R.string.edit_type) { alertDialog ->
+                    alertDialog.showKeyboard(binding.typeTitle)
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         ensureBackgroundThread {
-                            eventTypeConfirmed(view.type_title.value, alertDialog)
+                            eventTypeConfirmed(binding.typeTitle.value, alertDialog)
                         }
                     }
                 }

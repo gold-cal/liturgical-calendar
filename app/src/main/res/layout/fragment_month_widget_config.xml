@@ -7,7 +7,9 @@
     android:background="@drawable/widget_round_background"
     android:paddingTop="@dimen/medium_margin">
 
-    <include layout="@layout/top_navigation" />
+    <include
+        android:id="@+id/top_nav"
+        layout="@layout/top_navigation" />
 
     <include
         android:id="@+id/first_row"

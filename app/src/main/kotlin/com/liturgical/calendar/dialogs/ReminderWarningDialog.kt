@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
 import com.liturgical.calendar.R
+import com.liturgical.calendar.databinding.DialogReminderWarningBinding
 import com.secure.commons.extensions.getAlertDialogBuilder
 import com.secure.commons.extensions.hideKeyboard
 import com.secure.commons.extensions.setupDialogStuff
@@ -15,13 +16,13 @@ class ReminderWarningDialog(val activity: Activity, val callback: () -> Unit) {
     private var dialog: AlertDialog? = null
 
     init {
-        val view = activity.layoutInflater.inflate(R.layout.dialog_reminder_warning, null)
+        val binding = DialogReminderWarningBinding.inflate(activity.layoutInflater)
 
         activity.getAlertDialogBuilder()
             .setPositiveButton(R.string.ok) { dialog, which -> dialogConfirmed() }
             .setNeutralButton(R.string.settings, null)
             .apply {
-                activity.setupDialogStuff(view, this, R.string.disclaimer, cancelOnTouchOutside = false) { alertDialog ->
+                activity.setupDialogStuff(binding.root, this, R.string.disclaimer, cancelOnTouchOutside = false) { alertDialog ->
                     alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
                         redirectToSettings()
                     }

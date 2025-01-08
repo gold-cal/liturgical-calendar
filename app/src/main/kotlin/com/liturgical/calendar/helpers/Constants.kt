@@ -133,6 +133,7 @@ const val HIGHLIGHT_WEEKENDS_COLOR = "highlight_weekends_color"
 const val LAST_USED_EVENT_SPAN = "last_used_event_span"
 const val ALLOW_CREATING_TASKS = "allow_creating_tasks"
 const val SHOW_BIRTH_ANN_DESCRIPTION = "show_birth_ann_description"
+const val SHOW_WIDGET_DESCRIPTION = "show_widget_description"
 const val CURRENT_SCROLL_POSITION = "current_scroll_position"
 const val VIEW_POSITION = "view_position"
 
@@ -147,6 +148,11 @@ const val REPEAT_ORDER_WEEKDAY_USE_LAST = 2             // i.e. every last sunda
 const val REPEAT_LAST_DAY = 3                           // i.e. every last day of the month
 const val REPEAT_ORDER_WEEKDAY = 4                      // i.e. every 4th sunday, even if a month has 4 sundays only (will stay 4th even at months with 5)
 
+// repeat_rule for yearly repetition
+const val REPEAT_AFTER_DAY = 5
+const val REPEAT_BEFORE_DAY = 6
+// const val REPEAT_IF_DAY = 7
+
 // special event and task flags
 const val FLAG_ALL_DAY = 1
 const val FLAG_IS_IN_PAST = 2
@@ -156,7 +162,7 @@ const val FLAG_TASK_COMPLETED = 8
 // constants related to ICS file exporting / importing
 const val BEGIN_CALENDAR = "BEGIN:VCALENDAR"
 const val END_CALENDAR = "END:VCALENDAR"
-const val CALENDAR_PRODID = "PRODID:-//Simple Mobile Tools//NONSGML Event Calendar//EN"
+const val CALENDAR_PRODID = "PRODID:-//Liturgical Calendar//NONSGML Event Calendar//EN"
 const val CALENDAR_VERSION = "VERSION:2.0"
 const val BEGIN_EVENT = "BEGIN:VEVENT"
 const val END_EVENT = "END:VEVENT"
@@ -190,7 +196,10 @@ const val SEQUENCE = "SEQUENCE"
 const val CATEGORY_COLOR = "X-SMT-CATEGORY-COLOR:"
 const val CATEGORY_COLOR_LEGACY = "CATEGORY_COLOR:"
 const val MISSING_YEAR = "X-SMT-MISSING-YEAR:"
+const val EXRRULE = "EXRRULE:"
+//const val NID = "NID:" // New Id for calendar event
 
+// RRule properties
 const val DISPLAY = "DISPLAY"
 const val EMAIL = "EMAIL"
 const val FREQ = "FREQ"
@@ -200,6 +209,26 @@ const val INTERVAL = "INTERVAL"
 const val CONFIRMED = "CONFIRMED"
 const val VALUE = "VALUE"
 const val DATE = "DATE"
+
+// Repeat Rule Bits
+//const val MONDAY_BIT = 1
+//const val TUESDAY_BIT = 2
+//const val WEDNESDAY_BIT = 4
+//const val THURSDAY_BIT = 8
+//const val FRIDAY_BIT = 16
+//const val SATURDAY_BIT = 32
+//const val SUNDAY_BIT = 64
+//const val EVERY_DAY_BIT = MONDAY_BIT or TUESDAY_BIT or WEDNESDAY_BIT or THURSDAY_BIT or FRIDAY_BIT or SATURDAY_BIT or SUNDAY_BIT
+//const val WEEK_DAYS_BIT = MONDAY_BIT or TUESDAY_BIT or WEDNESDAY_BIT or THURSDAY_BIT or FRIDAY_BIT
+//const val WEEKENDS_BIT = SATURDAY_BIT or SUNDAY_BIT
+
+
+// EXRRULE Properties
+const val BEFORE_DATE = "BEFORE-DATE"
+const val AFTER_DATE = "AFTER-DATE"
+const val FULL_MOON = "FM"
+//const val IF = "IF"
+//const val CUSTOM = "CUSTOM" // allow for use of if statements
 
 const val DAILY = "DAILY"
 const val WEEKLY = "WEEKLY"
@@ -231,6 +260,7 @@ const val DELETE_ALL_OCCURRENCES = 2
 const val REMINDER_NOTIFICATION = 0
 const val REMINDER_EMAIL = 1
 
+// Event Items
 const val EVENT = "EVENT"
 const val TASK = "TASK"
 const val START_TS = "START_TS"

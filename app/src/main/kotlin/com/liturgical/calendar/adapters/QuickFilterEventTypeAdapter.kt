@@ -5,12 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
+import com.liturgical.calendar.databinding.QuickFilterEventTypeViewBinding
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.models.EventType
 import com.secure.commons.extensions.adjustAlpha
 import com.secure.commons.extensions.getProperTextColor
 import com.secure.commons.helpers.LOWER_ALPHA
-import kotlinx.android.synthetic.main.quick_filter_event_type_view.view.*
 
 class QuickFilterEventTypeAdapter(
     val activity: SimpleActivity,
@@ -55,7 +55,7 @@ class QuickFilterEventTypeAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val parentWidth = parent.measuredWidth
         val nrOfItems = quickFilterEventTypes.size
-        val view = activity.layoutInflater.inflate(R.layout.quick_filter_event_type_view, parent, false)
+        val view = QuickFilterEventTypeViewBinding.inflate(activity.layoutInflater, parent, false).root
         if (nrOfItems * minItemWidth > parentWidth) view.layoutParams.width = minItemWidth
         else view.layoutParams.width = parentWidth / nrOfItems
         return ViewHolder(view)
@@ -71,17 +71,17 @@ class QuickFilterEventTypeAdapter(
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bindView(eventType: EventType): View {
             val isSelected = activeKeys.contains(eventType.id)
-            itemView.apply {
-                quick_filter_event_type.text = eventType.title
+            QuickFilterEventTypeViewBinding.bind(itemView).apply {
+                quickFilterEventType.text = eventType.title
                 val textColor = if (isSelected) textColorActive else textColorInactive
-                quick_filter_event_type.setTextColor(textColor)
+                quickFilterEventType.setTextColor(textColor)
 
                 val indicatorHeightRes = if (isSelected) R.dimen.quick_filter_active_line_size else R.dimen.quick_filter_inactive_line_size
-                quick_filter_event_type_color.layoutParams.height = resources.getDimensionPixelSize(indicatorHeightRes)
-                quick_filter_event_type_color.setBackgroundColor(eventType.color)
+                quickFilterEventTypeColor.layoutParams.height = root.resources.getDimensionPixelSize(indicatorHeightRes)
+                quickFilterEventTypeColor.setBackgroundColor(eventType.color)
 
                 // avoid too quick clicks, could cause glitches
-                quick_filter_event_type.setOnClickListener {
+                quickFilterEventType.setOnClickListener {
                     if (System.currentTimeMillis() - lastClickTS > 300) {
                         lastClickTS = System.currentTimeMillis()
                         viewClicked(!isSelected, eventType)

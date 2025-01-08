@@ -3,14 +3,13 @@ package com.liturgical.calendar.adapters
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
+import com.liturgical.calendar.databinding.FilterEventTypeViewBinding
 import com.liturgical.calendar.models.EventType
 import com.secure.commons.extensions.getProperBackgroundColor
 import com.secure.commons.extensions.getProperPrimaryColor
 import com.secure.commons.extensions.getProperTextColor
 import com.secure.commons.extensions.setFillWithStroke
-import kotlinx.android.synthetic.main.filter_event_type_view.view.*
 
 class FilterEventTypeAdapter(val activity: SimpleActivity, val eventTypes: List<EventType>, val displayEventTypes: Set<String>) :
     RecyclerView.Adapter<FilterEventTypeAdapter.ViewHolder>() {
@@ -37,8 +36,7 @@ class FilterEventTypeAdapter(val activity: SimpleActivity, val eventTypes: List<
     fun getSelectedItemsList() = selectedKeys.asSequence().map { it }.toMutableList() as ArrayList<Long>
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = activity.layoutInflater.inflate(R.layout.filter_event_type_view, parent, false)
-        return ViewHolder(view)
+        return ViewHolder(FilterEventTypeViewBinding.inflate(activity.layoutInflater, parent, false).root)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -51,12 +49,12 @@ class FilterEventTypeAdapter(val activity: SimpleActivity, val eventTypes: List<
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bindView(eventType: EventType): View {
             val isSelected = selectedKeys.contains(eventType.id)
-            itemView.apply {
-                filter_event_type_checkbox.isChecked = isSelected
-                filter_event_type_checkbox.setColors(activity.getProperTextColor(), activity.getProperPrimaryColor(), activity.getProperBackgroundColor())
-                filter_event_type_checkbox.text = eventType.getDisplayTitle()
-                filter_event_type_color.setFillWithStroke(eventType.color, activity.getProperBackgroundColor())
-                filter_event_type_holder.setOnClickListener { viewClicked(!isSelected, eventType) }
+            FilterEventTypeViewBinding.bind(itemView).apply {
+                filterEventTypeCheckbox.isChecked = isSelected
+                filterEventTypeCheckbox.setColors(activity.getProperTextColor(), activity.getProperPrimaryColor(), activity.getProperBackgroundColor())
+                filterEventTypeCheckbox.text = eventType.getDisplayTitle()
+                filterEventTypeColor.setFillWithStroke(eventType.color, activity.getProperBackgroundColor())
+                filterEventTypeHolder.setOnClickListener { viewClicked(!isSelected, eventType) }
             }
 
             return itemView

@@ -16,6 +16,7 @@ import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Bundle
 import android.provider.CalendarContract
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -29,6 +30,7 @@ import com.liturgical.calendar.activities.EventTypePickerActivity
 import com.liturgical.calendar.activities.SnoozeReminderActivity
 import com.liturgical.calendar.activities.TaskActivity
 import com.liturgical.calendar.databases.EventsDatabase
+import com.liturgical.calendar.databinding.DayMonthlyEventViewBinding
 import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.helpers.Formatter
 import com.liturgical.calendar.interfaces.EventTypesDao
@@ -42,7 +44,6 @@ import com.liturgical.calendar.services.MarkCompletedService
 import com.liturgical.calendar.services.SnoozeService
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.*
-import kotlinx.android.synthetic.main.day_monthly_event_view.view.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
@@ -530,22 +531,21 @@ fun Context.addDayEvents(day: DayMonthly, linearLayout: LinearLayout, res: Resou
             backgroundDrawable.alpha = 64
             textColor = textColor.adjustAlpha(0.25f)
         }
+        DayMonthlyEventViewBinding.inflate(LayoutInflater.from(applicationContext), null, false).apply {
+            root.background = backgroundDrawable
+            root.layoutParams = eventLayoutParams
+            linearLayout.addView(this.root)
 
-        (View.inflate(applicationContext, R.layout.day_monthly_event_view, null) as ConstraintLayout).apply {
-            background = backgroundDrawable
-            layoutParams = eventLayoutParams
-            linearLayout.addView(this)
-
-            day_monthly_event_id.apply {
+            dayMonthlyEventId.apply {
                 setTextColor(textColor)
                 text = it.title.replace(" ", "\u00A0")  // allow word break by char
                 checkViewStrikeThrough(it.isTaskCompleted())
                 contentDescription = it.title
             }
 
-            day_monthly_task_image.beVisibleIf(it.isTask())
+            dayMonthlyTaskImage.beVisibleIf(it.isTask())
             if (it.isTask()) {
-                day_monthly_task_image.applyColorFilter(textColor)
+                dayMonthlyTaskImage.applyColorFilter(textColor)
             }
         }
     }

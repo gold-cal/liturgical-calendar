@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
+import com.liturgical.calendar.databinding.EventListItemBinding
 import com.liturgical.calendar.dialogs.DeleteEventDialog
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.Formatter
@@ -15,7 +16,6 @@ import com.secure.commons.extensions.*
 import com.secure.commons.helpers.MEDIUM_ALPHA
 import com.secure.commons.helpers.ensureBackgroundThread
 import com.secure.commons.views.MyRecyclerView
-import kotlinx.android.synthetic.main.event_list_item.view.*
 
 class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, recyclerView: MyRecyclerView, var dayCode: String, itemClick: (Any) -> Unit) :
     MyRecyclerViewAdapter(activity, recyclerView, itemClick) {
@@ -55,7 +55,9 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
 
     override fun onActionModeDestroyed() {}
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = createViewHolder(R.layout.event_list_item, parent)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyRecyclerViewAdapter.ViewHolder {
+        return ViewHolder(EventListItemBinding.inflate(layoutInflater, parent, false).root)
+    }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val event = events[position]
@@ -79,28 +81,28 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
     }
 
     private fun setupView(view: View, event: Event) {
-        view.apply {
-            event_item_holder.isSelected = selectedKeys.contains(event.id?.toInt())
-            event_item_holder.background.applyColorFilter(textColor)
-            event_item_title.text = event.title
-            event_item_title.checkViewStrikeThrough(event.isTaskCompleted())
-            event_item_time.text = if (event.getIsAllDay()) "" else Formatter.getTimeFromTS(context, event.startTS)
-            if (event.getIsAllDay()) event_item_time.beGone()
+        EventListItemBinding.bind(view).apply {
+            eventItemHolder.isSelected = selectedKeys.contains(event.id?.toInt())
+            eventItemHolder.background.applyColorFilter(textColor)
+            eventItemTitle.text = event.title
+            eventItemTitle.checkViewStrikeThrough(event.isTaskCompleted())
+            eventItemTime.text = if (event.getIsAllDay()) "" else Formatter.getTimeFromTS(root.context, event.startTS)
+            if (event.getIsAllDay()) eventItemTime.beGone()
             if (event.startTS != event.endTS && !event.getIsAllDay()) {
                 val startDayCode = Formatter.getDayCodeFromTS(event.startTS)
                 val endDayCode = Formatter.getDayCodeFromTS(event.endTS)
                 val startDate = Formatter.getDayTitle(activity, startDayCode, false)
                 val endDate = Formatter.getDayTitle(activity, endDayCode, false)
-                val startTimeString = event_item_time.text
-                val endTimeString = Formatter.getTimeFromTS(context, event.endTS)
+                val startTimeString = eventItemTime.text
+                val endTimeString = Formatter.getTimeFromTS(root.context, event.endTS)
                 val startDayString = if (startDayCode != dayCode) " ($startDate)" else ""
                 val endDayString = if (endDayCode != dayCode) " ($endDate)" else ""
-                event_item_time.text = "$startTimeString$startDayString - $endTimeString$endDayString"
+                eventItemTime.text = "$startTimeString$startDayString - $endTimeString$endDayString"
             }
 
-            event_item_description.text = if (replaceDescriptionWithLocation) event.location else event.description.replace("\n", " ")
-            event_item_description.beVisibleIf(displayDescription && event_item_description.text.isNotEmpty())
-            event_item_color_bar.background.applyColorFilter(event.color)
+            eventItemDescription.text = if (replaceDescriptionWithLocation) event.location else event.description.replace("\n", " ")
+            eventItemDescription.beVisibleIf(displayDescription && eventItemDescription.text.isNotEmpty())
+            eventItemColorBar.background.applyColorFilter(event.color)
 
             var newTextColor = textColor
 
@@ -114,11 +116,11 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
                 newTextColor = newTextColor.adjustAlpha(MEDIUM_ALPHA)
             }
 
-            event_item_time.setTextColor(newTextColor)
-            event_item_title.setTextColor(newTextColor)
-            event_item_description?.setTextColor(newTextColor)
-            event_item_task_image.applyColorFilter(newTextColor)
-            event_item_task_image.beVisibleIf(event.isTask())
+            eventItemTime.setTextColor(newTextColor)
+            eventItemTitle.setTextColor(newTextColor)
+            eventItemDescription.setTextColor(newTextColor)
+            eventItemTaskImage.applyColorFilter(newTextColor)
+            eventItemTaskImage.beVisibleIf(event.isTask())
 
             val startMargin = if (event.isTask()) {
                 0
@@ -126,7 +128,7 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
                 mediumMargin
             }
 
-            (event_item_title.layoutParams as ConstraintLayout.LayoutParams).marginStart = startMargin
+            (eventItemTitle.layoutParams as ConstraintLayout.LayoutParams).marginStart = startMargin
         }
     }
 

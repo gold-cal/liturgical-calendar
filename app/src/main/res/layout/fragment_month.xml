@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:paddingTop="@dimen/medium_margin">
 
-    <include layout="@layout/top_navigation" />
+    <include
+        layout="@layout/top_navigation" />
 
     <com.liturgical.calendar.views.MonthViewWrapper
         android:id="@+id/month_view_wrapper"

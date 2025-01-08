@@ -10,22 +10,24 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuItemCompat
 import com.liturgical.calendar.R
 import com.liturgical.calendar.adapters.SelectTimeZoneAdapter
+import com.liturgical.calendar.databinding.ActivitySelectTimeZoneBinding
 import com.liturgical.calendar.helpers.CURRENT_TIME_ZONE
 import com.liturgical.calendar.helpers.TIME_ZONE
 import com.liturgical.calendar.helpers.getAllTimeZones
 import com.liturgical.calendar.models.MyTimeZone
 import com.secure.commons.extensions.hideKeyboard
+import com.secure.commons.extensions.viewBinding
 import com.secure.commons.helpers.NavigationIcon
-import kotlinx.android.synthetic.main.activity_select_time_zone.*
 import java.util.*
 
 class SelectTimeZoneActivity : SimpleActivity() {
     private var mSearchMenuItem: MenuItem? = null
     private val allTimeZones = getAllTimeZones()
+    private val binding by viewBinding(ActivitySelectTimeZoneBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_select_time_zone)
+        setContentView(binding.root)
         setupOptionsMenu()
 
         SelectTimeZoneAdapter(this, allTimeZones) {
@@ -35,23 +37,23 @@ class SelectTimeZoneActivity : SimpleActivity() {
             setResult(RESULT_OK, data)
             finish()
         }.apply {
-            select_time_zone_list.adapter = this
+            binding.selectTimeZoneList.adapter = this
         }
 
         val currentTimeZone = intent.getStringExtra(CURRENT_TIME_ZONE) ?: TimeZone.getDefault().id
         val pos = allTimeZones.indexOfFirst { it.zoneName.equals(currentTimeZone, true) }
         if (pos != -1) {
-            select_time_zone_list.scrollToPosition(pos)
+            binding.selectTimeZoneList.scrollToPosition(pos)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        setupToolbar(select_time_zone_toolbar, NavigationIcon.Arrow, searchMenuItem = mSearchMenuItem)
+        setupToolbar(binding.selectTimeZoneToolbar, NavigationIcon.Arrow, searchMenuItem = mSearchMenuItem)
     }
 
     private fun setupOptionsMenu() {
-        setupSearch(select_time_zone_toolbar.menu)
+        setupSearch(binding.selectTimeZoneToolbar.menu)
     }
 
     private fun setupSearch(menu: Menu) {
@@ -91,6 +93,6 @@ class SelectTimeZoneActivity : SimpleActivity() {
         val timeZones = allTimeZones.filter {
             it.zoneName.lowercase(Locale.getDefault()).contains(text.lowercase(Locale.getDefault()))
         }.toMutableList() as ArrayList<MyTimeZone>
-        (select_time_zone_list.adapter as? SelectTimeZoneAdapter)?.updateTimeZones(timeZones)
+        (binding.selectTimeZoneList.adapter as? SelectTimeZoneAdapter)?.updateTimeZones(timeZones)
     }
 }

@@ -310,6 +310,10 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(SHOW_BIRTH_ANN_DESCRIPTION, false)
         set(showBirthdayAnniversaryDescription) = prefs.edit().putBoolean(SHOW_BIRTH_ANN_DESCRIPTION, showBirthdayAnniversaryDescription).apply()
 
+    var showWidgetDescription: Boolean
+        get() = prefs.getBoolean(SHOW_WIDGET_DESCRIPTION, false)
+        set(showWidgetDescription) = prefs.edit().putBoolean(SHOW_WIDGET_DESCRIPTION, showWidgetDescription).apply()
+
     var currentScrollPosition: Int
         get() = prefs.getInt(CURRENT_SCROLL_POSITION, 0)
         set(currentScrollPosition) = prefs.edit().putInt(CURRENT_SCROLL_POSITION, currentScrollPosition).apply()

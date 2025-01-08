@@ -10,7 +10,6 @@ import com.liturgical.calendar.R
 import com.liturgical.calendar.R.id.event_item_holder
 import com.liturgical.calendar.R.id.event_section_background
 import com.liturgical.calendar.R.id.event_section_title
-//import com.liturgical.calendar.R.id.gone
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.extensions.getWidgetFontSize
@@ -36,7 +35,8 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
     private var replaceDescription = context.config.replaceDescription
     private var dimPastEvents = context.config.dimPastEvents
     private var dimCompletedTasks = context.config.dimCompletedTasks
-    //private var showAllDayString = context.config.showAllDayString
+    private var showDescription = context.config.showWidgetDescription
+    private var showBirthAnnDes = context.config.showBirthdayAnniversaryDescription
     private var fontSize = context.getWidgetFontSize()
     //private var mediumMargin = context.resources.getDimension(R.dimen.medium_margin).toInt()
     private var tinyMargin = context.resources.getDimension(R.dimen.tiny_margin).toInt()
@@ -54,6 +54,8 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
         dimPastEvents = context.config.dimPastEvents
         dimCompletedTasks = context.config.dimCompletedTasks
         fontSize = context.getWidgetFontSize()
+        showDescription = context.config.showWidgetDescription
+        showBirthAnnDes = context.config.showBirthdayAnniversaryDescription
     }
 
     override fun getViewAt(position: Int): RemoteViews {
@@ -107,34 +109,27 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
                     timeText += " (${Formatter.getDateDayTitle(endCode)})"
                 }
             }
-            if (context.config.showBirthdayAnniversaryDescription) {
-                if (item.isSpecialEvent) {
-                    //val birthday = context.getString(R.string.birthday)
-                    showItemTime = true
-                    //timeText = if (item.description == birthday) birthday else context.getString(R.string.anniversary)
-                }
+            showItemTime = when {
+                (showBirthAnnDes && item.isSpecialEvent) -> true
+                (showDescription && item.isAllDay) -> true
+                else -> {false}
             }
 
             setText(R.id.event_item_time, timeText)
-            // if the time is going to be hidden, try to make the time and mask set to gone
-            // and set the color bar to be set to the bottom of the text view
-            // can't :(
-            /*if (!item.isAllDay || showItemTime) {
-                setVisibleIf(R.id.event_item_time, false)
-                setVisibleIf(R.id.event_item_divider, false)
-                setA
-            }*/
+
             setVisibleIf(R.id.event_item_time, !item.isAllDay || showItemTime)
 
 
             // we cannot change the event_item_color_bar rules dynamically, so do it like this
             val descriptionText = if (replaceDescription) item.location else item.description.replace("\n", " ")
-            if (displayDescription && descriptionText.isNotEmpty()) {
-                if (context.config.showBirthdayAnniversaryDescription) {
+            if (descriptionText.isNotEmpty()) {
+                if (showItemTime) {
                     setText(R.id.event_item_time, descriptionText)
                 } else {
                     setText(R.id.event_item_time, "$timeText\n$descriptionText")
                 }
+            } else {
+                setVisibleIf(R.id.event_item_time, !item.isAllDay)
             }
 
             if (item.isTask && item.isTaskCompleted && dimCompletedTasks || dimPastEvents && item.isPastEvent) {

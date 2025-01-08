@@ -3,13 +3,13 @@ package com.liturgical.calendar.dialogs
 import android.view.View
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
+import com.liturgical.calendar.databinding.DialogSetRemindersBinding
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.helpers.ANNIVERSARY_EVENT
 import com.liturgical.calendar.helpers.BIRTHDAY_EVENT
 import com.liturgical.calendar.helpers.OTHER_EVENT
 import com.liturgical.calendar.helpers.REMINDER_OFF
 import com.secure.commons.extensions.*
-import kotlinx.android.synthetic.main.dialog_set_reminders.view.*
 
 class SetRemindersDialog(val activity: SimpleActivity, val eventType: Int, val callback: (reminders: ArrayList<Int>) -> Unit) {
     private var mReminder1Minutes = REMINDER_OFF
@@ -18,20 +18,20 @@ class SetRemindersDialog(val activity: SimpleActivity, val eventType: Int, val c
     private var isAutomatic = false
 
     init {
-        val view = activity.layoutInflater.inflate(R.layout.dialog_set_reminders, null).apply {
-            set_reminders_image.applyColorFilter(context.getProperTextColor())
-            set_reminders_1.text = activity.getFormattedMinutes(mReminder1Minutes)
-            set_reminders_2.text = activity.getFormattedMinutes(mReminder1Minutes)
-            set_reminders_3.text = activity.getFormattedMinutes(mReminder1Minutes)
+        val binding = DialogSetRemindersBinding.inflate(activity.layoutInflater).apply {
+            setRemindersImage.applyColorFilter(root.context.getProperTextColor())
+            setReminders1.text = activity.getFormattedMinutes(mReminder1Minutes)
+            setReminders2.text = activity.getFormattedMinutes(mReminder1Minutes)
+            setReminders3.text = activity.getFormattedMinutes(mReminder1Minutes)
 
-            set_reminders_1.setOnClickListener {
+            setReminders1.setOnClickListener {
                 activity.handleNotificationPermission { granted ->
                     if (granted) {
                         activity.showPickSecondsDialogHelper(mReminder1Minutes, showDuringDayOption = true) {
                             mReminder1Minutes = if (it == -1 || it == 0) it else it / 60
-                            set_reminders_1.text = activity.getFormattedMinutes(mReminder1Minutes)
+                            setReminders1.text = activity.getFormattedMinutes(mReminder1Minutes)
                             if (mReminder1Minutes != REMINDER_OFF) {
-                                set_reminders_2.beVisible()
+                                setReminders2.beVisible()
                             }
                         }
                     } else {
@@ -40,24 +40,24 @@ class SetRemindersDialog(val activity: SimpleActivity, val eventType: Int, val c
                 }
             }
 
-            set_reminders_2.setOnClickListener {
+            setReminders2.setOnClickListener {
                 activity.showPickSecondsDialogHelper(mReminder2Minutes, showDuringDayOption = true) {
                     mReminder2Minutes = if (it == -1 || it == 0) it else it / 60
-                    set_reminders_2.text = activity.getFormattedMinutes(mReminder2Minutes)
+                    setReminders2.text = activity.getFormattedMinutes(mReminder2Minutes)
                     if (mReminder2Minutes != REMINDER_OFF) {
-                        set_reminders_3.beVisible()
+                        setReminders3.beVisible()
                     }
                 }
             }
 
-            set_reminders_3.setOnClickListener {
+            setReminders3.setOnClickListener {
                 activity.showPickSecondsDialogHelper(mReminder3Minutes, showDuringDayOption = true) {
                     mReminder3Minutes = if (it == -1 || it == 0) it else it / 60
-                    set_reminders_3.text = activity.getFormattedMinutes(mReminder3Minutes)
+                    setReminders3.text = activity.getFormattedMinutes(mReminder3Minutes)
                 }
             }
 
-            add_event_automatically_checkbox.apply {
+            addEventAutomaticallyCheckbox.apply {
                 visibility = if (eventType == OTHER_EVENT) View.GONE else View.VISIBLE
                 text = when (eventType) {
                     BIRTHDAY_EVENT -> activity.getString(R.string.add_birthdays_automatically)
@@ -78,7 +78,7 @@ class SetRemindersDialog(val activity: SimpleActivity, val eventType: Int, val c
             .setPositiveButton(R.string.ok) { dialog, which -> dialogConfirmed() }
             .setNegativeButton(R.string.cancel, null)
             .apply {
-                activity.setupDialogStuff(view, this, R.string.event_reminders)
+                activity.setupDialogStuff(binding.root, this, R.string.event_reminders)
             }
     }
 

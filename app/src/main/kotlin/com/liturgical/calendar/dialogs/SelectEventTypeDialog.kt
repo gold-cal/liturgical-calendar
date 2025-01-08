@@ -6,12 +6,11 @@ import android.view.ViewGroup
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import com.liturgical.calendar.R
+import com.liturgical.calendar.databinding.DialogSelectRadioGroupBinding
+import com.liturgical.calendar.databinding.RadioButtonWithColorBinding
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.models.EventType
 import com.secure.commons.extensions.*
-import com.secure.commons.views.MyCompatRadioButton
-import kotlinx.android.synthetic.main.dialog_select_radio_group.view.*
-import kotlinx.android.synthetic.main.radio_button_with_color.view.*
 
 class SelectEventTypeDialog(
     val activity: Activity, val currEventType: Long, val showCalDAVCalendars: Boolean, val showNewEventTypeOption: Boolean,
@@ -26,8 +25,8 @@ class SelectEventTypeDialog(
     private var eventTypes = ArrayList<EventType>()
 
     init {
-        val view = activity.layoutInflater.inflate(R.layout.dialog_select_radio_group, null) as ViewGroup
-        radioGroup = view.dialog_radio_group
+        val binding = DialogSelectRadioGroupBinding.inflate(activity.layoutInflater)
+        radioGroup = binding.dialogRadioGroup
 
         activity.eventsHelper.getEventTypes(activity, showOnlyWritable) {
             eventTypes = it
@@ -44,32 +43,32 @@ class SelectEventTypeDialog(
                     addRadioButton(newEventType)
                 }
                 wasInit = true
-                activity.updateTextColors(view.dialog_radio_holder)
+                activity.updateTextColors(binding.dialogRadioHolder)
             }
         }
 
         activity.getAlertDialogBuilder()
             .apply {
-                activity.setupDialogStuff(view, this) { alertDialog ->
+                activity.setupDialogStuff(binding.root, this) { alertDialog ->
                     dialog = alertDialog
                 }
             }
     }
 
     private fun addRadioButton(eventType: EventType) {
-        val view = activity.layoutInflater.inflate(R.layout.radio_button_with_color, null)
-        (view.dialog_radio_button as MyCompatRadioButton).apply {
+        val colorBinding = RadioButtonWithColorBinding.inflate(activity.layoutInflater)
+        colorBinding.dialogRadioButton.apply {
             text = eventType.getDisplayTitle()
             isChecked = eventType.id == currEventType
             id = eventType.id!!.toInt()
         }
 
         if (eventType.color != Color.TRANSPARENT) {
-            view.dialog_radio_color.setFillWithStroke(eventType.color, activity.getProperBackgroundColor())
+            colorBinding.dialogRadioColor.setFillWithStroke(eventType.color, activity.getProperBackgroundColor())
         }
 
-        view.setOnClickListener { viewClicked(eventType) }
-        radioGroup.addView(view, RadioGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        colorBinding.root.setOnClickListener { viewClicked(eventType) }
+        radioGroup.addView(colorBinding.root, RadioGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
     }
 
     private fun viewClicked(eventType: EventType) {

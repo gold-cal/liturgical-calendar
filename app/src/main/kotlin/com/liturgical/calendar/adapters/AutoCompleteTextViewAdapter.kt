@@ -1,17 +1,15 @@
 package com.liturgical.calendar.adapters
 
 import android.graphics.drawable.BitmapDrawable
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Filter
-import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
+import com.liturgical.calendar.databinding.ItemAutocompleteEmailNameBinding
 import com.liturgical.calendar.models.Attendee
 import com.secure.commons.extensions.normalizeString
 import com.secure.commons.helpers.SimpleContactsHelper
-import kotlinx.android.synthetic.main.item_autocomplete_email_name.view.*
 
 class AutoCompleteTextViewAdapter(val activity: SimpleActivity, val contacts: ArrayList<Attendee>) : ArrayAdapter<Attendee>(activity, 0, contacts) {
     var resultList = ArrayList<Attendee>()
@@ -20,8 +18,10 @@ class AutoCompleteTextViewAdapter(val activity: SimpleActivity, val contacts: Ar
         val contact = resultList[position]
         var listItem = convertView
         if (listItem == null || listItem.tag != contact.name.isNotEmpty()) {
-            val layout = if (contact.name.isNotEmpty()) R.layout.item_autocomplete_email_name else R.layout.item_autocomplete_email
-            listItem = LayoutInflater.from(activity).inflate(layout, parent, false)
+            //val layout = if (contact.name.isNotEmpty()) ItemAutocompleteEmailNameBinding else kd
+                //R.layout.item_autocomplete_email_name else R.layout.item_autocomplete_email
+            listItem = ItemAutocompleteEmailNameBinding.inflate(activity.layoutInflater).root
+            //listItem = LayoutInflater.from(activity).inflate(layout, parent, false)
         }
 
         val nameToUse = when {
@@ -31,12 +31,12 @@ class AutoCompleteTextViewAdapter(val activity: SimpleActivity, val contacts: Ar
         }
 
         val placeholder = BitmapDrawable(activity.resources, SimpleContactsHelper(context).getContactLetterIcon(nameToUse))
-        listItem!!.apply {
-            tag = contact.name.isNotEmpty()
-            item_autocomplete_name?.text = contact.name
-            item_autocomplete_email?.text = contact.email
+        ItemAutocompleteEmailNameBinding.bind(listItem).apply {
+            listItem.tag = contact.name.isNotEmpty()
+            itemAutocompleteName.text = contact.name
+            itemAutocompleteEmail.text = contact.email
 
-            contact.updateImage(context, item_autocomplete_image, placeholder)
+            contact.updateImage(context, itemAutocompleteImage, placeholder)
         }
 
         return listItem

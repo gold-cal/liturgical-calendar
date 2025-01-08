@@ -4,26 +4,26 @@ import androidx.appcompat.app.AlertDialog
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
 import com.liturgical.calendar.adapters.FilterEventTypeAdapter
+import com.liturgical.calendar.databinding.DialogFilterEventTypesBinding
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.eventsHelper
 import com.secure.commons.extensions.getAlertDialogBuilder
 import com.secure.commons.extensions.setupDialogStuff
-import kotlinx.android.synthetic.main.dialog_filter_event_types.view.*
 
 class SelectQuickFilterEventTypesDialog(val activity: SimpleActivity) {
     private var dialog: AlertDialog? = null
-    private val view = activity.layoutInflater.inflate(R.layout.dialog_filter_event_types, null)
+    private val binding = DialogFilterEventTypesBinding.inflate(activity.layoutInflater)
 
     init {
         activity.eventsHelper.getEventTypes(activity, false) {
             val quickFilterEventTypes = activity.config.quickFilterEventTypes
-            view.filter_event_types_list.adapter = FilterEventTypeAdapter(activity, it, quickFilterEventTypes)
+            binding.filterEventTypesList.adapter = FilterEventTypeAdapter(activity, it, quickFilterEventTypes)
 
             activity.getAlertDialogBuilder()
-                .setPositiveButton(R.string.ok) { dialogInterface, i -> confirmEventTypes() }
+                .setPositiveButton(R.string.ok) { dialogInterface, _ -> confirmEventTypes() }
                 .setNegativeButton(R.string.cancel, null)
                 .apply {
-                    activity.setupDialogStuff(view, this) { alertDialog ->
+                    activity.setupDialogStuff(binding.root, this) { alertDialog ->
                         dialog = alertDialog
                     }
                 }
@@ -31,7 +31,7 @@ class SelectQuickFilterEventTypesDialog(val activity: SimpleActivity) {
     }
 
     private fun confirmEventTypes() {
-        val selectedItems = (view.filter_event_types_list.adapter as FilterEventTypeAdapter).getSelectedItemsList().map {
+        val selectedItems = (binding.filterEventTypesList.adapter as FilterEventTypeAdapter).getSelectedItemsList().map {
             it.toString()
         }.toHashSet()
 

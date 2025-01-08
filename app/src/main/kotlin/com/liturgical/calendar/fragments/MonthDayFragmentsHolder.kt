@@ -11,6 +11,8 @@ import androidx.viewpager.widget.ViewPager
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.MainActivity
 import com.liturgical.calendar.adapters.MyMonthDayPagerAdapter
+import com.liturgical.calendar.databinding.DatePickerBinding
+import com.liturgical.calendar.databinding.FragmentMonthsDaysHolderBinding
 import com.liturgical.calendar.extensions.getMonthCode
 import com.liturgical.calendar.helpers.DAY_CODE
 import com.liturgical.calendar.helpers.Formatter
@@ -18,7 +20,6 @@ import com.liturgical.calendar.helpers.MONTHLY_DAILY_VIEW
 import com.liturgical.calendar.interfaces.NavigationListener
 import com.secure.commons.extensions.*
 import com.secure.commons.views.MyViewPager
-import kotlinx.android.synthetic.main.fragment_months_days_holder.view.*
 import org.joda.time.DateTime
 
 class MonthDayFragmentsHolder : MyFragmentHolder(), NavigationListener {
@@ -38,13 +39,13 @@ class MonthDayFragmentsHolder : MyFragmentHolder(), NavigationListener {
         todayDayCode = Formatter.getTodayCode()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_months_days_holder, container, false)
-        view.background = ColorDrawable(requireContext().getProperBackgroundColor())
-        viewPager = view.fragment_months_days_viewpager
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val binding = FragmentMonthsDaysHolderBinding.inflate(inflater, container, false)
+        binding.root.background = ColorDrawable(requireContext().getProperBackgroundColor())
+        viewPager = binding.fragmentMonthsDaysViewpager
         viewPager!!.id = (System.currentTimeMillis() % 100000).toInt()
         setupFragment()
-        return view
+        return binding.root
     }
 
     private fun setupFragment() {
@@ -86,11 +87,11 @@ class MonthDayFragmentsHolder : MyFragmentHolder(), NavigationListener {
     }
 
     override fun goLeft() {
-        viewPager!!.currentItem = viewPager!!.currentItem - 1
+        viewPager!!.currentItem -= 1
     }
 
     override fun goRight() {
-        viewPager!!.currentItem = viewPager!!.currentItem + 1
+        viewPager!!.currentItem += 1
     }
 
     override fun goToDateTime(dateTime: DateTime) {
@@ -105,18 +106,17 @@ class MonthDayFragmentsHolder : MyFragmentHolder(), NavigationListener {
 
     override fun showGoToDateDialog() {
         requireActivity().setTheme(requireContext().getDatePickerDialogTheme())
-        val view = layoutInflater.inflate(R.layout.date_picker, null)
-        val datePicker = view.findViewById<DatePicker>(R.id.date_picker)
-        datePicker.findViewById<View>(Resources.getSystem().getIdentifier("day", "id", "android")).beGone()
-
+        val dateBinding = DatePickerBinding.inflate(layoutInflater)
+        //val datePicker = dateBinding.findViewById<DatePicker>(R.id.date_picker)
+        dateBinding.datePicker.findViewById<View>(Resources.getSystem().getIdentifier("day", "id", "android")).beGone()
         val dateTime = getCurrentDate()!!
-        datePicker.init(dateTime.year, dateTime.monthOfYear - 1, 1, null)
+        dateBinding.datePicker.init(dateTime.year, dateTime.monthOfYear - 1, 1, null)
 
         activity?.getAlertDialogBuilder()!!
             .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { dialog, which -> datePicked(dateTime, datePicker) }
+            .setPositiveButton(R.string.ok) { dialog, which -> datePicked(dateTime, dateBinding.datePicker) }
             .apply {
-                activity?.setupDialogStuff(view, this)
+                activity?.setupDialogStuff(dateBinding.root, this)
             }
     }
 
