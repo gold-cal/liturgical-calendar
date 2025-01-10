@@ -10,8 +10,36 @@ import com.secure.commons.extensions.areDigitsOnly
 import com.secure.commons.helpers.*
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
+import kotlin.math.floor
+import kotlin.math.pow
 
 class Parser {
+    // EXRRULE:BEFORE=12;AFTER=21
+    fun parseExtendedRule(fullString: String, repetition: EventRepetition): EventRepetition {
+        val parts = fullString.split(";").filter { it.isNotEmpty() }
+        var exRepeatRule = 0
+        if (!repetition.repeatInterval.isXYearlyRepetition()) {
+            return repetition
+        }
+
+        for (part in parts) {
+            val keyValue = part.split("=")
+            if (keyValue.size <= 1) { continue }
+            val key = keyValue[0]
+            val value = keyValue[1]
+            if (key == AFTER_DATE) {
+                exRepeatRule = if (value == FULL_MOON) {
+                    REPEAT_AFTER_FM
+                } else {
+                    REPEAT_AFTER_DAY
+                }
+            } else if (key == BEFORE_DATE) {
+                exRepeatRule = REPEAT_BEFORE_DAY
+            }
+        }
+        return EventRepetition(repetition.repeatInterval, exRepeatRule, 0)
+    }
+    // RRULE:FREQ=YEARLY;INTERVAL=1;BYMONTH=2
     // from RRULE:FREQ=DAILY;COUNT=5 to Daily, 5x...
     fun parseRepeatInterval(fullString: String, startTS: Long): EventRepetition {
         val parts = fullString.split(";").filter { it.isNotEmpty() }
@@ -31,7 +59,7 @@ class Parser {
                 repeatInterval = getFrequencySeconds(value)
                 if (value == WEEKLY) {
                     val start = Formatter.getDateTimeFromTS(startTS)
-                    repeatRule = Math.pow(2.0, (start.dayOfWeek - 1).toDouble()).toInt()
+                    repeatRule = 2.0.pow((start.dayOfWeek - 1).toDouble()).toInt()
                 } else if (value == MONTHLY || value == YEARLY) {
                     repeatRule = REPEAT_SAME_DAY
                 } else if (value == DAILY && fullString.contains(INTERVAL)) {
@@ -39,7 +67,7 @@ class Parser {
                     // properly handle events repeating by 14 days or so, just add a repeat rule to specify a day of the week
                     if (interval.areDigitsOnly() && interval.toInt() % 7 == 0) {
                         val dateTime = Formatter.getDateTimeFromTS(startTS)
-                        repeatRule = Math.pow(2.0, (dateTime.dayOfWeek - 1).toDouble()).toInt()
+                        repeatRule = 2.0.pow((dateTime.dayOfWeek - 1).toDouble()).toInt()
                     } else if (fullString.contains("BYDAY")) {
                         // some services use weekly repetition for repeating on specific week days, some use daily
                         // make these produce the same result
@@ -227,12 +255,12 @@ class Parser {
         var hours = 0
         var remainder = minutes
         if (remainder >= DAY_MINUTES) {
-            days = Math.floor((remainder / DAY_MINUTES).toDouble()).toInt()
+            days = floor((remainder / DAY_MINUTES).toDouble()).toInt()
             remainder -= days * DAY_MINUTES
         }
 
         if (remainder >= 60) {
-            hours = Math.floor((remainder / 60).toDouble()).toInt()
+            hours = floor((remainder / 60).toDouble()).toInt()
             remainder -= hours * 60
         }
 

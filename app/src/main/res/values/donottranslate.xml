@@ -40,4 +40,7 @@
     <string name="release_19">Compressed some resources to make smaller app size and improved performance\n
                               Added option to show description in widget view\n
                               Added option to unsync contact birthdays/anniversaries</string>
+    <string name="release_20">Calendar now automatically adds EASTER!\n
+                              Added some new rules for yearly event repetition\n
+                              Easter dependent events to follow…</string>
 </resources>

@@ -5,11 +5,13 @@ import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
 import com.liturgical.calendar.extensions.eventsDB
 import com.liturgical.calendar.extensions.eventsHelper
+import com.liturgical.calendar.extensions.isXYearlyRepetition
 import com.liturgical.calendar.helpers.IcsImporter.ImportResult.IMPORT_FAIL
 import com.liturgical.calendar.helpers.IcsImporter.ImportResult.IMPORT_NOTHING_NEW
 import com.liturgical.calendar.helpers.IcsImporter.ImportResult.IMPORT_OK
 import com.liturgical.calendar.helpers.IcsImporter.ImportResult.IMPORT_PARTIAL
 import com.liturgical.calendar.models.Event
+import com.liturgical.calendar.models.EventRepetition
 import com.liturgical.calendar.models.EventType
 import com.liturgical.calendar.models.Reminder
 import com.secure.commons.extensions.areDigitsOnly
@@ -31,6 +33,7 @@ class IcsImporter(val activity: SimpleActivity) {
     private var curImportId = ""
     private var curRecurrenceDayCode = ""
     private var curRrule = ""
+    private var curExRrule = ""
     private var curFlags = 0
     private var curReminderMinutes = ArrayList<Int>()
     private var curReminderActions = ArrayList<Int>()
@@ -74,7 +77,7 @@ class IcsImporter(val activity: SimpleActivity) {
                 activity.assets.open(path)
             }
 
-            inputStream.bufferedReader().use {
+            inputStream.bufferedReader().use { it ->
                 while (true) {
                     val curLine = it.readLine() ?: break
                     if (curLine.trim().isEmpty()) {
@@ -118,6 +121,12 @@ class IcsImporter(val activity: SimpleActivity) {
                         // some RRULEs need to know the events start datetime. If it's yet unknown, postpone RRULE parsing
                         if (curStart != -1L) {
                             parseRepeatRule()
+                        }
+                    } else if (line.startsWith(EXRRULE)) {
+                        curExRrule = line.substring(EXRRULE.length)
+                        // only parse if RRULE has been parsed
+                        if (curRepeatInterval != 0 && curRepeatInterval.isXYearlyRepetition()) {
+                            parseExtendedRule()
                         }
                     } else if (line.startsWith(ACTION)) {
                         val action = line.substring(ACTION.length).trim()
@@ -377,6 +386,13 @@ class IcsImporter(val activity: SimpleActivity) {
         curRepeatRule = repeatRule.repeatRule
         curRepeatInterval = repeatRule.repeatInterval
         curRepeatLimit = repeatRule.repeatLimit
+    }
+
+    private fun parseExtendedRule() {
+        val repetition = Parser().parseExtendedRule(curExRrule, EventRepetition(curRepeatInterval, curRepeatRule, curRepeatLimit))
+        curRepeatRule = repetition.repeatRule
+        curRepeatInterval = repetition.repeatInterval
+        curRepeatLimit = repetition.repeatLimit
     }
 
     private fun resetValues() {

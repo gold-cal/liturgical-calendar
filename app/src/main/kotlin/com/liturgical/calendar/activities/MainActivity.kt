@@ -1238,8 +1238,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 }
             }
         } else {
-            handlePermission(PERMISSION_WRITE_STORAGE) {
-                if (it) {
+            handlePermission(PERMISSION_WRITE_STORAGE) { hasPermission ->
+                if (hasPermission) {
                     ExportEventsDialog(this, config.lastExportPath, false) { file, eventTypes ->
                         getFileOutputStream(file.toFileDirItem(this), true) {
                             exportEventsTo(eventTypes, it)
@@ -1348,20 +1348,6 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     }
 
     /** Functions for the Liturgical Calendar **/
-    /*private fun handleLiturgicalParseResult(result: ImportResult) {
-        toast(
-            when (result) {
-                ImportResult.IMPORT_NOTHING_NEW -> R.string.no_new_items
-                ImportResult.IMPORT_OK -> R.string.tlc_imported_successfully
-                ImportResult.IMPORT_PARTIAL -> R.string.importing_some_holidays_failed
-                else -> R.string.importing_tlc_failed
-            }, Toast.LENGTH_LONG
-        )
-    }*/
-
-    private fun isLeapYear(year: Int) : Boolean {
-        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
-    }
 
     // this function needs to be run on a new thread
     // make sure you are in a ensureBackgroundThread when calling it
@@ -1388,35 +1374,16 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 //val icsResult: ImportResult
                 // delete old version of calendar
                 //if (dbVersion != 0) deleteOldTLC()
-                /** Update once a week **/
+                // Update once a week
                 config.tlcRefresh = todayDateTime.plusDays(7).seconds()
 
 
                 val eventTypeId = eventsHelper.getLiturgicalEventTypeId()
-                //val result =
                 IcsImporter(this).importEvents(true, "tlc.ics", eventTypeId, 0, false, null)
-                //handleLiturgicalParseResult(result)
-                /*if (result == ImportResult.IMPORT_FAIL) {
-                    runOnUiThread {
-                        handleLiturgicalParseResult(ImportResult.IMPORT_FAIL)
-                    }
-                    return@ensureBackgroundThread
-                }*/
-                //icsResult = result
-
-                /** TODO: Need to set this up so that it exports all its events to a file first.
-                 ** Then, import it into the calendar. This way I can track code changes
-                 ** by setting a LAST_UPDATED value for each chunk of code that I can change
-                 ** manually if I update the code because of a bug. Can use copies of icsExport
-                 ** and import and can save it to storage so I can view it.
-                 ** Questions:
-                 **    Can I append text to a file? **/
-                //calculateEaster()
 
                 runOnUiThread {
                     updateViewPager()
                     setupQuickFilter()
-                    //handleLiturgicalParseResult(icsResult)
                 }
             }
         }
@@ -1424,7 +1391,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
     // this function needs to be run on a new thread
     // make sure you are in a ensureBackgroundThread when calling it
-    private fun addLiturgicalEvent(
+    /*private fun addLiturgicalEvent(
         holyDay: Boolean,
         eventName: String,
         eventDescription: String,
@@ -1443,82 +1410,12 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             eventType = eventTypeId, source = source, lastUpdated = lastUpdated
         )
         eventsHelper.insertEvent(event, false, false)
-    }
+    }*/
 
     /** this function needs to be run on a new thread
     ** make sure you are in a ensureBackgroundThread when calling it */
-    private fun calculateEaster(){
-        // Calculate when Easter is to determine everything else
-        // The full moon of 2023 is Apl 5 @ 23:37, Wed = 4 (will use military time)
-        val fullMoon = DateTime(2023, 4, 5, 23, 37)
-        val today = DateTime.now()
-        if (config.isFirstCalc) {
-            config.lastCalculatedFullMoon = fullMoon.seconds()
-        }
-        var lastFullMoon = if (config.isFirstCalc) {
-            config.isFirstCalc = false
-            fullMoon
-        } else {
-            Formatter.getDateTimeFromTS(config.lastCalculatedFullMoon)
-        }
-        /** Check if we should calculate the next easter cycle **/
-        if (lastFullMoon.year == (today.year + 2)) return
-        val fullMoonDayTitle = Formatter.getDayOfWeek(lastFullMoon)
-        var fullMoonDay = getDayInt(fullMoonDayTitle)
-        if (fullMoonDay == 8) {
-            toast("Failed to get day of week", Toast.LENGTH_LONG)
-            return
-        }
 
-        /* Now equinox to equinox is 365 days if not a leap year
-        ** To calculate the number of days from the last full moon to the next spring equinox
-        ** we need to subtract the days between the first equinox and the first full moon.
-        **  Last full moon          Easter         Spring Equinox       Next Full Moon        Easter
-        **        |--------------------|------------------|--------------------|-------------------|
-        ** 1 leap year = 366 days - 31 = 335 days + March 21 = 356 days
-        ** 1 year = 365 days - month of March (31 days) = 334 days + March 21 = 355 days
-        ** April 1 -> March 21 = 355 days
-        ** Days in 1 moon cycle: 29.53058770576 days = 2551442 sec */
-        var nextFullMoonYear = lastFullMoon.year
-        var easterDay = DateTime(fullMoon.year, fullMoon.monthOfYear, fullMoon.dayOfMonth, 0, 0)
-        while (nextFullMoonYear < (today.year + 2)) {
-            val daysToEaster = 7 - fullMoonDay
-            // Easter is the first Sunday after the first full moon from the spring equinox (March 21)
-            easterDay = easterDay.plusDays(daysToEaster)
-
-            addLiturgicalEvent(true, "Easter", "", easterDay.seconds())
-            // TODO: add other liturgical events
-
-            // Need to calculate days from spring equinox to full moon
-            val daysFromEquinoxToFullMoon = if (lastFullMoon.monthOfYear == 4) {
-                10 + lastFullMoon.dayOfMonth
-            } else {
-                lastFullMoon.dayOfMonth - 21
-            }
-
-            nextFullMoonYear++
-            // need to calculate when the next full moon is
-            // Number of days from Jan 1 to March 21
-            val janToEquinox = if (isLeapYear(nextFullMoonYear)) 81 else 80
-            // Total days from last full moon to spring equinox
-            val daysFromLastFullMoonToEquinox = 285 + janToEquinox - daysFromEquinoxToFullMoon  // -21 + 306
-            // now need to convert to seconds
-            val secondsToEquinox = daysFromLastFullMoonToEquinox * 86400 //* 24 * 60 *60
-            // Now Calculate the time from the spring equinox to the next full moon
-            var secondsToNextFullMoon = 0
-            while (secondsToNextFullMoon < secondsToEquinox) {
-                secondsToNextFullMoon += SECONDS_IN_MOON_CYCLE
-            }
-            // Now add this to the last full moon
-            lastFullMoon = lastFullMoon.plusSeconds(secondsToNextFullMoon)
-            fullMoonDay = getDayInt(Formatter.getDayOfWeek(lastFullMoon))
-            easterDay = DateTime(lastFullMoon.year, lastFullMoon.monthOfYear, lastFullMoon.dayOfMonth, 0, 0)
-        }
-        // save the last calculated full moon
-        config.lastCalculatedFullMoon = lastFullMoon.seconds()
-    }
-
-    private fun addEasterEvents(easterDay: DateTime) {
+    /* private fun addEasterEvents(easterDay: DateTime) {
         val easterEvents = ArrayList<Event>(20)
 
         val title = arrayOf(
@@ -1566,22 +1463,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             "FEAST OF THE SACRED HEART",
             "Second Sunday Ofter Pentecost"  // ...
         )
-    }
-
-    private fun getDayInt(day: String): Int {
-        return when (day) {
-            "Mon" -> 1
-            "Tue" -> 2
-            "Wed" -> 3
-            "Thu" -> 4
-            "Fri" -> 5
-            "Sat" -> 6
-            "Sun" -> 0
-            else -> {
-                8
-            }
-        }
-    }
+    }*/
 
     private fun createEventTypes() {
         if (config.isFirstRun) {
@@ -1691,6 +1573,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 add(Release(17, R.string.release_17))
                 add(Release(18, R.string.release_18))
                 add(Release(19, R.string.release_19))
+                add(Release(20, R.string.release_20))
 
                 checkWhatsNew(this, BuildConfig.VERSION_CODE)
             }

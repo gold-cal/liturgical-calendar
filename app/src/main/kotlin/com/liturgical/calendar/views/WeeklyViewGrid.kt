@@ -17,7 +17,7 @@ class WeeklyViewGrid(context: Context, attrs: AttributeSet, defStyle: Int) : Vie
     constructor(context: Context, attrs: AttributeSet) : this(context, attrs, 0)
 
     init {
-        paint.color = context.resources.getColor(R.color.divider_grey)
+        paint.color = context.resources.getColor(R.color.divider_grey, null)
     }
 
     override fun onDraw(canvas: Canvas) {

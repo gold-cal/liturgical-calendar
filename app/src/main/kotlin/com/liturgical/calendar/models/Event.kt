@@ -5,6 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.seconds
 import com.liturgical.calendar.helpers.*
 import com.secure.commons.extensions.addBitIf
@@ -56,6 +57,7 @@ data class Event(
                     repeatInterval % YEAR == 0 -> when (repeatRule) {
                         REPEAT_ORDER_WEEKDAY -> addXthDayInterval(oldStart, original, false)
                         REPEAT_ORDER_WEEKDAY_USE_LAST -> addXthDayInterval(oldStart, original, true)
+                        REPEAT_AFTER_FM -> calculateFullMoon(oldStart)
                         else -> addYearsWithSameDay(oldStart)
                     }
                     repeatInterval % MONTH == 0 -> when (repeatRule) {
@@ -93,7 +95,100 @@ data class Event(
         return newDateTime
     }
 
-    // if an event should happen on 31st with Same Day monthly repetition, dont show it at all at months with 30 or less days
+    private fun getDayInt(day: String): Int {
+        return when (day) {
+            "Mon" -> 1
+            "Tue" -> 2
+            "Wed" -> 3
+            "Thu" -> 4
+            "Fri" -> 5
+            "Sat" -> 6
+            else -> {
+                0
+            }
+        }
+    }
+
+    private fun isLeapYear(year: Int) : Boolean {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+    }
+
+    private fun calculateFullMoon(currStart: DateTime): DateTime{
+        // Calculate when Easter is to determine everything else
+        // The full moon of 2023 is Apl 5 @ 23:37, Wed = 4 (will use military time)
+        val fullMoon = DateTime(2023, 4, 5, 23, 37)
+        //val today = DateTime.now()
+        /*if (config.isFirstCalc) {
+            config.lastCalculatedFullMoon = fullMoon.seconds()
+        }*/
+        var lastFullMoon = fullMoon
+        /** Check if we should calculate the next easter cycle **/
+        //if (lastFullMoon.year == (today.year + 2)) return
+        val fullMoonDayTitle = Formatter.getDayOfWeek(fullMoon)
+        var fullMoonDay = getDayInt(fullMoonDayTitle)
+        /*if (fullMoonDay == 8) {
+            toast("Failed to get day of week", Toast.LENGTH_LONG)
+            return
+        }*/
+        var finished = false
+
+        /* Now equinox to equinox is 365 days if not a leap year
+        ** To calculate the number of days from the last full moon to the next spring equinox
+        ** we need to subtract the days between the first equinox and the first full moon.
+        **  Last full moon          Easter         Spring Equinox       Next Full Moon        Easter
+        **        |--------------------|------------------|--------------------|-------------------|
+        ** 1 leap year = 366 days - 31 = 335 days + March 21 = 356 days
+        ** 1 year = 365 days - month of March (31 days) = 334 days + March 21 = 355 days
+        ** April 1 -> March 21 = 355 days
+        ** Days in 1 moon cycle: 29.53058770576 days = 2551442 sec */
+        var nextFullMoonYear = lastFullMoon.year
+        var easterDay = DateTime(fullMoon.year, fullMoon.monthOfYear, fullMoon.dayOfMonth, 0, 0)
+        var daysToEaster = 7 - fullMoonDay
+        // Easter is the first Sunday after the first full moon from the spring equinox (March 21)
+        easterDay = easterDay.plusDays(daysToEaster)
+
+        while (!finished) { //(today.year)) {
+
+            //addLiturgicalEvent(true, "Easter", "", easterDay.seconds())
+            // TODO: add other liturgical events
+
+            // Need to calculate days from spring equinox to full moon
+            val daysFromEquinoxToFullMoon = if (lastFullMoon.monthOfYear == 4) {
+                10 + lastFullMoon.dayOfMonth
+            } else {
+                lastFullMoon.dayOfMonth - 21
+            }
+
+            nextFullMoonYear++
+            // need to calculate when the next full moon is
+            // Number of days from Jan 1 to March 21
+            val janToEquinox = if (isLeapYear(nextFullMoonYear)) 81 else 80
+            // Total days from last full moon to spring equinox
+            val daysFromLastFullMoonToEquinox = 285 + janToEquinox - daysFromEquinoxToFullMoon  // -21 + 306
+            // now need to convert to seconds
+            val secondsToEquinox = daysFromLastFullMoonToEquinox * 86400 //* 24 * 60 *60
+            // Now Calculate the time from the spring equinox to the next full moon
+            var secondsToNextFullMoon = 0
+            while (secondsToNextFullMoon < secondsToEquinox) {
+                secondsToNextFullMoon += SECONDS_IN_MOON_CYCLE
+            }
+            // Now add this to the last full moon
+            lastFullMoon = lastFullMoon.plusSeconds(secondsToNextFullMoon)
+            fullMoonDay = getDayInt(Formatter.getDayOfWeek(lastFullMoon))
+            easterDay = DateTime(lastFullMoon.year, lastFullMoon.monthOfYear, lastFullMoon.dayOfMonth, 0, 0)
+            daysToEaster = 7 - fullMoonDay
+            // Easter is the first Sunday after the first full moon from the spring equinox (March 21)
+            easterDay = easterDay.plusDays(daysToEaster)
+            if (nextFullMoonYear == (currStart.year + 1)) {
+                finished = true
+            }
+        }
+        // save the last calculated full moon
+        //config.lastCalculatedFullMoon = lastFullMoon.seconds()
+        return easterDay
+    }
+
+    // if an event should happen on 31st with Same Day monthly repetition, don't show it at all at months with 30 or less days
     private fun addMonthsWithSameDay(currStart: DateTime, original: Event): DateTime {
         var newDateTime = currStart.plusMonths(repeatInterval / MONTH)
         if (newDateTime.dayOfMonth == currStart.dayOfMonth) {
@@ -110,6 +205,8 @@ data class Event(
         }
         return newDateTime
     }
+
+
 
     // handle monthly repetitions like Third Monday
     private fun addXthDayInterval(currStart: DateTime, original: Event, forceLastWeekday: Boolean): DateTime {

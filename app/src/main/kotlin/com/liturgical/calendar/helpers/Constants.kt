@@ -151,7 +151,8 @@ const val REPEAT_ORDER_WEEKDAY = 4                      // i.e. every 4th sunday
 // repeat_rule for yearly repetition
 const val REPEAT_AFTER_DAY = 5
 const val REPEAT_BEFORE_DAY = 6
-// const val REPEAT_IF_DAY = 7
+const val REPEAT_AFTER_FM = 7
+// const val REPEAT_IF_DAY = 8
 
 // special event and task flags
 const val FLAG_ALL_DAY = 1
