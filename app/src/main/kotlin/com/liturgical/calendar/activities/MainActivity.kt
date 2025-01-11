@@ -1363,20 +1363,24 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     */
     private fun addLiturgicalCalendar() {
         var tlcRefreshListener = config.tlcRefresh
+        val refresh = config.isRefresh
         val todayDateTime = Formatter.getDateTimeFromCode(Formatter.getDayCodeFromTS(getNowSeconds())) // no time
         if (tlcRefreshListener == 0L) {
             tlcRefreshListener = todayDateTime.minusDays(1).seconds()
         }
         val today = todayDateTime.seconds()
 
-        if (tlcRefreshListener < today) {
+        if (tlcRefreshListener < today || refresh) {
             ensureBackgroundThread {
                 //val icsResult: ImportResult
                 // delete old version of calendar
                 //if (dbVersion != 0) deleteOldTLC()
                 // Update once a week
-                config.tlcRefresh = todayDateTime.plusDays(7).seconds()
-
+                if (!refresh) {
+                    config.tlcRefresh = todayDateTime.plusDays(7).seconds()
+                } else {
+                    config.isRefresh = false
+                }
 
                 val eventTypeId = eventsHelper.getLiturgicalEventTypeId()
                 IcsImporter(this).importEvents(true, "tlc.ics", eventTypeId, 0, false, null)
@@ -1574,6 +1578,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 add(Release(18, R.string.release_18))
                 add(Release(19, R.string.release_19))
                 add(Release(20, R.string.release_20))
+                add(Release(21, R.string.release_21))
 
                 checkWhatsNew(this, BuildConfig.VERSION_CODE)
             }

@@ -21,13 +21,13 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(IS_FIRST_RUN, true)
         set(isFirstRun) = prefs.edit().putBoolean(IS_FIRST_RUN, isFirstRun).apply()
 
-    var lastCalculatedFullMoon: Long
+    /*var lastCalculatedFullMoon: Long
         get() = prefs.getLong(LAST_CALCULATED_FULL_MOON, 0L)
-        set(lastCalculatedFullMoon) = prefs.edit().putLong(LAST_CALCULATED_FULL_MOON, lastCalculatedFullMoon).apply()
+        set(lastCalculatedFullMoon) = prefs.edit().putLong(LAST_CALCULATED_FULL_MOON, lastCalculatedFullMoon).apply()*/
 
-    var isFirstCalc: Boolean
-        get() = prefs.getBoolean(IS_FIRST_CALC, true)
-        set(isFirstCalc) = prefs.edit().putBoolean(IS_FIRST_CALC, isFirstCalc).apply()
+    var isRefresh: Boolean
+        get() = prefs.getBoolean(IS_REFRESH, true)
+        set(isRefresh) = prefs.edit().putBoolean(IS_REFRESH, isRefresh).apply()
 
     var tlcRefresh: Long
         get() = prefs.getLong(TLC_REFRESH, 0L)

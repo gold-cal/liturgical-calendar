@@ -17,8 +17,8 @@ android {
         applicationId "com.liturgical.calendar"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 20
-        versionName "1.00.0"
+        versionCode 21
+        versionName "1.00.1"
         multiDexEnabled true
         setProperty("archivesBaseName", "Liturgical-Calendar-" + versionName)
         vectorDrawables.useSupportLibrary = true

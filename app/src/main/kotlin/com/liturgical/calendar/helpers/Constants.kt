@@ -140,7 +140,7 @@ const val VIEW_POSITION = "view_position"
 // TLC values
 const val TLC_REFRESH = "tlc_refresh"
 const val LAST_CALCULATED_FULL_MOON = "last_calculated_full_moon"
-const val IS_FIRST_CALC = "is_first_calc"
+const val IS_REFRESH = "is_refresh"
 
 // repeat_rule for monthly and yearly repetition
 const val REPEAT_SAME_DAY = 1                           // i.e. 25th every month, or 3rd june (if yearly repetition)
