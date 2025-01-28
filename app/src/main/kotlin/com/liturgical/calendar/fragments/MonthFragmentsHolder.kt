@@ -113,7 +113,7 @@ class MonthFragmentsHolder : MyFragmentHolder(), NavigationListener {
         dateBinding.datePicker.findViewById<View>(Resources.getSystem().getIdentifier("day", "id", "android")).beGone()
 
         val dateTime = getCurrentDate()!!
-        dateBinding.datePicker.init(dateTime.year, dateTime.monthOfYear - 1, 1, null)
+        dateBinding.datePicker.init(dateTime.year, dateTime.monthOfYear, 1, null)
 
         activity?.getAlertDialogBuilder()!!
             .setNegativeButton(R.string.cancel, null)
@@ -124,7 +124,7 @@ class MonthFragmentsHolder : MyFragmentHolder(), NavigationListener {
     }
 
     private fun datePicked(dateTime: DateTime, datePicker: DatePicker) {
-        val month = datePicker.month + 1
+        val month = datePicker.month
         val year = datePicker.year
         val newDateTime = dateTime.withDate(year, month, 1)
         goToDateTime(newDateTime)

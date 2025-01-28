@@ -14,6 +14,10 @@ import kotlin.math.floor
 import kotlin.math.pow
 
 class Parser {
+    private fun getRepeatAfterRule() {
+
+    }
+
     // EXRRULE:BEFORE=12;AFTER=21
     fun parseExtendedRule(fullString: String, repetition: EventRepetition): EventRepetition {
         val parts = fullString.split(";").filter { it.isNotEmpty() }
@@ -27,6 +31,16 @@ class Parser {
             if (keyValue.size <= 1) { continue }
             val key = keyValue[0]
             val value = keyValue[1]
+            val splitValue = value.split("-")
+            var valueNumber = ""
+            var valueDay = ""
+            if (splitValue.size > 1) {
+                valueNumber = splitValue[0]
+                valueDay = splitValue[1]
+            } else {
+                valueNumber = splitValue[0]
+            }
+            // TODO: convert to when statement
             if (key == AFTER_DATE) {
                 exRepeatRule = if (value == FULL_MOON) {
                     REPEAT_AFTER_FM
@@ -35,6 +49,14 @@ class Parser {
                 }
             } else if (key == BEFORE_DATE) {
                 exRepeatRule = REPEAT_BEFORE_DAY
+            } else if (key == FM_PLUS_DAYS) {
+                exRepeatRule = FM_ADD_DAYS_RULE + value.toInt()
+            } else if (key == FM_PLUS_WEEKS) {
+                exRepeatRule = FM_ADD_WEEKS_RULE + value.toInt()
+            } else if (key == FM_MINUS_DAYS) {
+                exRepeatRule = FM_MINUS_DAYS_RULE + value.toInt()
+            } else if (key == FM_MINUS_WEEKS) {
+                exRepeatRule = FM_MINUS_WEEKS_RULE + value.toInt()
             }
         }
         return EventRepetition(repetition.repeatInterval, exRepeatRule, 0)
@@ -138,6 +160,29 @@ class Parser {
         val dateTimeFormat = DateTimeFormat.forPattern("yyyyMMddHHmmss")
         val dateTimeZone = if (useUTC) DateTimeZone.UTC else DateTimeZone.getDefault()
         return dateTimeFormat.parseDateTime(digitString).withZoneRetainFields(dateTimeZone).seconds()
+    }
+
+    fun getExRepeatCode(event: Event): String {
+        val repeatInterval = event.repeatInterval
+        if (repeatInterval < YEAR) return ""
+
+        val repeatRule = getExCode(event.repeatRule)
+        val repeatNumber = getExNumber(event.repeatRule)
+        return "$repeatRule=$repeatNumber"
+    }
+
+    private fun getExCode(repeatRule: Int) = when {
+        repeatRule > FM_MINUS_WEEKS_RULE -> FM_MINUS_WEEKS
+        repeatRule > FM_MINUS_DAYS_RULE -> FM_MINUS_DAYS
+        repeatRule > FM_ADD_WEEKS_RULE -> FM_PLUS_WEEKS
+        else -> FM_PLUS_DAYS
+    }
+
+    private fun getExNumber(repeatRule: Int) = when {
+        repeatRule > FM_MINUS_WEEKS_RULE -> (FM_MINUS_WEEKS_RULE xor repeatRule)
+        repeatRule > FM_MINUS_DAYS_RULE -> (FM_MINUS_DAYS_RULE xor repeatRule)
+        repeatRule > FM_ADD_WEEKS_RULE -> (FM_ADD_WEEKS_RULE xor repeatRule)
+        else -> (FM_ADD_DAYS_RULE xor repeatRule)
     }
 
     // from Daily, 5x... to RRULE:FREQ=DAILY;COUNT=5

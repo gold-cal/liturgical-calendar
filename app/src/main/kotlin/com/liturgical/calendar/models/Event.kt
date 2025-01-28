@@ -5,7 +5,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.seconds
 import com.liturgical.calendar.helpers.*
 import com.secure.commons.extensions.addBitIf
@@ -55,10 +54,11 @@ data class Event(
             else -> {
                 when {
                     repeatInterval % YEAR == 0 -> when (repeatRule) {
+                        REPEAT_SAME_DAY -> addYearsWithSameDay(oldStart)
                         REPEAT_ORDER_WEEKDAY -> addXthDayInterval(oldStart, original, false)
                         REPEAT_ORDER_WEEKDAY_USE_LAST -> addXthDayInterval(oldStart, original, true)
                         REPEAT_AFTER_FM -> calculateFullMoon(oldStart)
-                        else -> addYearsWithSameDay(oldStart)
+                        else -> addYearWithRepeatRule(oldStart, repeatRule)
                     }
                     repeatInterval % MONTH == 0 -> when (repeatRule) {
                         REPEAT_SAME_DAY -> addMonthsWithSameDay(oldStart, original)
@@ -92,6 +92,36 @@ data class Event(
             }
             newDateTime = newDateTime.withDayOfMonth(currStart.dayOfMonth)
         }
+        return newDateTime
+    }
+
+    // the repeat rule contains information on how to determine the date
+    /*private fun addDayInterval(currStart: DateTime, repeatRule: Int, flags: Int): DateTime {
+        var newDateTime = currStart
+        // 32 = 0b10,000
+
+        return
+    }*/
+
+    // the repeat rule contains information on how to calculate the date repetition
+    private fun addYearWithRepeatRule(currStart: DateTime, repeatRule: Int): DateTime {
+        var newDateTime = calculateFullMoon(currStart)
+        var rule = repeatRule
+        // have to keep these in this order larges to smallest
+        if (repeatRule > FM_MINUS_WEEKS_RULE) {
+            rule = rule xor FM_MINUS_WEEKS_RULE
+            newDateTime = newDateTime.minusWeeks(rule)
+        } else if (repeatRule > FM_MINUS_DAYS_RULE) {
+            rule = rule xor FM_MINUS_DAYS_RULE
+            newDateTime = newDateTime.minusDays(rule)
+        } else if (repeatRule > FM_ADD_WEEKS_RULE) {
+            rule = rule xor FM_ADD_WEEKS_RULE
+            newDateTime = newDateTime.plusWeeks(rule)
+        } else if (repeatRule > FM_ADD_DAYS_RULE) {
+            rule = rule xor FM_ADD_DAYS_RULE
+            newDateTime = newDateTime.plusDays(rule)
+        }
+
         return newDateTime
     }
 

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- <RelativeLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -14,22 +14,22 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/settings_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="45dp"
+        android:layout_height="@dimen/toolbar_height"
         android:layout_marginStart="@dimen/medium_margin"
         android:layout_marginEnd="@dimen/medium_margin"
-        android:layout_marginTop="@dimen/tiny_margin"
+        android:layout_marginTop="@dimen/medium_margin"
         android:background="@drawable/search_menu_background"
-        android:backgroundTint="@color/color_primary"
-        app:title="@string/settings"/> -->
+        android:backgroundTint="?attr/colorPrimary"
+        app:title="@string/settings"/>
 
 
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/settings_app_bar_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"> -->
 
         <!-- removed: (app:layout_scrollFlags="scroll|enterAlways") -->
-        <com.google.android.material.appbar.MaterialToolbar
+        <!-- <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/settings_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -37,16 +37,16 @@
             app:title="@string/settings"
             app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
 
-    </com.google.android.material.appbar.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout> -->
 
+        <!-- app:layout_behavior="@string/appbar_scrolling_view_behavior" -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/settings_nested_scrollview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fillViewport="true"
         android:scrollbars="none"
-        android:layout_below="@id/settings_toolbar"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_below="@id/settings_toolbar">
 
         <LinearLayout
             android:id="@+id/settings_holder"
@@ -1205,5 +1205,5 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-    <!-- </RelativeLayout> -->
+    </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

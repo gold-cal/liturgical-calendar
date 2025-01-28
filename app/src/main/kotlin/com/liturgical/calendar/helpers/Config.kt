@@ -108,7 +108,7 @@ class Config(context: Context) : BaseConfig(context) {
     }
 
     var listWidgetViewToOpen: Int
-        get() = prefs.getInt(LIST_WIDGET_VIEW_TO_OPEN, DAILY_VIEW)
+        get() = prefs.getInt(LIST_WIDGET_VIEW_TO_OPEN, MONTHLY_VIEW)
         set(viewToOpenFromListWidget) = prefs.edit().putInt(LIST_WIDGET_VIEW_TO_OPEN, viewToOpenFromListWidget).apply()
 
     var listWidgetDayPosition: Int

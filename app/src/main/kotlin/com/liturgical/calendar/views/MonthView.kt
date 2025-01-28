@@ -10,10 +10,7 @@ import android.view.View
 import com.liturgical.calendar.R
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.seconds
-import com.liturgical.calendar.helpers.COLUMN_COUNT
-import com.liturgical.calendar.helpers.Formatter
-import com.liturgical.calendar.helpers.ROW_COUNT
-import com.liturgical.calendar.helpers.isWeekend
+import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.models.DayMonthly
 import com.liturgical.calendar.models.Event
 import com.liturgical.calendar.models.MonthViewEvent
@@ -117,6 +114,11 @@ class MonthView(context: Context, attrs: AttributeSet, defStyle: Int) : View(con
     private fun groupAllEvents() {
         days.forEach { day ->
             val dayIndexOnMonthView = day.indexOnMonthView
+            /*var tlcEvent: MonthViewEvent
+            val dayToSkip = ArrayList<String>()
+            dayToSkip.add("EASTER")
+            dayToSkip.add("PENTECOST")
+            var showEvent = false*/
 
             day.dayEvents.forEach { event ->
                 // make sure we properly handle events lasting multiple days and repeating ones
@@ -127,6 +129,13 @@ class MonthView(context: Context, attrs: AttributeSet, defStyle: Int) : View(con
                 // handle overlapping repeating events e.g. an event that lasts 3 days, but repeats every 2 days has a one day overlap
                 val canOverlap = event.endTS - event.startTS > event.repeatInterval
                 val shouldAddEvent = notYetAddedOrIsRepeatingEvent || canOverlap && (lastEvent!!.startTS < event.startTS)
+                /*val isSpecialDay = if (dayToSkip[0] == event.title || dayToSkip[1] == event.title) {
+                    showEvent = false
+                    true
+                } else {
+                    showEvent = true
+                    false
+                }*/
 
                 if (shouldAddEvent && !validDayEvent) {
                     val daysCnt = getEventLastingDaysCount(event)
@@ -135,8 +144,15 @@ class MonthView(context: Context, attrs: AttributeSet, defStyle: Int) : View(con
                         event.id!!, event.title, event.startTS, event.endTS, event.color, dayIndexOnMonthView,
                         daysCnt, dayIndexOnMonthView, event.getIsAllDay(), event.isPastEvent, event.isTask(), event.isTaskCompleted()
                     )
+                    /*if (event.eventType == LITURGICAL_EVENT_TYPE_ID) {
+                        tlcEvent = monthViewEvent
+                    }
+                    if (isSpecialDay ||)*/
                     allEvents.add(monthViewEvent)
                 }
+                /*if (showEvent) {
+                    allEvents.add()
+                }*/
             }
         }
 

@@ -157,6 +157,7 @@ class WeekFragmentsHolder : MyFragmentHolder(), WeekFragmentListener {
     }
 
     private fun setupWeeklyActionbarTitle(timestamp: Long) {
+
         val startDateTime = Formatter.getDateTimeFromTS(timestamp)
         val endDateTime = Formatter.getDateTimeFromTS(timestamp + WEEK_SECONDS)
         val startMonthName = Formatter.getMonthName(requireContext(), startDateTime.monthOfYear)

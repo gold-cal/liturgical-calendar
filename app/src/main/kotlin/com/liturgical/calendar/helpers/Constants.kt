@@ -142,10 +142,12 @@ const val TLC_REFRESH = "tlc_refresh"
 const val LAST_CALCULATED_FULL_MOON = "last_calculated_full_moon"
 const val IS_REFRESH = "is_refresh"
 
+// repeat_rule for monthly repetition
+const val REPEAT_LAST_DAY = 3                           // i.e. every last day of the month
+
 // repeat_rule for monthly and yearly repetition
 const val REPEAT_SAME_DAY = 1                           // i.e. 25th every month, or 3rd june (if yearly repetition)
 const val REPEAT_ORDER_WEEKDAY_USE_LAST = 2             // i.e. every last sunday. 4th if a month has 4 sundays, 5th if 5 (or last sunday in june, if yearly)
-const val REPEAT_LAST_DAY = 3                           // i.e. every last day of the month
 const val REPEAT_ORDER_WEEKDAY = 4                      // i.e. every 4th sunday, even if a month has 4 sundays only (will stay 4th even at months with 5)
 
 // repeat_rule for yearly repetition
@@ -211,23 +213,25 @@ const val CONFIRMED = "CONFIRMED"
 const val VALUE = "VALUE"
 const val DATE = "DATE"
 
-// Repeat Rule Bits
-//const val MONDAY_BIT = 1
-//const val TUESDAY_BIT = 2
-//const val WEDNESDAY_BIT = 4
-//const val THURSDAY_BIT = 8
-//const val FRIDAY_BIT = 16
-//const val SATURDAY_BIT = 32
-//const val SUNDAY_BIT = 64
-//const val EVERY_DAY_BIT = MONDAY_BIT or TUESDAY_BIT or WEDNESDAY_BIT or THURSDAY_BIT or FRIDAY_BIT or SATURDAY_BIT or SUNDAY_BIT
-//const val WEEK_DAYS_BIT = MONDAY_BIT or TUESDAY_BIT or WEDNESDAY_BIT or THURSDAY_BIT or FRIDAY_BIT
-//const val WEEKENDS_BIT = SATURDAY_BIT or SUNDAY_BIT
+// Repeat Rules added to Flags
+const val REPEAT_XTH_DAY_OF_WEEK_AFTER = 16
+const val REPEAT_X_DAYS_AFTER = 32
 
+// Repeat Rule Bits
+// FIRST_SUNDAY == 1 and continue up 2 FIRST_MONDAY, 3,4, ...
+const val FM_ADD_DAYS_RULE = 512
+const val FM_ADD_WEEKS_RULE = 1024
+const val FM_MINUS_DAYS_RULE = 2048
+const val FM_MINUS_WEEKS_RULE = 4096
 
 // EXRRULE Properties
 const val BEFORE_DATE = "BEFORE-DATE"
 const val AFTER_DATE = "AFTER-DATE"
 const val FULL_MOON = "FM"
+const val FM_PLUS_WEEKS = "FM-PW"
+const val FM_PLUS_DAYS = "FM-PD"
+const val FM_MINUS_DAYS = "FM-MD"
+const val FM_MINUS_WEEKS = "FM-MW"
 //const val IF = "IF"
 //const val CUSTOM = "CUSTOM" // allow for use of if statements
 

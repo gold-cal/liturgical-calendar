@@ -44,4 +44,6 @@
                               Added some new rules for yearly event repetition\n
                               Easter dependent events to follow…</string>
     <string name="release_21">Calendar refresh bug fix</string>
+    <string name="release_22">UI updates\n
+                              More calendar items added</string>
 </resources>

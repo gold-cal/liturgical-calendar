@@ -80,9 +80,9 @@ class ManageEventTypesAdapter(
             eventTypeTitle.text = eventType.getDisplayTitle()
             eventTypeColor.setFillWithStroke(eventType.color, activity.getProperBackgroundColor())
             eventTypeTitle.setTextColor(textColor)
-            if (eventType.title == "TLC") {
+            /*if (eventType.title == "TLC") {
                 reloadMenuItem.beVisible()
-            }
+            }*/
 
             overflowMenuIcon.drawable.apply {
                 mutate()

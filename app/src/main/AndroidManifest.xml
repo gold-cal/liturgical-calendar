@@ -17,9 +17,9 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
-    <uses-permission
+    <!-- <uses-permission
         android:name="android.permission.USE_FINGERPRINT"
-        tools:node="remove" />
+        tools:node="remove" /> -->
 
     <queries>
         <package android:name="com.simplemobiletools.contacts.pro.debug" />

@@ -6,7 +6,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/task_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height"
+        android:layout_marginStart="@dimen/medium_margin"
+        android:layout_marginEnd="@dimen/medium_margin"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:background="@drawable/search_menu_background"
+        android:backgroundTint="?attr/colorPrimary"
+        app:menu="@menu/menu_task"
+        app:title="@string/app_launcher_name"
+        app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle"/>
+
+    <!-- <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/task_app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -20,13 +38,13 @@
             app:title="@string/app_launcher_name"
             app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
 
-    </com.google.android.material.appbar.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout> -->
 
     <ScrollView
         android:id="@+id/task_scrollview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_below="@+id/task_toolbar">
 
         <RelativeLayout
             android:id="@+id/task_holder"
@@ -384,4 +402,5 @@
 
         </RelativeLayout>
     </ScrollView>
+    </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

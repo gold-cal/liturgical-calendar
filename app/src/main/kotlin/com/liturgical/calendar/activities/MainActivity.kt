@@ -44,10 +44,7 @@ import com.secure.commons.dialogs.RadioGroupDialog
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.*
 import com.secure.commons.interfaces.RefreshRecyclerViewListener
-import com.secure.commons.models.FAQItem
-import com.secure.commons.models.RadioItem
-import com.secure.commons.models.Release
-import com.secure.commons.models.SimpleContact
+import com.secure.commons.models.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.io.FileOutputStream
@@ -1136,7 +1133,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     }
 
     private fun showBackNavigationArrow() {
-        binding.mainToolbar.navigationIcon = resources.getColoredDrawableWithColor(R.drawable.ic_arrow_left_vector, getProperStatusBarColor().getContrastColor())
+        binding.mainToolbar.navigationIcon = resources.getColoredDrawableWithColor(R.drawable.ic_arrow_left_vector, getProperBackgroundColor().getContrastColor())
     }
 
     private fun refreshViewPager() {
@@ -1276,6 +1273,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
     private fun launchAbout() {
         val licenses = LICENSE_JODA
+        val forkedFromUrl = "https://github.com/SimpleMobileTools/Simple-Calendar"
+        val sourceCodeUrl = "https://github.com/gold-cal/litrugical-calendar"
 
         val faqItems = arrayListOf(
             FAQItem(R.string.faq_2_title, R.string.faq_2_text),
@@ -1294,8 +1293,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             faqItems.add(FAQItem(R.string.faq_7_title_commons, R.string.faq_7_text_commons))
 
         }*/
+        val showItems = AboutItems(true, true, forkedFromUrl, sourceCodeUrl)
 
-        startAboutActivity(R.string.app_name, licenses, BuildConfig.VERSION_NAME, faqItems, true)
+        startAboutActivity(R.string.app_name, licenses, BuildConfig.VERSION_NAME, faqItems, true, showItems)
     }
 
     private fun searchQueryChanged(text: String) {
@@ -1573,12 +1573,13 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 //add(Release(12, R.string.release_12))
                 //add(Release(14, R.string.release_14))
                 //add(Release(15, R.string.release_15))
-                add(Release(16, R.string.release_16))
-                add(Release(17, R.string.release_17))
-                add(Release(18, R.string.release_18))
+                //add(Release(16, R.string.release_16))
+                //add(Release(17, R.string.release_17))
+                //add(Release(18, R.string.release_18))
                 add(Release(19, R.string.release_19))
                 add(Release(20, R.string.release_20))
                 add(Release(21, R.string.release_21))
+                add(Release(22, R.string.release_22))
 
                 checkWhatsNew(this, BuildConfig.VERSION_CODE)
             }
