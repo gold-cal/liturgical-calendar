@@ -31,7 +31,7 @@ object Formatter {
         val monthIndex = Integer.valueOf(dayCode.substring(4, 6))
         var month = getMonthName(context, monthIndex)
         if (shortMonth) {
-            month = month.substring(0, Math.min(month.length, 3))
+            month = month.substring(0, month.length.coerceAtMost(3))
         }
 
         var date = "$month $day"

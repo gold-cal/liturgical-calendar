@@ -8,4 +8,6 @@ fun Int.isXWeeklyRepetition() = this != 0 && this % WEEK == 0
 
 fun Int.isXMonthlyRepetition() = this != 0 && this % MONTH == 0
 
-fun Int.isXYearlyRepetition() = this != 0 && this % YEAR == 0
+fun Int.isXYearlyRepetition() = this != 0 && this % YEAR  == 0
+
+fun Int.getBits(value: Int) = ((this or value) xor value)

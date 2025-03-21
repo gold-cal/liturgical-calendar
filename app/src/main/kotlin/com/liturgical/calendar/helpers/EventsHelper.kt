@@ -13,6 +13,7 @@ import com.secure.commons.extensions.getProperPrimaryColor
 import com.secure.commons.extensions.toast
 import com.secure.commons.helpers.CHOPPED_LIST_DEFAULT_SIZE
 import com.secure.commons.helpers.ensureBackgroundThread
+import org.joda.time.DateTime
 
 class EventsHelper(val context: Context) {
     private val config = context.config
@@ -355,6 +356,24 @@ class EventsHelper(val context: Context) {
         }
 
         callback(events)
+    }
+
+    fun deleteOldEvents(olderThen: Int) {
+        var oldEvents = ArrayList<Event>()
+        // Set the day to whatever year, jan, 1, 5 am
+        val datesAfter = Formatter.getDateTimeFromTS(getNowSeconds()).minusYears(olderThen).seconds()
+        oldEvents.addAll(eventsDB.getOldEvents(datesAfter))
+        if (oldEvents.isEmpty()) return
+
+        oldEvents = oldEvents.asSequence().distinct().filter {
+            it.source == SOURCE_DEFAULT_CALENDAR
+        }.toMutableList() as ArrayList<Event>
+
+        val eventIDs = ArrayList<Long>()
+        oldEvents.forEach {
+            eventIDs.add(it.id!!)
+        }
+        eventsDB.deleteEvents(eventIDs.toMutableList())
     }
 
     fun createPredefinedEventType(title: String, @ColorRes colorResId: Int, type: Int, caldav: Boolean = false): Long {

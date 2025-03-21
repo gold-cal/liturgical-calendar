@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dialog_year_picker_holder"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.secure.commons.views.MyTextInputLayout
+        android:id="@+id/dialog_year_picker_hint"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_margin"
+        android:paddingTop="@dimen/activity_margin"
+        android:paddingRight="@dimen/activity_margin"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintWidth_percent="0.5"
+        android:hint="@string/value">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dialog_year_picker_value"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:inputType="number"
+            android:maxLength="2"
+            android:textCursorDrawable="@null"
+            android:textSize="@dimen/bigger_text_size" />
+
+    </com.secure.commons.views.MyTextInputLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/bigger_margin"
+        android:padding="@dimen/activity_margin"
+        android:textSize="@dimen/bigger_text_size"
+        android:text="Years"
+        app:layout_constraintStart_toEndOf="@id/dialog_year_picker_hint"
+        app:layout_constraintTop_toTopOf="@id/dialog_year_picker_hint"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

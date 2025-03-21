@@ -10,6 +10,7 @@ const val SCHEDULE_CALDAV_REQUEST_CODE = 10000
 const val SCHEDULE_WIDGET_REQUEST_CODE = 20000
 const val ACTION_AUTO_UPDATE = "com.liturgical.calendar.AUTO_UPDATE"
 
+// Settings
 const val DAY_CODE = "day_code"
 const val YEAR_LABEL = "year"
 const val EVENT_ID = "event_id"
@@ -31,8 +32,11 @@ const val LITURGICAL_EVENT_TYPE_ID = 3L
 const val TIME_ZONE = "time_zone"
 const val CURRENT_TIME_ZONE = "current_time_zone"
 const val IS_FIRST_RUN = "is_first_run"
+const val DELETE_OLD_EVENTS = "delete_old_events"
+const val DELETE_EVENTS_OLDER_THEN = "delete_events_older_then"
 const val TODAY_POSITION = "today_position"
 
+// Main window view
 const val MONTHLY_VIEW = 1
 const val YEARLY_VIEW = 2
 const val EVENTS_LIST_VIEW = 3
@@ -139,7 +143,7 @@ const val VIEW_POSITION = "view_position"
 
 // TLC values
 const val TLC_REFRESH = "tlc_refresh"
-const val LAST_CALCULATED_FULL_MOON = "last_calculated_full_moon"
+//const val LAST_CALCULATED_FULL_MOON = "last_calculated_full_moon"
 const val IS_REFRESH = "is_refresh"
 
 // repeat_rule for monthly repetition
@@ -151,16 +155,73 @@ const val REPEAT_ORDER_WEEKDAY_USE_LAST = 2             // i.e. every last sunda
 const val REPEAT_ORDER_WEEKDAY = 4                      // i.e. every 4th sunday, even if a month has 4 sundays only (will stay 4th even at months with 5)
 
 // repeat_rule for yearly repetition
-const val REPEAT_AFTER_DAY = 5
-const val REPEAT_BEFORE_DAY = 6
+const val REPEAT_SAME_DAY_WITH_EXCEPTION = 3
+// const val REPEAT_AFTER_DAY = 5
+const val REPEAT_BEFORE_FM = 6
 const val REPEAT_AFTER_FM = 7
-// const val REPEAT_IF_DAY = 8
+const val REPEAT_HNOJ = 8  // (HNOJ) = Holy Name Of Jesus
+
+// Repeat_Rule Bits
+// The first part of the Int is used to hold the count, up to 500 days
+// Then the rest are bits:
+const val FM_ADD_DAYS_RULE = 0x200
+const val FM_ADD_WEEKS_RULE = 0x400
+const val FM_MINUS_DAYS_RULE = 0x800
+const val FM_MINUS_WEEKS_RULE = 0x1000
+// Empty = 0x2000
+// Empty = 0x4000
+//  = 0x8000
+
+
+// extended_Rule for yearly repetition
+// first 9 bits are storing days after/before a date
 
 // special event and task flags
 const val FLAG_ALL_DAY = 1
 const val FLAG_IS_IN_PAST = 2
 const val FLAG_MISSING_YEAR = 4
 const val FLAG_TASK_COMPLETED = 8
+const val FLAG_FISH_TFPA = 0x10
+const val FLAG_FISH_TFA = 0x20
+const val FLAG_FISH_OFA = 0x40
+const val FLAG_FISH_OA_TF = 0x80
+const val FLAG_FISH_TA = 0x100
+//const val FLAG_EXCEPTION = 0x200
+
+/** If FLAG_EXCEPTION is set
+ * An Exception can only occur when the exception date or range lands on the date of the
+ * current event.
+ * The first bit is set if the event contains any EXRRULEs
+ * Event extended_rule has this format:
+ * 32                23          17              9               1
+ * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+ *                    | d shift |  range or 0  |  date or range |
+ * date or range: This is the exception date that the day has to equal before the exception
+ *                will be applied.
+ * range or 0: If this value is 0, the date or range is as above, otherwise it is considered
+ *             part of the range of dates from this value.
+ * d shift: This is the number of days that the event will be shifted, up to 31 is allowed
+ *          OR the number of weeks shifted, up to 31 weeks allowed
+ * starting with bit 23, the values are as follows
+ */
+// up to 9 bits available,
+const val EX_RULE_SPD = 0x400000  // set if the d shift should be added to the original date
+const val EX_RULE_SMD = 0x800000  // set if the d shift should be subtracted from the original date
+const val EX_RULE_SPW = 0x1000000
+const val EX_RULE_SMW = 0x2000000
+const val EX_RULE_EPD = 0x4000000  // marks how to calculate the date that the exception is on
+const val EX_RULE_EMD = 0x8000000
+const val EX_RULE_EPW = 0x10000000
+const val EX_RULE_EMW = 0x20000000
+const val EX_RULE_R =   0x40000000 // Range
+//------------ End -------------------------
+// Constants for getting the shift, range and date from above
+const val RANGE_TO = 1
+const val RANGE_FROM = 9
+const val SHIFT = 17
+const val XOR_SHIFT =      0x7FC1FFFF
+const val XOR_RANGE_FROM = 0x7FFE01FF
+const val XOR_RANGE_TO =   0x7FFFFE01
 
 // constants related to ICS file exporting / importing
 const val BEGIN_CALENDAR = "BEGIN:VCALENDAR"
@@ -213,26 +274,33 @@ const val CONFIRMED = "CONFIRMED"
 const val VALUE = "VALUE"
 const val DATE = "DATE"
 
-// Repeat Rules added to Flags
-const val REPEAT_XTH_DAY_OF_WEEK_AFTER = 16
-const val REPEAT_X_DAYS_AFTER = 32
-
-// Repeat Rule Bits
-// FIRST_SUNDAY == 1 and continue up 2 FIRST_MONDAY, 3,4, ...
-const val FM_ADD_DAYS_RULE = 512
-const val FM_ADD_WEEKS_RULE = 1024
-const val FM_MINUS_DAYS_RULE = 2048
-const val FM_MINUS_WEEKS_RULE = 4096
-
 // EXRRULE Properties
-const val BEFORE_DATE = "BEFORE-DATE"
-const val AFTER_DATE = "AFTER-DATE"
+const val EXT = "EXT"  // Extended
+const val EXCEPTION = "EXCEPTION"
 const val FULL_MOON = "FM"
 const val FM_PLUS_WEEKS = "FM-PW"
 const val FM_PLUS_DAYS = "FM-PD"
 const val FM_MINUS_DAYS = "FM-MD"
 const val FM_MINUS_WEEKS = "FM-MW"
-//const val IF = "IF"
+
+// EXRRULE Values
+const val BEFORE = "BEFORE"
+const val AFTER = "AFTER"
+const val HOLY_NAME_JESUS = "HNJ"
+const val EXP = "EXP"
+const val PD = "PD"
+const val PW = "PW"
+const val MD = "MD"
+const val MW = "MW"
+const val SPD = "SPD"
+const val SMD = "SMD"
+const val SPW = "SPW"
+const val SMW = "SMW"
+const val FLAG_TFPA = "TFPA"
+const val FLAG_TFA = "TFA"
+const val FLAG_OFA = "OFA"
+const val FLAG_OA_TF = "OATF"
+const val FLAG_TA = "TA"
 //const val CUSTOM = "CUSTOM" // allow for use of if statements
 
 const val DAILY = "DAILY"

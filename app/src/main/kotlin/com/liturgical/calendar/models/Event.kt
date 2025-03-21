@@ -5,6 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.liturgical.calendar.extensions.getBits
 import com.liturgical.calendar.extensions.seconds
 import com.liturgical.calendar.helpers.*
 import com.secure.commons.extensions.addBitIf
@@ -40,7 +41,8 @@ data class Event(
     @ColumnInfo(name = "source") var source: String = SOURCE_DEFAULT_CALENDAR,
     @ColumnInfo(name = "availability") var availability: Int = 0,
     @ColumnInfo(name = "color") var color: Int = 0,
-    @ColumnInfo(name = "type") var type: Int = TYPE_EVENT
+    @ColumnInfo(name = "type") var type: Int = TYPE_EVENT,
+    @ColumnInfo(name = "extended_rule") var extendedRule: Int = 0
 ) : Serializable {
 
     companion object {
@@ -55,9 +57,11 @@ data class Event(
                 when {
                     repeatInterval % YEAR == 0 -> when (repeatRule) {
                         REPEAT_SAME_DAY -> addYearsWithSameDay(oldStart)
-                        REPEAT_ORDER_WEEKDAY -> addXthDayInterval(oldStart, original, false)
                         REPEAT_ORDER_WEEKDAY_USE_LAST -> addXthDayInterval(oldStart, original, true)
-                        REPEAT_AFTER_FM -> calculateFullMoon(oldStart)
+                        REPEAT_SAME_DAY_WITH_EXCEPTION -> handleYearlyException(oldStart, original, extendedRule)
+                        REPEAT_ORDER_WEEKDAY -> addXthDayInterval(oldStart, original, false)
+                        REPEAT_AFTER_FM -> calculateEaster(oldStart)
+                        REPEAT_HNOJ -> calculateHNOJ(oldStart)
                         else -> addYearWithRepeatRule(oldStart, repeatRule)
                     }
                     repeatInterval % MONTH == 0 -> when (repeatRule) {
@@ -81,6 +85,72 @@ data class Event(
         endTS = newEndTS
     }
 
+    private fun shiftDate(currStart: DateTime, shiftBit: Int, shiftValue: Int): DateTime {
+        val newDateTime = when (shiftBit) {
+            EX_RULE_SPD -> currStart.plusDays(shiftValue)
+            EX_RULE_SMD -> currStart.minusDays(shiftValue)
+            EX_RULE_SPW -> currStart.plusWeeks(shiftValue)
+            EX_RULE_SMW -> currStart.minusWeeks(shiftValue)
+            else -> currStart
+        }
+        return newDateTime
+    }
+
+    private fun handleShiftBit(currStart: DateTime, extendedRule: Int): DateTime {
+        val shift = extendedRule.getBits(XOR_SHIFT).ushr(SHIFT)
+        var shiftBit = EX_RULE_SPD
+        var isFinished = false
+        var newDateTime = currStart
+        while (!isFinished) {
+            // if the bit is not set check the next condition
+            if ((extendedRule or shiftBit) == 0) {
+                shiftBit = shiftBit.shl(1)
+                // if the bit is greater the SMW, no bit is set, so return
+                if (shiftBit > EX_RULE_SMW) return currStart
+            } else {
+                isFinished = true
+                newDateTime = shiftDate(currStart, shiftBit, shift)
+            }
+        }
+        return newDateTime
+    }
+
+    private fun handleYearlyException(currStart: DateTime, original: Event, extendedRule: Int): DateTime {
+        var newDateTime = currStart.plusYears(repeatInterval / YEAR)
+        val origDay = Formatter.getDateTimeFromTS(original.startTS)
+        var isException = false
+        val date = extendedRule.getBits(XOR_RANGE_TO).ushr(RANGE_TO)
+        // Check if it is a range
+        if ((extendedRule and EX_RULE_R) != 0) {
+            var from = extendedRule.getBits(XOR_RANGE_FROM).ushr(RANGE_FROM)
+            /** TODO: Need to add range check*/
+        } else {
+            // check if exception day lands on the same day as newDateTime
+            if ((extendedRule and EX_RULE_EPD) != 0) {
+                val ePD = addYearWithRepeatRule(currStart, (date or FM_ADD_DAYS_RULE))
+                if (newDateTime == ePD) isException = true
+            } else if ((extendedRule and EX_RULE_EMD) != 0) {
+                val eMD = addYearWithRepeatRule(currStart, (date or FM_MINUS_DAYS_RULE))
+                if (newDateTime == eMD) isException = true
+            } else if ((extendedRule and EX_RULE_EPW) != 0) {
+                val ePW = addYearWithRepeatRule(currStart, (date or FM_ADD_WEEKS_RULE))
+                if (newDateTime == ePW) isException = true
+            } else if ((extendedRule and EX_RULE_EMW) != 0) {
+                val eMW = addYearWithRepeatRule(currStart, (date or FM_MINUS_WEEKS_RULE))
+                if (newDateTime == eMW) isException = true
+            }
+        }
+        if (isException) {
+            newDateTime = handleShiftBit(newDateTime, extendedRule)
+        } else { // check and make sure the date is the same as the original event
+            if (newDateTime.monthOfYear != origDay.monthOfYear || newDateTime.dayOfMonth != origDay.dayOfMonth) {
+                val yearShift = newDateTime.year - origDay.year
+                newDateTime = origDay.plusYears(yearShift)
+            }
+        }
+        return newDateTime
+    }
+
     // if an event should happen on 29th Feb. with Same Day yearly repetition, show it only on leap years
     private fun addYearsWithSameDay(currStart: DateTime): DateTime {
         var newDateTime = currStart.plusYears(repeatInterval / YEAR)
@@ -95,19 +165,27 @@ data class Event(
         return newDateTime
     }
 
-    // the repeat rule contains information on how to determine the date
-    /*private fun addDayInterval(currStart: DateTime, repeatRule: Int, flags: Int): DateTime {
-        var newDateTime = currStart
-        // 32 = 0b10,000
-
-        return
-    }*/
+    // if the first sunday of jan lands on the 1,6 or 7, then it is on the 2
+    // otherwise it is on the first sunday
+    private fun calculateHNOJ(currStart: DateTime): DateTime {
+        val year = currStart.year + 1
+        var newDateTime = DateTime(year, 1, 1, 0, 0)
+        val day = newDateTime.dayOfWeek
+        // TODO: Replace with when statement
+        newDateTime = when (day) {
+            3 -> newDateTime.plusDays(4)
+            4 -> newDateTime.plusDays(3)
+            5 -> newDateTime.plusDays(2)
+            else -> newDateTime.plusDays(1)
+        }
+        return newDateTime
+    }
 
     // the repeat rule contains information on how to calculate the date repetition
     private fun addYearWithRepeatRule(currStart: DateTime, repeatRule: Int): DateTime {
-        var newDateTime = calculateFullMoon(currStart)
+        var newDateTime = calculateEaster(currStart)
         var rule = repeatRule
-        // have to keep these in this order larges to smallest
+        // have to keep these in this order largest to smallest
         if (repeatRule > FM_MINUS_WEEKS_RULE) {
             rule = rule xor FM_MINUS_WEEKS_RULE
             newDateTime = newDateTime.minusWeeks(rule)
@@ -143,23 +221,16 @@ data class Event(
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
 
-    private fun calculateFullMoon(currStart: DateTime): DateTime{
+    private fun calculateEaster(currStart: DateTime): DateTime{
         // Calculate when Easter is to determine everything else
         // The full moon of 2023 is Apl 5 @ 23:37, Wed = 4 (will use military time)
         val fullMoon = DateTime(2023, 4, 5, 23, 37)
-        //val today = DateTime.now()
-        /*if (config.isFirstCalc) {
-            config.lastCalculatedFullMoon = fullMoon.seconds()
-        }*/
+        if (currStart.year < fullMoon.year) return currStart
+
         var lastFullMoon = fullMoon
         /** Check if we should calculate the next easter cycle **/
-        //if (lastFullMoon.year == (today.year + 2)) return
         val fullMoonDayTitle = Formatter.getDayOfWeek(fullMoon)
         var fullMoonDay = getDayInt(fullMoonDayTitle)
-        /*if (fullMoonDay == 8) {
-            toast("Failed to get day of week", Toast.LENGTH_LONG)
-            return
-        }*/
         var finished = false
 
         /* Now equinox to equinox is 365 days if not a leap year
@@ -172,7 +243,7 @@ data class Event(
         ** April 1 -> March 21 = 355 days
         ** Days in 1 moon cycle: 29.53058770576 days = 2551442 sec */
         var nextFullMoonYear = lastFullMoon.year
-        var easterDay = DateTime(fullMoon.year, fullMoon.monthOfYear, fullMoon.dayOfMonth, 0, 0)
+        var easterDay = DateTime(fullMoon.year, fullMoon.monthOfYear, fullMoon.dayOfMonth, 5, 0)
         var daysToEaster = 7 - fullMoonDay
         // Easter is the first Sunday after the first full moon from the spring equinox (March 21)
         easterDay = easterDay.plusDays(daysToEaster)
@@ -205,7 +276,7 @@ data class Event(
             // Now add this to the last full moon
             lastFullMoon = lastFullMoon.plusSeconds(secondsToNextFullMoon)
             fullMoonDay = getDayInt(Formatter.getDayOfWeek(lastFullMoon))
-            easterDay = DateTime(lastFullMoon.year, lastFullMoon.monthOfYear, lastFullMoon.dayOfMonth, 0, 0)
+            easterDay = DateTime(lastFullMoon.year, lastFullMoon.monthOfYear, lastFullMoon.dayOfMonth, 5, 0)
             daysToEaster = 7 - fullMoonDay
             // Easter is the first Sunday after the first full moon from the spring equinox (March 21)
             easterDay = easterDay.plusDays(daysToEaster)

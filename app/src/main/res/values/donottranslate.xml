@@ -46,4 +46,7 @@
     <string name="release_21">Calendar refresh bug fix</string>
     <string name="release_22">UI updates\n
                               More calendar items added</string>
+    <string name="release_23">More items added to the calendar\n
+                              Added option to remove events older then a specified number of years\n
+                              Fixed a crash when trying to select the month and year on the monthly view</string>
 </resources>

@@ -22,23 +22,6 @@
         android:backgroundTint="?attr/colorPrimary"
         app:title="@string/settings"/>
 
-
-    <!-- <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/settings_app_bar_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"> -->
-
-        <!-- removed: (app:layout_scrollFlags="scroll|enterAlways") -->
-        <!-- <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/settings_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
-            app:title="@string/settings"
-            app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
-
-    </com.google.android.material.appbar.AppBarLayout> -->
-
         <!-- app:layout_behavior="@string/appbar_scrolling_view_behavior" -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/settings_nested_scrollview"
@@ -1062,6 +1045,46 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/sync_contact_anniversaries"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/settings_delete_old_events_holder"
+                    style="@style/SettingsHolderCheckboxStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ripple_background">
+
+                    <com.secure.commons.views.MyAppCompatCheckbox
+                        android:id="@+id/settings_delete_old_events"
+                        style="@style/SettingsCheckboxStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/delete_older_events"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/settings_delete_events_older_then_holder"
+                    style="@style/SettingsHolderTextViewStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ripple_background">
+
+                    <com.secure.commons.views.MyTextView
+                        android:id="@+id/settings_delete_events_older_then_label"
+                        style="@style/SettingsTextLabelStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/delete_events_older_then" />
+
+                    <com.secure.commons.views.MyTextView
+                        android:id="@+id/settings_delete_events_older_then_value"
+                        style="@style/SettingsTextValueStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/settings_delete_events_older_then_label"
+                        tools:text="2 years" />
 
                 </RelativeLayout>
 

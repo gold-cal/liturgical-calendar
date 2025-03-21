@@ -124,7 +124,7 @@ class MonthFragmentsHolder : MyFragmentHolder(), NavigationListener {
     }
 
     private fun datePicked(dateTime: DateTime, datePicker: DatePicker) {
-        val month = datePicker.month
+        val month = datePicker.month + 1
         val year = datePicker.year
         val newDateTime = dateTime.withDate(year, month, 1)
         goToDateTime(newDateTime)

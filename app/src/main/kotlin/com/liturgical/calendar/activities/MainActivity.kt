@@ -95,10 +95,6 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             if (config.allowCreatingTasks) {
                 if (binding.fabExtendedOverlay.isVisible()) {
                     openNewEvent()
-
-                    /*Handler().postDelayed({
-                        hideExtendedFab()
-                    }, 300)*/
                 } else {
                     showExtendedFab()
                 }
@@ -148,12 +144,12 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         }
 
         addBirthdaysAnniversariesAtStart()
-
-
         // Add all the liturgical calendar stuff
         addLiturgicalCalendar()
         // Add the birthday and anniversary calendar types
         createEventTypes()
+        // Check if there are old calendar items to delete
+        checkDeleteOldEvents()
 
     }
 
@@ -759,7 +755,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 }
             }
             // TODO: make it support simple mobile tools contact app
-            if (config.addCustomEventsAutomatically) {
+            /*if (config.addCustomEventsAutomatically) {
                 //adPrivateEvents(false, privateContacts, config.customEventReminders) { eventsFound, eventsAdded ->
                     addContactEvents(false, true, config.customEventReminders, 0, 0) { // eventsFound, eventsAdded) {
                         if (it > 0) {
@@ -769,7 +765,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                         }
                     }
                 //}
-            }
+            }*/
         }
     }
 
@@ -1059,20 +1055,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     }
 
     private fun openNewEvent() = openNewEventOrTask(false)
-        /*{
-        hideKeyboard()
-        val lastFragment = currentFragments.last()
-        val allowChangingDay = lastFragment !is DayFragmentsHolder && lastFragment !is MonthDayFragmentsHolder
-        launchNewEventIntent(lastFragment.getNewEventDayCode(), allowChangingDay)
-    }*/
-
     private fun openNewTask() = openNewEventOrTask(true)
-        /*{
-        hideKeyboard()
-        val lastFragment = currentFragments.last()
-        val allowChangingDay = lastFragment !is DayFragmentsHolder && lastFragment !is MonthDayFragmentsHolder
-        launchNewTaskIntent(lastFragment.getNewEventDayCode(), allowChangingDay)
-    }*/
 
     fun openMonthFromYearly(dateTime: DateTime) {
         if (currentFragments.last() is MonthFragmentsHolder) {
@@ -1347,20 +1330,6 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         updateViewPager(dayCode)
     }
 
-    /** Functions for the Liturgical Calendar **/
-
-    // this function needs to be run on a new thread
-    // make sure you are in a ensureBackgroundThread when calling it
-    /*private fun deleteOldTLC() {
-        val events = eventsDB.getLiturgicalEvents()
-        val eventsToDelete = events.mapNotNull { it.id }.toMutableList()
-        eventsHelper.deleteEvents(eventsToDelete, false)
-        config.isFirstCalc = true
-    }*/
-
-    /** TODO: make this a new rule so Easter and all it's dependents can be added to the normal calendar
-     *
-    */
     private fun addLiturgicalCalendar() {
         var tlcRefreshListener = config.tlcRefresh
         val refresh = config.isRefresh
@@ -1372,9 +1341,6 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
         if (tlcRefreshListener < today || refresh) {
             ensureBackgroundThread {
-                //val icsResult: ImportResult
-                // delete old version of calendar
-                //if (dbVersion != 0) deleteOldTLC()
                 // Update once a week
                 if (!refresh) {
                     config.tlcRefresh = todayDateTime.plusDays(7).seconds()
@@ -1393,82 +1359,6 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         }
     }
 
-    // this function needs to be run on a new thread
-    // make sure you are in a ensureBackgroundThread when calling it
-    /*private fun addLiturgicalEvent(
-        holyDay: Boolean,
-        eventName: String,
-        eventDescription: String,
-        startTS: Long
-    ){
-        val eventTypeId = if (holyDay) eventsHelper.getHolydayEventTypeId() else eventsHelper.getLiturgicalEventTypeId()
-        val source = SOURCE_LITURGICAL_CALENDAR
-        //val format = "yyyy-MM-dd"
-        //val formatter = SimpleDateFormat(format, Locale.getDefault())
-        //val timeStamp = formatter.parse(format)
-        val lastUpdated = System.currentTimeMillis()
-
-        val event = Event(
-            null, startTS = startTS, endTS = startTS, title = eventName, description = eventDescription,
-            timeZone = DateTimeZone.getDefault().id, flags = FLAG_ALL_DAY,
-            eventType = eventTypeId, source = source, lastUpdated = lastUpdated
-        )
-        eventsHelper.insertEvent(event, false, false)
-    }*/
-
-    /** this function needs to be run on a new thread
-    ** make sure you are in a ensureBackgroundThread when calling it */
-
-    /* private fun addEasterEvents(easterDay: DateTime) {
-        val easterEvents = ArrayList<Event>(20)
-
-        val title = arrayOf(
-            // Days before Easter
-            "HOLY THURSDAY",      //
-            "GOOD FRIDAY",         //
-            "HOLY SATURDAY",        //
-            "Palm Sunday",
-            "Our Lady of Sorrows",
-            "Passion Sunday",
-            "Laetare Sunday",
-            "Third Sunday of Lent",
-            "Second Sunday of Lent",
-            "Ember Saturday",
-            "Ember Friday",
-            "Ember Wednesday",
-            "First Sunday of Lent",
-            "ASH WEDNESDAY",
-            "Quinquagesima Sunday",
-            "Sexagesima Sunday",
-            "Septuagesima Sunday",
-            // Days after Easter
-            "Monday in Octave of Easter",
-            "Tuesday in Octave of Easter",
-            "Wednesday in Octave of Easter",
-            "Thursday in Octave of Easter",
-            "Friday in Octave of Easter",
-            "Saturday in Octave of Easter",
-            "Low Sunday",
-            "Second Sunday Ofter Easter",
-            "Third Sunday after Easter",
-            "Fourth Sunday after Easter",
-            "Fifth Sunday after Easter",
-            "THE ASCENSION OF OUR LORD",
-            "Sunday after the Ascension",
-            "PENTECOST",
-            "Monday in Octave of Pentecost",
-            "Tuesday in Octave of Pentecost",
-            "Ember Wednesday of Pentecost",
-            "Thursday in Octave of Pentecost",
-            "Ember Friday of Pentecost",
-            "Ember Saturday of Pentecost",
-            "TRINITY SUNDAY",
-            "Feast of CORPUS CHRISTI",
-            "FEAST OF THE SACRED HEART",
-            "Second Sunday Ofter Pentecost"  // ...
-        )
-    }*/
-
     private fun createEventTypes() {
         if (config.isFirstRun) {
             ensureBackgroundThread {
@@ -1479,6 +1369,16 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 runOnUiThread {
                     config.isFirstRun = false
                 }
+            }
+        }
+    }
+
+    private fun  checkDeleteOldEvents() {
+        // check if this feature has been enabled
+        if (config.deleteOldEvents) {
+            ensureBackgroundThread {
+                val olderThen = config.deleteEventsOlderThen
+                eventsHelper.deleteOldEvents(olderThen)
             }
         }
     }
@@ -1576,10 +1476,11 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 //add(Release(16, R.string.release_16))
                 //add(Release(17, R.string.release_17))
                 //add(Release(18, R.string.release_18))
-                add(Release(19, R.string.release_19))
+                //add(Release(19, R.string.release_19))
                 add(Release(20, R.string.release_20))
                 add(Release(21, R.string.release_21))
                 add(Release(22, R.string.release_22))
+                add(Release(23, R.string.release_23))
 
                 checkWhatsNew(this, BuildConfig.VERSION_CODE)
             }

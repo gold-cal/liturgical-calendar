@@ -44,6 +44,7 @@ class IcsImporter(val activity: SimpleActivity) {
     private var curEventTypeId = REGULAR_EVENT_TYPE_ID
     private var curLastModified = 0L
     private var curCategoryColor = -2
+    private var curExtendedRule = 0
     private var curAvailability = Events.AVAILABILITY_BUSY
     private var isNotificationDescription = false
     private var isProperReminderAction = false
@@ -97,9 +98,8 @@ class IcsImporter(val activity: SimpleActivity) {
                         if (isParsingEvent) {
                             curStart = getTimestamp(line.substring(DTSTART.length))
 
-                            if (curRrule != "") {
-                                parseRepeatRule()
-                            }
+                            if (curRrule != "") parseRepeatRule()
+                            if (curExRrule != "") parseExtendedRule()
                         }
                     } else if (line.startsWith(DTEND)) {
                         curEnd = getTimestamp(line.substring(DTEND.length))
@@ -249,7 +249,8 @@ class IcsImporter(val activity: SimpleActivity) {
                             0,
                             curLastModified,
                             source,
-                            curAvailability
+                            curAvailability,
+                            extendedRule = curExtendedRule
                         )
 
                         if (event.getIsAllDay() && curEnd > curStart) {
@@ -361,7 +362,7 @@ class IcsImporter(val activity: SimpleActivity) {
 
         val eventId = eventsHelper.getEventTypeIdWithTitle(eventTypeTitle)
         curEventTypeId = if (eventId == -1L) {
-            val newTypeColor = if (curCategoryColor == -2) activity.resources.getColor(R.color.color_primary) else curCategoryColor
+            val newTypeColor = if (curCategoryColor == -2) activity.resources.getColor(R.color.color_primary, null) else curCategoryColor
             var type = OTHER_EVENT
             if (defaultEventTypeId == LITURGICAL_EVENT_TYPE_ID) {
                 type = HOLYDAY_EVENT
@@ -377,7 +378,7 @@ class IcsImporter(val activity: SimpleActivity) {
         return if (title.startsWith(";") && title.contains(":")) {
             title.substring(title.lastIndexOf(':') + 1)
         } else {
-            title.substring(1, Math.min(title.length, 180))
+            title.substring(1, title.length.coerceAtMost(180))
         }
     }
 
@@ -389,10 +390,11 @@ class IcsImporter(val activity: SimpleActivity) {
     }
 
     private fun parseExtendedRule() {
-        val repetition = Parser().parseExtendedRule(curExRrule, EventRepetition(curRepeatInterval, curRepeatRule, curRepeatLimit))
+        if (!curRepeatInterval.isXYearlyRepetition()) return
+        val repetition = Parser().parseExtendedRule(curExRrule, curRepeatRule, curFlags)
         curRepeatRule = repetition.repeatRule
-        curRepeatInterval = repetition.repeatInterval
-        curRepeatLimit = repetition.repeatLimit
+        curExtendedRule = repetition.extendedRule
+        curFlags = repetition.flags
     }
 
     private fun resetValues() {

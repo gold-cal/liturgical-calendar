@@ -13,6 +13,7 @@ import com.liturgical.calendar.databinding.ActivitySettingsBinding
 import com.liturgical.calendar.dialogs.SelectCalendarsDialog
 import com.liturgical.calendar.dialogs.SelectEventTypeDialog
 import com.liturgical.calendar.dialogs.SelectQuickFilterEventTypesDialog
+import com.liturgical.calendar.dialogs.YearPickerDialog
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.models.EventType
@@ -94,6 +95,7 @@ class SettingsActivity : SimpleActivity() {
         setupDimCompletedTasks()
         setupSyncBirthdays()
         setupSyncAnniversaries()
+        setupDeleteOldEvents()
         setupDefaultTaskType()
         setupAllowChangingTimeZones()
         updateTextColors(binding.settingsHolder)
@@ -791,6 +793,32 @@ class SettingsActivity : SimpleActivity() {
         binding.settingsSyncContactAnniversariesHolder.setOnClickListener {
             binding.settingsSyncContactAnniversaries.toggle()
             config.addAnniversariesAutomatically = binding.settingsSyncContactAnniversaries.isChecked
+        }
+    }
+
+    /*private fun setupDefaultReminder1() {
+        binding.settingsDefaultReminder1.text = getFormattedMinutes(config.defaultReminder1)
+        binding.settingsDefaultReminder1Holder.setOnClickListener {
+            showPickSecondsDialogHelper(config.defaultReminder1) {
+                config.defaultReminder1 = if (it == -1 || it == 0) it else it / 60
+                binding.settingsDefaultReminder1.text = getFormattedMinutes(config.defaultReminder1)
+            }
+        }
+    } */
+    private fun setupDeleteOldEvents() {
+        binding.settingsDeleteOldEvents.isChecked = config.deleteOldEvents
+        binding.settingsDeleteEventsOlderThenHolder.beVisibleIf(config.deleteOldEvents)
+        binding.settingsDeleteOldEventsHolder.setOnClickListener {
+            binding.settingsDeleteOldEvents.toggle()
+            config.deleteOldEvents = binding.settingsDeleteOldEvents.isChecked
+            binding.settingsDeleteEventsOlderThenHolder.beVisibleIf(binding.settingsDeleteOldEvents.isChecked)
+        }
+        binding.settingsDeleteEventsOlderThenValue.text = String.format("%d Years", config.deleteEventsOlderThen)
+        binding.settingsDeleteEventsOlderThenHolder.setOnClickListener {
+            YearPickerDialog(this) {value ->
+                config.deleteEventsOlderThen = if (value < 1) 1 else value
+                binding.settingsDeleteEventsOlderThenValue.text = String.format("%d Years", value)
+            }
         }
     }
 

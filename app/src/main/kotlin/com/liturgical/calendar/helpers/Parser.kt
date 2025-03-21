@@ -5,6 +5,7 @@ import com.liturgical.calendar.extensions.isXWeeklyRepetition
 import com.liturgical.calendar.extensions.isXYearlyRepetition
 import com.liturgical.calendar.extensions.seconds
 import com.liturgical.calendar.models.Event
+import com.liturgical.calendar.models.EventExtendedRule
 import com.liturgical.calendar.models.EventRepetition
 import com.secure.commons.extensions.areDigitsOnly
 import com.secure.commons.helpers.*
@@ -14,52 +15,106 @@ import kotlin.math.floor
 import kotlin.math.pow
 
 class Parser {
-    private fun getRepeatAfterRule() {
+    // EXRRULE:EXT=EXP;EXCEPTION=D,39-E,PD-SMW,2-R,23,30
+    /** EXCEPTION Format:
+     * D = Date of exception in ddmm or dd format
+     *     If E, then it equals the number of days or weeks of event
+     * E = Dependent on Easter
+     * PD = Plus Days
+     * PW = PLUS Weeks
+     * MD = Minus Days
+     * MW = Minus Weeks
+     * R = Range of exception
+     * SPD or SMW : S = shift date
+     *              D = Days  P = Plus
+     *              W = Weeks M = Minus
+     */
+    private fun parseExceptionRule(stringValue: String): Int {
+        val parts = stringValue.split("-").filter { it.isNotEmpty() }
+        var exceptionRule = 1
 
+        for (part in parts) {
+            val keyValue = part.split(",")
+            if (keyValue.size <= 1) {continue}
+            var buf = 0
+            val key = keyValue[0]
+            var value = keyValue[1]
+            exceptionRule = when (key) {
+                "D" -> { buf = if (value.toInt() > 255) continue else value.toInt() shl 1
+                        exceptionRule or buf }
+                "E" -> when (value) {
+                    PD -> exceptionRule or EX_RULE_EPD
+                    PW -> exceptionRule or EX_RULE_EPW
+                    MD -> exceptionRule or EX_RULE_EMD
+                    MW -> exceptionRule or EX_RULE_EMW
+                    else -> exceptionRule
+                }
+                SPD -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
+                    exceptionRule or EX_RULE_SPD or buf
+                }
+                SMD -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
+                    exceptionRule or EX_RULE_SMD or buf
+                }
+                SPW -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
+                    exceptionRule or EX_RULE_SPW or buf
+                }
+                SMW -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
+                    exceptionRule or EX_RULE_SMW or buf
+                }
+                "R" -> { if (keyValue.size < 3) continue
+                    buf = if (value.toInt() > 255) continue else value.toInt() shl 9
+                    value = keyValue[2]
+                    buf = if (value.toInt() > 255) continue else buf or (value.toInt() shl 1)
+                    exceptionRule or EX_RULE_R or buf
+                }
+                else -> exceptionRule
+            }
+        }
+
+        return exceptionRule
     }
 
-    // EXRRULE:BEFORE=12;AFTER=21
-    fun parseExtendedRule(fullString: String, repetition: EventRepetition): EventRepetition {
+    // EXRRULE:FM=AFTER or EXRRULE:FM_PD=20
+    // EXRRULE:
+    fun parseExtendedRule(fullString: String, repeatRule: Int, flags: Int): EventExtendedRule {
         val parts = fullString.split(";").filter { it.isNotEmpty() }
-        var exRepeatRule = 0
-        if (!repetition.repeatInterval.isXYearlyRepetition()) {
+        var newRepeatRule = 0
+        var newExtendedRule = 1
+        var newFlags = flags
+        /*if (!repetition.repeatInterval.isXYearlyRepetition()) {
             return repetition
-        }
+        } */
 
         for (part in parts) {
             val keyValue = part.split("=")
             if (keyValue.size <= 1) { continue }
             val key = keyValue[0]
             val value = keyValue[1]
-            val splitValue = value.split("-")
-            var valueNumber = ""
-            var valueDay = ""
-            if (splitValue.size > 1) {
-                valueNumber = splitValue[0]
-                valueDay = splitValue[1]
-            } else {
-                valueNumber = splitValue[0]
-            }
-            // TODO: convert to when statement
-            if (key == AFTER_DATE) {
-                exRepeatRule = if (value == FULL_MOON) {
-                    REPEAT_AFTER_FM
-                } else {
-                    REPEAT_AFTER_DAY
+            when (key) {
+                FULL_MOON -> newRepeatRule = when (value) {
+                    AFTER -> REPEAT_AFTER_FM
+                    BEFORE -> REPEAT_BEFORE_FM
+                    else -> repeatRule
                 }
-            } else if (key == BEFORE_DATE) {
-                exRepeatRule = REPEAT_BEFORE_DAY
-            } else if (key == FM_PLUS_DAYS) {
-                exRepeatRule = FM_ADD_DAYS_RULE + value.toInt()
-            } else if (key == FM_PLUS_WEEKS) {
-                exRepeatRule = FM_ADD_WEEKS_RULE + value.toInt()
-            } else if (key == FM_MINUS_DAYS) {
-                exRepeatRule = FM_MINUS_DAYS_RULE + value.toInt()
-            } else if (key == FM_MINUS_WEEKS) {
-                exRepeatRule = FM_MINUS_WEEKS_RULE + value.toInt()
+                EXT -> when (value) {
+                    HOLY_NAME_JESUS -> newRepeatRule = REPEAT_HNOJ
+                    EXP -> newRepeatRule = REPEAT_SAME_DAY_WITH_EXCEPTION
+                    FLAG_OFA -> newFlags = newFlags or FLAG_FISH_OFA
+                    FLAG_OA_TF -> newFlags = newFlags or FLAG_FISH_OA_TF
+                    FLAG_TFA -> newFlags = newFlags or FLAG_FISH_TFA
+                    FLAG_TA -> newFlags = newFlags or FLAG_FISH_TA
+                    FLAG_TFPA -> newFlags = newFlags or FLAG_FISH_TFPA
+                    else -> newRepeatRule = repeatRule
+                }
+                EXCEPTION -> newExtendedRule = parseExceptionRule(value)
+                FM_PLUS_DAYS -> newRepeatRule = FM_ADD_DAYS_RULE + value.toInt()
+                FM_PLUS_WEEKS -> newRepeatRule = FM_ADD_WEEKS_RULE + value.toInt()
+                FM_MINUS_DAYS -> newRepeatRule = FM_MINUS_DAYS_RULE + value.toInt()
+                FM_MINUS_WEEKS -> newRepeatRule = FM_MINUS_WEEKS_RULE + value.toInt()
+                else -> newRepeatRule = repeatRule
             }
         }
-        return EventRepetition(repetition.repeatInterval, exRepeatRule, 0)
+        return EventExtendedRule(newRepeatRule, newExtendedRule, newFlags )
     }
     // RRULE:FREQ=YEARLY;INTERVAL=1;BYMONTH=2
     // from RRULE:FREQ=DAILY;COUNT=5 to Daily, 5x...
@@ -116,7 +171,7 @@ class Parser {
                 }
             }
         }
-        return EventRepetition(repeatInterval, repeatRule, repeatLimit)
+        return EventRepetition(repeatInterval, repeatRule, repeatLimit, 0)
     }
 
     private fun getFrequencySeconds(interval: String) = when (interval) {

@@ -21,9 +21,13 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(IS_FIRST_RUN, true)
         set(isFirstRun) = prefs.edit().putBoolean(IS_FIRST_RUN, isFirstRun).apply()
 
-    /*var lastCalculatedFullMoon: Long
-        get() = prefs.getLong(LAST_CALCULATED_FULL_MOON, 0L)
-        set(lastCalculatedFullMoon) = prefs.edit().putLong(LAST_CALCULATED_FULL_MOON, lastCalculatedFullMoon).apply()*/
+    var deleteOldEvents: Boolean
+        get() = prefs.getBoolean(DELETE_OLD_EVENTS, false)
+        set(deleteOldEvents) = prefs.edit().putBoolean(DELETE_OLD_EVENTS, deleteOldEvents).apply()
+
+    var deleteEventsOlderThen: Int
+        get() = prefs.getInt(DELETE_EVENTS_OLDER_THEN, 2)
+        set(deleteEventsOlderThen) = prefs.edit().putInt(DELETE_EVENTS_OLDER_THEN, deleteEventsOlderThen).apply()
 
     var isRefresh: Boolean
         get() = prefs.getBoolean(IS_REFRESH, true)
@@ -176,7 +180,7 @@ class Config(context: Context) : BaseConfig(context) {
     fun getDisplayEventTypesAsList() = displayEventTypes.map { it.toLong() }.toMutableList() as ArrayList<Long>
 
     fun addDisplayEventType(type: String) {
-        addDisplayEventTypes(HashSet<String>(Arrays.asList(type)))
+        addDisplayEventTypes(HashSet<String>(listOf(type)))
     }
 
     private fun addDisplayEventTypes(types: Set<String>) {
