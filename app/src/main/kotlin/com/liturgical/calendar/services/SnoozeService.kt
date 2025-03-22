@@ -8,6 +8,7 @@ import com.liturgical.calendar.extensions.rescheduleReminder
 import com.liturgical.calendar.helpers.EVENT_ID
 
 class SnoozeService : IntentService("Snooze") {
+    @Deprecated("Deprecated in Java")
     override fun onHandleIntent(intent: Intent?) {
         if (intent != null) {
             val eventId = intent.getLongExtra(EVENT_ID, 0L)

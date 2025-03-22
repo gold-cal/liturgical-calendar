@@ -265,6 +265,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (mIsSearchOpen) {
             closeSearch()
@@ -286,6 +287,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         checkIsViewIntent()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
         if (requestCode == PICK_IMPORT_SOURCE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
@@ -1257,7 +1259,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     private fun launchAbout() {
         val licenses = LICENSE_JODA
         val forkedFromUrl = "https://github.com/SimpleMobileTools/Simple-Calendar"
-        val sourceCodeUrl = "https://github.com/gold-cal/litrugical-calendar"
+        val sourceCodeUrl = "https://github.com/gold-cal/liturgical-calendar"
 
         val faqItems = arrayListOf(
             FAQItem(R.string.faq_2_title, R.string.faq_2_text),

@@ -30,7 +30,7 @@ data class Event(
     @ColumnInfo(name = "repeat_interval") var repeatInterval: Int = 0,
     @ColumnInfo(name = "repeat_rule") var repeatRule: Int = 0,
     @ColumnInfo(name = "repeat_limit") var repeatLimit: Long = 0L,
-    @ColumnInfo(name = "repetition_exceptions") var repetitionExceptions: ArrayList<String> = ArrayList(),
+    @ColumnInfo(name = "repetition_exceptions") var repetitionExceptions: List<String> = emptyList(),
     @ColumnInfo(name = "attendees") var attendees: String = "",
     @ColumnInfo(name = "import_id") var importId: String = "",
     @ColumnInfo(name = "time_zone") var timeZone: String = "",
@@ -46,7 +46,7 @@ data class Event(
 ) : Serializable {
 
     companion object {
-        private const val serialVersionUID = -32456795132345616L
+        private const val SERIAL_VERSION_UID = -32456795132345616L
     }
 
     fun addIntervalTime(original: Event) {
@@ -171,7 +171,6 @@ data class Event(
         val year = currStart.year + 1
         var newDateTime = DateTime(year, 1, 1, 0, 0)
         val day = newDateTime.dayOfWeek
-        // TODO: Replace with when statement
         newDateTime = when (day) {
             3 -> newDateTime.plusDays(4)
             4 -> newDateTime.plusDays(3)
@@ -248,11 +247,7 @@ data class Event(
         // Easter is the first Sunday after the first full moon from the spring equinox (March 21)
         easterDay = easterDay.plusDays(daysToEaster)
 
-        while (!finished) { //(today.year)) {
-
-            //addLiturgicalEvent(true, "Easter", "", easterDay.seconds())
-            // TODO: add other liturgical events
-
+        while (!finished) {
             // Need to calculate days from spring equinox to full moon
             val daysFromEquinoxToFullMoon = if (lastFullMoon.monthOfYear == 4) {
                 10 + lastFullMoon.dayOfMonth
@@ -284,8 +279,7 @@ data class Event(
                 finished = true
             }
         }
-        // save the last calculated full moon
-        //config.lastCalculatedFullMoon = lastFullMoon.seconds()
+
         return easterDay
     }
 
@@ -384,9 +378,9 @@ data class Event(
         isPastEvent = endTSToCheck < getNowSeconds()
     }
 
-    fun addRepetitionException(daycode: String) {
-        var newRepetitionExceptions = repetitionExceptions
-        newRepetitionExceptions.add(daycode)
+    fun addRepetitionException(dayCode: String) {
+        var newRepetitionExceptions = repetitionExceptions.toMutableList()
+        newRepetitionExceptions.add(dayCode)
         newRepetitionExceptions = newRepetitionExceptions.distinct().toMutableList() as ArrayList<String>
         repetitionExceptions = newRepetitionExceptions
     }

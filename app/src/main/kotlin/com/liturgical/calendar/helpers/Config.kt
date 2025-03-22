@@ -72,7 +72,7 @@ class Config(context: Context) : BaseConfig(context) {
     var lastSoundUri: String
         get() = prefs.getString(LAST_SOUND_URI, "")!!
         set(lastSoundUri) = prefs.edit().putString(LAST_SOUND_URI, lastSoundUri).apply()
-
+    // do not export
     var lastReminderChannel: Long
         get() = prefs.getLong(LAST_REMINDER_CHANNEL_ID, 0L)
         set(lastReminderChannel) = prefs.edit().putLong(LAST_REMINDER_CHANNEL_ID, lastReminderChannel).apply()
@@ -125,7 +125,7 @@ class Config(context: Context) : BaseConfig(context) {
             context.scheduleCalDAVSync(caldavSync)
             prefs.edit().putBoolean(CALDAV_SYNC, caldavSync).apply()
         }
-
+    // not exportable option
     var widgetUpdate: Boolean
         get() = prefs.getBoolean(WIDGET_UPDATE, false)
         set(widgetUpdate) = prefs.edit().putBoolean(WIDGET_UPDATE, widgetUpdate).apply()
@@ -273,11 +273,11 @@ class Config(context: Context) : BaseConfig(context) {
     var customEventReminders: ArrayList<Int>
         get() = prefs.getString(CUSTOM_EVENT_REMINDERS, REMINDER_DEFAULT_VALUE)!!.split(",").map { it.toInt() }.toMutableList() as ArrayList<Int>
         set(customEventReminders) = prefs.edit().putString(CUSTOM_EVENT_REMINDERS, customEventReminders.joinToString(",")).apply()
-
+    // No need to export setting
     var lastExportPath: String
         get() = prefs.getString(LAST_EXPORT_PATH, "")!!
         set(lastExportPath) = prefs.edit().putString(LAST_EXPORT_PATH, lastExportPath).apply()
-
+    // No need to export setting
     var exportPastEvents: Boolean
         get() = prefs.getBoolean(EXPORT_PAST_EVENTS, false)
         set(exportPastEvents) = prefs.edit().putBoolean(EXPORT_PAST_EVENTS, exportPastEvents).apply()
@@ -301,7 +301,7 @@ class Config(context: Context) : BaseConfig(context) {
     var highlightWeekendsColor: Int
         get() = prefs.getInt(HIGHLIGHT_WEEKENDS_COLOR, context.resources.getColor(R.color.red_text,null))
         set(highlightWeekendsColor) = prefs.edit().putInt(HIGHLIGHT_WEEKENDS_COLOR, highlightWeekendsColor).apply()
-
+    // No need to export setting
     var lastUsedEventSpan: Int
         get() = prefs.getInt(LAST_USED_EVENT_SPAN, YEAR_SECONDS)
         set(lastUsedEventSpan) = prefs.edit().putInt(LAST_USED_EVENT_SPAN, lastUsedEventSpan).apply()

@@ -179,7 +179,7 @@ class EventActivity : SimpleActivity() {
         binding.eventStartTime.setOnClickListener { setupStartTime() }
         binding.eventEndTime.setOnClickListener { setupEndTime() }
         binding.eventTimeZone.setOnClickListener { setupTimeZone() }
-        binding.eventAllDay.setOnCheckedChangeListener { compoundButton, isChecked -> toggleAllDay(isChecked) }
+        binding.eventAllDay.setOnCheckedChangeListener { _, isChecked -> toggleAllDay(isChecked) }
         binding.eventRepetition.setOnClickListener { showRepeatIntervalDialog() }
         binding.eventRepetitionRuleHolder.setOnClickListener { showRepetitionRuleDialog() }
         binding.eventRepetitionLimitHolder.setOnClickListener { showRepetitionTypePicker() }
@@ -270,7 +270,7 @@ class EventActivity : SimpleActivity() {
         val offset = if (!config.allowChangingTimeZones || mEvent.getTimeZoneString().equals(mOriginalTimeZone, true)) {
             0
         } else {
-            val original = if (mOriginalTimeZone.isEmpty()) DateTimeZone.getDefault().id else mOriginalTimeZone
+            val original = mOriginalTimeZone.ifEmpty { DateTimeZone.getDefault().id }
             val millis = System.currentTimeMillis()
             (DateTimeZone.forID(mEvent.getTimeZoneString()).getOffset(millis) - DateTimeZone.forID(original).getOffset(millis)) / 1000L
         }
@@ -420,6 +420,7 @@ class EventActivity : SimpleActivity() {
         updateActionBarTitle()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         if (requestCode == SELECT_TIME_ZONE_INTENT && resultCode == Activity.RESULT_OK && resultData?.hasExtra(TIME_ZONE) == true) {
             val timeZone = resultData.getSerializableExtra(TIME_ZONE) as MyTimeZone
@@ -1112,7 +1113,7 @@ class EventActivity : SimpleActivity() {
         DeleteEventDialog(this, arrayListOf(mEvent.id!!), mEvent.repeatInterval > 0) {
             ensureBackgroundThread {
                 when (it) {
-                    DELETE_SELECTED_OCCURRENCE -> eventsHelper.addEventRepetitionException(mEvent.id!!, mEventOccurrenceTS, true)
+                    DELETE_SELECTED_OCCURRENCE -> eventsHelper.deleteRepeatingEventOccurrence(mEvent.id!!, mEventOccurrenceTS, true)
                     DELETE_FUTURE_OCCURRENCES -> eventsHelper.addEventRepeatLimit(mEvent.id!!, mEventOccurrenceTS)
                     DELETE_ALL_OCCURRENCES -> eventsHelper.deleteEvent(mEvent.id!!, true)
                 }
@@ -1318,7 +1319,7 @@ class EventActivity : SimpleActivity() {
             when (it) {
                 0 -> {
                     ensureBackgroundThread {
-                        eventsHelper.addEventRepetitionException(mEvent.id!!, mEventOccurrenceTS, true)
+                        eventsHelper.deleteRepeatingEventOccurrence(mEvent.id!!, mEventOccurrenceTS, true)
                         mEvent.apply {
                             parentId = id!!.toLong()
                             id = null
@@ -1467,17 +1468,17 @@ class EventActivity : SimpleActivity() {
         ).show()
     }
 
-    private val startDateSetListener = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
+    private val startDateSetListener = DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
         dateSet(year, monthOfYear, dayOfMonth, true)
     }
 
-    private val startTimeSetListener = TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
+    private val startTimeSetListener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
         timeSet(hourOfDay, minute, true)
     }
 
-    private val endDateSetListener = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth -> dateSet(year, monthOfYear, dayOfMonth, false) }
+    private val endDateSetListener = DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth -> dateSet(year, monthOfYear, dayOfMonth, false) }
 
-    private val endTimeSetListener = TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute -> timeSet(hourOfDay, minute, false) }
+    private val endTimeSetListener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute -> timeSet(hourOfDay, minute, false) }
 
     private fun dateSet(year: Int, month: Int, day: Int, isStart: Boolean) {
         if (isStart) {
@@ -1527,7 +1528,7 @@ class EventActivity : SimpleActivity() {
         if (mRepeatInterval.isXWeeklyRepetition()) {
             val day = mRepeatRule
             if (day == MONDAY_BIT || day == TUESDAY_BIT || day == WEDNESDAY_BIT || day == THURSDAY_BIT || day == FRIDAY_BIT || day == SATURDAY_BIT || day == SUNDAY_BIT) {
-                setRepeatRule(Math.pow(2.0, (mEventStartDateTime.dayOfWeek - 1).toDouble()).toInt())
+                setRepeatRule(2.0.pow((mEventStartDateTime.dayOfWeek - 1).toDouble()).toInt())
             }
         } else if (mRepeatInterval.isXMonthlyRepetition() || mRepeatInterval.isXYearlyRepetition()) {
             if (mRepeatRule == REPEAT_LAST_DAY && !isLastDayOfTheMonth()) {
@@ -1541,17 +1542,17 @@ class EventActivity : SimpleActivity() {
         mAvailableContacts = getEmails()
 
         val names = getNames()
-        mAvailableContacts.forEach {
-            val contactId = it.contactId
+        mAvailableContacts.forEach { attendee ->
+            val contactId = attendee.contactId
             val contact = names.firstOrNull { it.contactId == contactId }
             val name = contact?.name
             if (name != null) {
-                it.name = name
+                attendee.name = name
             }
 
             val photoUri = contact?.photoUri
             if (photoUri != null) {
-                it.photoUri = photoUri
+                attendee.photoUri = photoUri
             }
         }
     }
@@ -1571,8 +1572,7 @@ class EventActivity : SimpleActivity() {
         mAttendees.reverse()
 
         runOnUiThread {
-            mAttendees.forEach {
-                val attendee = it
+            mAttendees.forEach { attendee ->
                 val deviceContact = mAvailableContacts.firstOrNull { it.email.isNotEmpty() && it.email == attendee.email && it.photoUri.isNotEmpty() }
                 if (deviceContact != null) {
                     attendee.photoUri = deviceContact.photoUri
@@ -1631,7 +1631,7 @@ class EventActivity : SimpleActivity() {
         val adapter = AutoCompleteTextViewAdapter(this, mAvailableContacts)
         autoCompleteView.setAdapter(adapter)
         autoCompleteView.imeOptions = EditorInfo.IME_ACTION_NEXT
-        autoCompleteView.setOnItemClickListener { parent, view, position, id ->
+        autoCompleteView.setOnItemClickListener { _, _, position, _ ->
             val currAttendees = (autoCompleteView.adapter as AutoCompleteTextViewAdapter).resultList
             val selectedAttendee = currAttendees[position]
             addSelectedAttendee(selectedAttendee, autoCompleteView, attendeeHolder)

@@ -13,7 +13,6 @@ import com.secure.commons.extensions.getProperPrimaryColor
 import com.secure.commons.extensions.toast
 import com.secure.commons.helpers.CHOPPED_LIST_DEFAULT_SIZE
 import com.secure.commons.helpers.ensureBackgroundThread
-import org.joda.time.DateTime
 
 class EventsHelper(val context: Context) {
     private val config = context.config
@@ -30,9 +29,8 @@ class EventsHelper(val context: Context) {
 
             if (showWritableOnly) {
                 val caldavCalendars = activity.calDAVHelper.getCalDAVCalendars("", true)
-                eventTypes = eventTypes.filter {
-                    val eventType = it
-                    it.caldavCalendarId == 0 || caldavCalendars.firstOrNull { it.id == eventType.caldavCalendarId }?.canWrite() == true
+                eventTypes = eventTypes.filter { eventType ->
+                    eventType.caldavCalendarId == 0 || caldavCalendars.firstOrNull { it.id == eventType.caldavCalendarId }?.canWrite() == true
                 }.toMutableList() as ArrayList<EventType>
             }
 
@@ -190,11 +188,11 @@ class EventsHelper(val context: Context) {
             return
         }
 
-        ids.chunked(CHOPPED_LIST_DEFAULT_SIZE).forEach {
-            val eventsWithImportId = eventsDB.getEventsByIdsWithImportIds(it)
-            eventsDB.deleteEvents(it)
+        ids.chunked(CHOPPED_LIST_DEFAULT_SIZE).forEach { longs ->
+            val eventsWithImportId = eventsDB.getEventsByIdsWithImportIds(longs)
+            eventsDB.deleteEvents(longs)
 
-            it.forEach {
+            longs.forEach {
                 context.cancelNotification(it)
                 context.cancelPendingIntent(it)
             }
@@ -205,7 +203,7 @@ class EventsHelper(val context: Context) {
                 }
             }
 
-            deleteChildEvents(it as MutableList<Long>, deleteFromCalDAV)
+            deleteChildEvents(longs as MutableList<Long>, deleteFromCalDAV)
             context.updateWidgets()
         }
     }
@@ -266,14 +264,28 @@ class EventsHelper(val context: Context) {
         }
     }
 
-    fun addEventRepetitionException(parentEventId: Long, occurrenceTS: Long, addToCalDAV: Boolean) {
+    /*fun addEventRepetitionException(parentEventId: Long, occurrenceTS: Long, addToCalDAV: Boolean) {
         ensureBackgroundThread {
             val parentEvent = eventsDB.getEventOrTaskWithId(parentEventId) ?: return@ensureBackgroundThread
             var repetitionExceptions = parentEvent.repetitionExceptions
-            repetitionExceptions.add(Formatter.getDayCodeFromTS(occurrenceTS))
+            repetitionExceptions = repetitionExceptions.add (Formatter.getDayCodeFromTS(occurrenceTS))
             repetitionExceptions = repetitionExceptions.distinct().toMutableList() as ArrayList<String>
 
             eventsDB.updateEventRepetitionExceptions(repetitionExceptions.toString(), parentEventId)
+            context.scheduleNextEventReminder(parentEvent, false)
+
+            if (addToCalDAV && config.caldavSync) {
+                context.calDAVHelper.insertEventRepeatException(parentEvent, occurrenceTS)
+            }
+        }
+    } */
+
+    fun deleteRepeatingEventOccurrence(parentEventId: Long, occurrenceTS: Long, addToCalDAV: Boolean) {
+        ensureBackgroundThread {
+            val parentEvent = eventsDB.getEventOrTaskWithId(parentEventId) ?: return@ensureBackgroundThread
+            val occurrenceDayCode = Formatter.getDayCodeFromTS(occurrenceTS)
+            parentEvent.addRepetitionException(occurrenceDayCode)
+            eventsDB.updateEventRepetitionExceptions(parentEvent.repetitionExceptions.toString(), parentEventId)
             context.scheduleNextEventReminder(parentEvent, false)
 
             if (addToCalDAV && config.caldavSync) {
@@ -377,7 +389,7 @@ class EventsHelper(val context: Context) {
     }
 
     fun createPredefinedEventType(title: String, @ColorRes colorResId: Int, type: Int, caldav: Boolean = false): Long {
-        val eventType = EventType(id = null, title = title, color = context.resources.getColor(colorResId), type = type)
+        val eventType = EventType(id = null, title = title, color = context.resources.getColor(colorResId, null), type = type)
 
         // check if the event type already exists but without the type (e.g. BIRTHDAY_EVENT) so as to avoid duplication
         val originalEventTypeId = if (caldav) {
@@ -394,7 +406,7 @@ class EventsHelper(val context: Context) {
 
     fun getLiturgicalEventTypeId(): Long {return  getLocalEventTypeIdWithClass(LITURGICAL_EVENT)}
 
-    fun getHolydayEventTypeId(): Long {return getLocalEventTypeIdWithClass(HOLYDAY_EVENT)}
+    //fun getHolydayEventTypeId(): Long {return getLocalEventTypeIdWithClass(HOLYDAY_EVENT)}
 
     fun getLocalBirthdaysEventTypeId(createIfNotExists: Boolean = true): Long {
         var eventTypeId = getLocalEventTypeIdWithClass(BIRTHDAY_EVENT)

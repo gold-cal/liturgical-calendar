@@ -247,7 +247,7 @@
     <string name="sync_contact_birthdays">Sync contact Birthdays</string>
     <string name="sync_contact_anniversaries">Sync contact Anniversaries</string>
     <string name="delete_older_events">Delete older events</string>
-    <string name="delete_events_older_then">Delete events older then</string>
+    <string name="delete_events_older_then">Delete events older than</string>
     <string name="manage_quick_filter_event_types">Manage quick filter event types</string>
     <string name="allow_creating_tasks">Allow creating tasks</string>
     <string name="default_task_type">Default Task Type</string>

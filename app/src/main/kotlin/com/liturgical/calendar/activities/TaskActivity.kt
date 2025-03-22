@@ -127,6 +127,7 @@ class TaskActivity : SimpleActivity() {
                 hasTimeChanged
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (System.currentTimeMillis() - mLastSavePromptTS > SAVE_DISCARD_PROMPT_INTERVAL && isTaskChanged()) {
             mLastSavePromptTS = System.currentTimeMillis()
@@ -449,7 +450,7 @@ class TaskActivity : SimpleActivity() {
             when (it) {
                 0 -> {
                     ensureBackgroundThread {
-                        eventsHelper.addEventRepetitionException(mTask.id!!, mTaskOccurrenceTS, true)
+                        eventsHelper.deleteRepeatingEventOccurrence(mTask.id!!, mTaskOccurrenceTS, true)
                         mTask.apply {
                             parentId = id!!.toLong()
                             id = null
@@ -495,7 +496,7 @@ class TaskActivity : SimpleActivity() {
         DeleteEventDialog(this, arrayListOf(mTask.id!!), mTask.repeatInterval > 0, isTask = true) {
             ensureBackgroundThread {
                 when (it) {
-                    DELETE_SELECTED_OCCURRENCE -> eventsHelper.addEventRepetitionException(mTask.id!!, mTaskOccurrenceTS, true)
+                    DELETE_SELECTED_OCCURRENCE -> eventsHelper.deleteRepeatingEventOccurrence(mTask.id!!, mTaskOccurrenceTS, true)
                     DELETE_FUTURE_OCCURRENCES -> eventsHelper.addEventRepeatLimit(mTask.id!!, mTaskOccurrenceTS)
                     DELETE_ALL_OCCURRENCES -> eventsHelper.deleteEvent(mTask.id!!, true)
                 }
