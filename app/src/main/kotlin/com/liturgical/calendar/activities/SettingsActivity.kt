@@ -7,9 +7,16 @@ import android.content.Intent
 import android.media.AudioManager
 import android.media.RingtoneManager
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import com.liturgical.calendar.R
 import com.liturgical.calendar.databinding.ActivitySettingsBinding
+import com.liturgical.calendar.databinding.ItemSettingsCheckboxBinding
+import com.liturgical.calendar.databinding.ItemSettingsColorBinding
+import com.liturgical.calendar.databinding.ItemSettingsDoubleTextviewBinding
+import com.liturgical.calendar.databinding.ItemSettingsHolderBinding
+import com.liturgical.calendar.databinding.ItemSettingsLabelBinding
+import com.liturgical.calendar.databinding.ItemSettingsSingleTextviewBinding
 import com.liturgical.calendar.dialogs.SelectCalendarsDialog
 import com.liturgical.calendar.dialogs.SelectEventTypeDialog
 import com.liturgical.calendar.dialogs.SelectQuickFilterEventTypesDialog
@@ -33,12 +40,12 @@ class SettingsActivity : SimpleActivity() {
     private val PICK_IMPORT_SOURCE_INTENT = 2
     private val binding by viewBinding(ActivitySettingsBinding::inflate)
 
-    private var mStoredAccentColor = 0
+    //private var mStoredAccentColor = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        mStoredAccentColor = getProperAccentColor()
+        //mStoredAccentColor = getProperAccentColor()
     }
 
     override fun onResume() {
@@ -48,100 +55,61 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupSettingItems() {
-        setupCustomizeColors()
-        setupCustomizeNotifications()
-        setupUseEnglish()
-        setupLanguage()
-        setupManageEventTypes()
-        setupManageQuickFilterEventTypes()
-        setupHourFormat()
-        setupAllowCreatingTasks()
-        setupSundayFirst()
-        setupHighlightWeekends()
-        setupShowWhatsNew()
-        setupHighlightWeekendsColor()
-        setupDeleteAllEvents()
-        setupDisplayDescription()
-        setupReplaceDescription()
-        setupBirthAnnLabel()
-        setupWeekNumbers()
-        setupShowGrid()
-        setupWeeklyStart()
-        setupMidnightSpanEvents()
-        setupAllowCustomizeDayCount()
-        setupStartWeekWithCurrentDay()
-        setupVibrate()
-        setupReminderSound()
-        setupReminderAudioStream()
-        setupUseSameSnooze()
-        setupLoopReminders()
-        setupSnoozeTime()
-        setupCaldavSync()
-        setupManageSyncedCalendars()
-        setupDefaultStartTime()
-        setupDefaultDuration()
-        setupDefaultEventType()
-        setupPullToRefresh()
-        setupDefaultReminder()
-        setupDefaultReminder1()
-        setupDefaultReminder2()
-        setupDefaultReminder3()
-        setupDisplayPastEvents()
-        setupFontSize()
-        setupShowWidgetDescription()
-        setupCustomizeWidgetColors()
-        setupViewToOpenFromListWidget()
-        setupDimEvents()
-        setupDimCompletedTasks()
-        setupSyncBirthdays()
-        setupSyncAnniversaries()
-        setupDeleteOldEvents()
-        setupDefaultTaskType()
-        setupAllowChangingTimeZones()
-        updateTextColors(binding.settingsHolder)
-        checkPrimaryColor()
-        setupExportSettings()
-        setupImportSettings()
-
-        arrayOf(
-            binding.settingsColorCustomizationLabel,
-            binding.settingsGeneralSettingsLabel,
-            binding.settingsRemindersLabel,
-            binding.settingsCaldavLabel,
-            binding.settingsNewEventsLabel,
-            binding.settingsWeeklyViewLabel,
-            binding.settingsMonthlyViewLabel,
-            binding.settingsEventListsLabel,
-            binding.settingsWidgetsLabel,
-            binding.settingsEventsLabel,
-            binding.settingsTasksLabel,
-            binding.settingsMigratingLabel
-        ).forEach {
-            it.setTextColor(getProperAccentColor())
-        }
-
-        arrayOf(
-            binding.settingsColorCustomizationHolder,
-            binding.settingsGeneralSettingsHolder,
-            binding.settingsRemindersHolder,
-            binding.settingsCaldavHolder,
-            binding.settingsNewEventsHolder,
-            binding.settingsWeeklyViewHolder,
-            binding.settingsMonthlyViewHolder,
-            binding.settingsEventListsHolder,
-            binding.settingsWidgetsHolder,
-            binding.settingsEventsHolder,
-            binding.settingsTasksHolder,
-            binding.settingsMigratingHolder
-        ).forEach {
-            it.background.applyColorFilter(getProperBackgroundColor().getContrastColor())
-        }
+        binding.settingsHolder.removeAllViews()
+        //-------- COLOR CUSTOMIZATION -------------
+        var label = createSettingsLabel(R.string.color_customization)
+        binding.settingsHolder.addView(label)
+        setupColorCustomization()
+        //-------- GENERAL -------------------------
+        label = createSettingsLabel(R.string.general_settings)
+        binding.settingsHolder.addView(label)
+        setupGeneralSettings()
+        //-------- REMINDERS -----------------------
+        label = createSettingsLabel(R.string.reminders)
+        binding.settingsHolder.addView(label)
+        setupRemindersSection()
+        //-------- CALDAV --------------------------
+        label = createSettingsLabel(R.string.caldav)
+        binding.settingsHolder.addView(label)
+        setupCaldavSection()
+        //-------- EVENTS --------------------------
+        label = createSettingsLabel(R.string.events)
+        binding.settingsHolder.addView(label)
+        setupEventsSection()
+        //-------- NEW EVENTS ----------------------
+        label = createSettingsLabel(R.string.new_event)
+        binding.settingsHolder.addView(label)
+        setupNewEventsSection()
+        //-------- TASKS ---------------------------
+        label = createSettingsLabel(R.string.tasks)
+        binding.settingsHolder.addView(label)
+        setupTaskSection()
+        //-------- EVENT LISTS ---------------------
+        label = createSettingsLabel(R.string.event_lists)
+        binding.settingsHolder.addView(label)
+        setupEventsListsSection()
+        //-------- WEEKLY VIEW ---------------------
+        label = createSettingsLabel(R.string.weekly_view)
+        binding.settingsHolder.addView(label)
+        setupWeeklyViewSection()
+        //-------- MONTHLY VIEW ---------------------
+        label = createSettingsLabel(R.string.monthly_view)
+        binding.settingsHolder.addView(label)
+        setupMonthlyViewSection()
+        //-------- WIDGETS -------------------------
+        label = createSettingsLabel(R.string.widgets)
+        binding.settingsHolder.addView(label)
+        setupWidgetsSection()
+        //-------- BACKUPS -------------------------
+        label = createSettingsLabel(R.string.migrating)
+        binding.settingsHolder.addView(label)
+        setupBackupSection()
     }
 
-    override fun onPause() {
+    /*override fun onPause() {
         super.onPause()
         mStoredAccentColor = getProperAccentColor()
-    }
+    }*/
 
     override fun onStop() {
         super.onStop()
@@ -163,6 +131,724 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
+    private fun createHolder() = ItemSettingsHolderBinding.inflate(layoutInflater, null, false)
+
+    private fun createSettingsLabel(resId: Int): TextView {
+        val labelBinding = ItemSettingsLabelBinding.inflate(layoutInflater, null, false)
+        labelBinding.settingsLabel.setText(resId)
+        labelBinding.settingsLabel.setTextColor(getProperAccentColor())
+        // background.applyColorFilter(getProperBackgroundColor().getContrastColor())
+        return labelBinding.root
+    }
+    /** @param label: Resource id value */
+    private fun createSettingsCheckbox(label: Int): ItemSettingsCheckboxBinding {
+        val checkbox = ItemSettingsCheckboxBinding.inflate(layoutInflater, null, false)
+        checkbox.settingsCheckbox.setText(label)
+        return checkbox
+    }
+    /** @param label: Resource id value */
+    private fun createSettingsSingleView(label: Int): ItemSettingsSingleTextviewBinding {
+        val view = ItemSettingsSingleTextviewBinding.inflate(layoutInflater, null, false)
+        view.settingsItemLabel.setText(label)
+        return view
+    }
+    /** @param label: Resource id value
+     *  @param value: String value */
+    private fun createSettingsDoubleView(label: Int, value: String): ItemSettingsDoubleTextviewBinding {
+        val view = ItemSettingsDoubleTextviewBinding.inflate(layoutInflater, null, false)
+        view.settingsLabel.setText(label)
+        view.settingsValue.text = value
+        return view
+    }
+
+    private fun createSettingsColor(label: Int, color: Int): ItemSettingsColorBinding {
+        val view = ItemSettingsColorBinding.inflate(layoutInflater, null, false)
+        view.settingsColorTextLabel.setText(label)
+        view.settingsColor.setFillWithStroke(color, getProperBackgroundColor())
+        return view
+    }
+
+    private fun setupColorCustomization() {
+        val holderBinding = ItemSettingsHolderBinding.inflate(layoutInflater, null, false)
+        // customize colors
+        var item = createSettingsSingleView(R.string.customize_colors)
+        item.settingsItemHolder.setOnClickListener { startCustomizationActivity() }
+        holderBinding.settingsWrapper.addView(item.root)
+        // customize widget colors
+        item = createSettingsSingleView(R.string.customize_widget_colors)
+        item.settingsItemHolder.setOnClickListener {
+            Intent(this, WidgetListConfigureActivity::class.java).apply {
+                putExtra(IS_CUSTOMIZING_COLORS, true)
+                startActivity(this)
+            }
+        }
+        holderBinding.settingsWrapper.addView(item.root)
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupGeneralSettings() {
+        val holderBinding = ItemSettingsHolderBinding.inflate(layoutInflater, null, false)
+        var checkbox: ItemSettingsCheckboxBinding
+        val doubleView: ItemSettingsDoubleTextviewBinding
+        // Use English Language
+        if ((config.wasUseEnglishToggled || Locale.getDefault().language != "en") && !isTiramisuPlus()) {
+            checkbox = createSettingsCheckbox(R.string.use_english_language)
+            checkbox.apply {
+                settingsCheckbox.isChecked = config.useEnglish
+                settingsCheckboxHolder.setOnClickListener {
+                    settingsCheckbox.toggle()
+                    config.useEnglish = settingsCheckbox.isChecked
+                    exitProcess(0)
+                }
+            }
+            holderBinding.root.addView(checkbox.root)
+            // Language
+            doubleView = createSettingsDoubleView(R.string.language, Locale.getDefault().displayLanguage)
+            doubleView.settingsDoubleViewHolder.setOnClickListener {
+                launchChangeAppLanguageIntent()
+            }
+            holderBinding.root.addView(doubleView.root)
+        }
+        // Manage Event Types
+        var singleView = createSettingsSingleView(R.string.manage_event_types)
+        singleView.settingsItemHolder.setOnClickListener {
+            startActivity(Intent(this, ManageEventTypesActivity::class.java))
+        }
+        holderBinding.root.addView(singleView.root)
+        // Manage Quick Filter Event Types
+        singleView = createSettingsSingleView(R.string.manage_quick_filter_event_types)
+        singleView.settingsItemHolder.setOnClickListener {
+            SelectQuickFilterEventTypesDialog(this)
+        }
+        holderBinding.root.addView(singleView.root)
+        // Use 24 hour Time
+        checkbox = createSettingsCheckbox(R.string.use_24_hour_time_format)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.use24HourFormat
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.use24HourFormat = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Start week on Sunday
+        checkbox = createSettingsCheckbox(R.string.sunday_first)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.isSundayFirst
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.isSundayFirst = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Highlight weekends color
+        val colorBinding = createSettingsColor(R.string.highlight_weekends_color, config.highlightWeekendsColor)
+        colorBinding.settingsColorHolder.setOnClickListener {
+            ColorPickerDialog(this, config.highlightWeekendsColor) { wasPositivePressed, color ->
+                if (wasPositivePressed) {
+                    config.highlightWeekendsColor = color
+                    colorBinding.settingsColor.setFillWithStroke(color, getProperBackgroundColor())
+                }
+            }
+        }
+        // Highlight Weekends on some views
+        checkbox = createSettingsCheckbox(R.string.highlight_weekends)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.highlightWeekends
+            colorBinding.settingsColorHolder.beVisibleIf(config.highlightWeekends)
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.highlightWeekends = settingsCheckbox.isChecked
+                colorBinding.settingsColorHolder.beVisibleIf(settingsCheckbox.isChecked)
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        holderBinding.root.addView(colorBinding.root)
+        // Add all to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupRemindersSection() {
+        val holderBinding = createHolder()
+        // Customize notifications
+        if (isOreoPlus()) {
+            val notification = createSettingsSingleView(R.string.customize_notifications)
+            notification.settingsItemHolder.setOnClickListener {
+                launchCustomizeNotificationsIntent()
+            }
+            holderBinding.root.addView(notification.root)
+        }
+        // Reminder Sound
+        else {
+            val sound = createSettingsDoubleView(R.string.reminder_sound, config.reminderSoundTitle)
+            sound.settingsDoubleViewHolder.setOnClickListener {
+                SelectAlarmSoundDialog(this, config.reminderSoundUri, config.reminderAudioStream, GET_RINGTONE_URI, RingtoneManager.TYPE_NOTIFICATION, false,
+                    onAlarmPicked = {
+                        if (it != null) {
+                            updateReminderSound(it)
+                        }
+                    }, onAlarmSoundDeleted = {
+                        if (it.uri == config.reminderSoundUri) {
+                            val defaultAlarm = getDefaultAlarmSound(RingtoneManager.TYPE_NOTIFICATION)
+                            updateReminderSound(defaultAlarm)
+                        }
+                    })
+            }
+            holderBinding.root.addView(sound.root)
+        }
+        // Audio stream used by reminders
+        val stream = createSettingsDoubleView(R.string.reminder_stream, getAudioStreamText())
+        stream.settingsDoubleViewHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(AudioManager.STREAM_ALARM, getString(R.string.alarm_stream)),
+                RadioItem(AudioManager.STREAM_SYSTEM, getString(R.string.system_stream)),
+                RadioItem(AudioManager.STREAM_NOTIFICATION, getString(R.string.notification_stream)),
+                RadioItem(AudioManager.STREAM_RING, getString(R.string.ring_stream))
+            )
+
+            RadioGroupDialog(this@SettingsActivity, items, config.reminderAudioStream) {
+                config.reminderAudioStream = it as Int
+                stream.settingsValue.text = getAudioStreamText()
+            }
+        }
+        holderBinding.root.addView(stream.root)
+        // Vibrate on reminder notification
+        var checkbox = createSettingsCheckbox(R.string.vibrate)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.vibrateOnReminder
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.vibrateOnReminder = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Loop reminders until dismissed
+        checkbox = createSettingsCheckbox(R.string.loop_reminders)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.loopReminders
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.loopReminders = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Snooze time
+        val snooze = createSettingsDoubleView(R.string.snooze_time, formatMinutesToTimeString(config.snoozeTime))
+        snooze.settingsDoubleViewHolder.beVisibleIf(config.useSameSnooze)
+        snooze.settingsDoubleViewHolder.setOnClickListener {
+            showPickSecondsDialogHelper(config.snoozeTime, true) {
+                config.snoozeTime = it / 60
+                snooze.settingsValue.text = formatMinutesToTimeString(config.snoozeTime)
+            }
+        }
+        // Always use same snooze time
+        checkbox = createSettingsCheckbox(R.string.use_same_snooze)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.useSameSnooze
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.useSameSnooze = settingsCheckbox.isChecked
+                snooze.settingsDoubleViewHolder.beVisibleIf(config.useSameSnooze)
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        holderBinding.root.addView(snooze.root)
+        // Add to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupCaldavSection() {
+        val holderBinding = createHolder()
+        // Pull to refresh
+        val refresh = createSettingsCheckbox(R.string.enable_pull_to_refresh)
+        refresh.apply {
+            settingsCheckbox.isChecked = config.pullToRefresh
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.pullToRefresh = settingsCheckbox.isChecked
+            }
+        }
+        // Manage Synced calendars
+        val manageCalendars = createSettingsSingleView(R.string.manage_synced_calendars)
+        manageCalendars.settingsItemHolder.setOnClickListener {
+            showCalendarPicker()
+        }
+        // Caldav
+        val caldav = createSettingsCheckbox(R.string.caldav_sync)
+        caldav.apply {
+            settingsCheckbox.isChecked = config.caldavSync
+            refresh.settingsCheckboxHolder.beVisibleIf(config.caldavSync)
+            manageCalendars.settingsItemHolder.beVisibleIf(config.caldavSync)
+            settingsCheckboxHolder.setOnClickListener {
+                if (config.caldavSync) {
+                    toggleCaldavSync(false)
+                    refresh.settingsCheckboxHolder.beGone()
+                    manageCalendars.settingsItemHolder.beGone()
+                    settingsCheckbox.isChecked = false
+                } else {
+                    handlePermission(PERMISSION_WRITE_CALENDAR) { haveCalenderWrite ->
+                        if (haveCalenderWrite) {
+                            handlePermission(PERMISSION_READ_CALENDAR) {
+                                if (it) {
+                                    handleNotificationPermission { granted ->
+                                        if (granted) {
+                                            val result = toggleCaldavSync(true)
+                                            refresh.settingsCheckboxHolder.beVisibleIf(result)
+                                            manageCalendars.settingsItemHolder.beVisibleIf(result)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        holderBinding.root.addView(caldav.root)
+        holderBinding.root.addView(refresh.root)
+        holderBinding.root.addView(manageCalendars.root)
+        // Add to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupEventsSection() {
+        val holderBinding = createHolder()
+        // Dim Past events
+        var checkbox = createSettingsCheckbox(R.string.dim_past_events)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.dimPastEvents
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.dimPastEvents = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Allow Changing event time zones
+        checkbox = createSettingsCheckbox(R.string.allow_changing_time_zones)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.allowChangingTimeZones
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.allowChangingTimeZones = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Sync contact Birthdays
+        checkbox = createSettingsCheckbox(R.string.sync_contact_birthdays)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.addBirthdaysAutomatically
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.addBirthdaysAutomatically = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Sync contact Anniversaries
+        checkbox = createSettingsCheckbox(R.string.sync_contact_anniversaries)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.addAnniversariesAutomatically
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.addAnniversariesAutomatically = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Delete events older than
+        val olderThan = createSettingsDoubleView(R.string.delete_events_older_then, "")
+        olderThan.settingsDoubleViewHolder.beVisibleIf(config.deleteOldEvents)
+        olderThan.settingsValue.text = String.format("%d Years", config.deleteEventsOlderThen)
+        olderThan.settingsDoubleViewHolder.setOnClickListener {
+            YearPickerDialog(this) {value ->
+                config.deleteEventsOlderThen = if (value < 1) 1 else value
+                olderThan.settingsValue.text = String.format("%d Years", value)
+            }
+        }
+        // Delete events older than X years
+        checkbox = createSettingsCheckbox(R.string.delete_older_events)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.deleteOldEvents
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.deleteOldEvents = settingsCheckbox.isChecked
+                olderThan.settingsDoubleViewHolder.beVisibleIf(settingsCheckbox.isChecked)
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        holderBinding.root.addView(olderThan.root)
+        // Delete all events
+        val deleteAll = createSettingsSingleView(R.string.delete_all_events)
+        deleteAll.settingsItemHolder.setOnClickListener {
+            ConfirmationDialog(this, messageId = R.string.delete_all_events_confirmation) {
+                eventsHelper.deleteAllEvents()
+            }
+        }
+        holderBinding.root.addView(deleteAll.root)
+        // Add events to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupNewEventsSection() {
+        val holderBinding = createHolder()
+        // Default Start time
+        val startTime = createSettingsDoubleView(R.string.default_start_time, "")
+        updateDefaultStartTimeText(startTime)
+        startTime.settingsDoubleViewHolder.setOnClickListener {
+            val currentDefaultTime = when (config.defaultStartTime) {
+                DEFAULT_START_TIME_NEXT_FULL_HOUR -> DEFAULT_START_TIME_NEXT_FULL_HOUR
+                DEFAULT_START_TIME_CURRENT_TIME -> DEFAULT_START_TIME_CURRENT_TIME
+                else -> 0
+            }
+
+            val items = ArrayList<RadioItem>()
+            items.add(RadioItem(DEFAULT_START_TIME_CURRENT_TIME, getString(R.string.current_time)))
+            items.add(RadioItem(DEFAULT_START_TIME_NEXT_FULL_HOUR, getString(R.string.next_full_hour)))
+            items.add(RadioItem(0, getString(R.string.other_time)))
+
+            RadioGroupDialog(this@SettingsActivity, items, currentDefaultTime) {
+                if (it as Int == DEFAULT_START_TIME_NEXT_FULL_HOUR || it == DEFAULT_START_TIME_CURRENT_TIME) {
+                    config.defaultStartTime = it
+                    updateDefaultStartTimeText(startTime)
+                } else {
+                    val timeListener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
+                        config.defaultStartTime = hourOfDay * 60 + minute
+                        updateDefaultStartTimeText(startTime)
+                    }
+
+                    val currentDateTime = DateTime.now()
+                    TimePickerDialog(
+                        this,
+                        getTimePickerDialogTheme(),
+                        timeListener,
+                        currentDateTime.hourOfDay,
+                        currentDateTime.minuteOfHour,
+                        config.use24HourFormat
+                    ).show()
+                }
+            }
+        }
+        holderBinding.root.addView(startTime.root)
+        // Default Duration
+        val duration = createSettingsDoubleView(R.string.default_duration, "")
+        updateDefaultDurationText(duration)
+        duration.settingsDoubleViewHolder.setOnClickListener {
+            CustomIntervalPickerDialog(this, config.defaultDuration * 60) {
+                val result = it / 60
+                config.defaultDuration = result
+                updateDefaultDurationText(duration)
+            }
+        }
+        holderBinding.root.addView(duration.root)
+        // Default Event type
+        val eventType = createSettingsDoubleView(R.string.default_event_type, "")
+        updateDefaultEventTypeText(eventType)
+        eventType.settingsDoubleViewHolder.setOnClickListener {
+            SelectEventTypeDialog(this, config.defaultEventTypeId, true, false, true, true) {
+                config.defaultEventTypeId = it.id!!
+                updateDefaultEventTypeText(eventType)
+            }
+        }
+        holderBinding.root.addView(eventType.root)
+        // Default reminder 1
+        val reminder1 = createSettingsDoubleView(R.string.default_reminder_1, getFormattedMinutes(config.defaultReminder1))
+        reminder1.settingsDoubleViewHolder.beVisibleIf(!config.usePreviousEventReminders)
+        reminder1.settingsDoubleViewHolder.setOnClickListener {
+            showPickSecondsDialogHelper(config.defaultReminder1) {
+                config.defaultReminder1 = if (it == -1 || it == 0) it else it / 60
+                reminder1.settingsValue.text = getFormattedMinutes(config.defaultReminder1)
+            }
+        }
+        // Default reminder 2
+        val reminder2 = createSettingsDoubleView(R.string.default_reminder_1, getFormattedMinutes(config.defaultReminder2))
+        reminder2.settingsDoubleViewHolder.beVisibleIf(!config.usePreviousEventReminders)
+        reminder2.settingsDoubleViewHolder.setOnClickListener {
+            showPickSecondsDialogHelper(config.defaultReminder2) {
+                config.defaultReminder2 = if (it == -1 || it == 0) it else it / 60
+                reminder2.settingsValue.text = getFormattedMinutes(config.defaultReminder2)
+            }
+        }
+        // Default reminder 3
+        val reminder3 = createSettingsDoubleView(R.string.default_reminder_3, getFormattedMinutes(config.defaultReminder3))
+        reminder3.settingsDoubleViewHolder.beVisibleIf(!config.usePreviousEventReminders)
+        reminder3.settingsDoubleViewHolder.setOnClickListener {
+            showPickSecondsDialogHelper(config.defaultReminder3) {
+                config.defaultReminder3 = if (it == -1 || it == 0) it else it / 60
+                reminder3.settingsValue.text = getFormattedMinutes(config.defaultReminder3)
+            }
+        }
+        // Use the last event's reminders as the default
+        val checkbox = createSettingsCheckbox(R.string.use_last_event_reminders)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.usePreviousEventReminders
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.usePreviousEventReminders = settingsCheckbox.isChecked
+                reminder1.settingsDoubleViewHolder.beVisibleIf(!settingsCheckbox.isChecked)
+                reminder2.settingsDoubleViewHolder.beVisibleIf(!settingsCheckbox.isChecked)
+                reminder3.settingsDoubleViewHolder.beVisibleIf(!settingsCheckbox.isChecked)
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        holderBinding.root.addView(reminder1.root)
+        holderBinding.root.addView(reminder2.root)
+        holderBinding.root.addView(reminder3.root)
+        // Add to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupTaskSection() {
+        val holderBinding = createHolder()
+        // Allow Creating Tasks
+        var checkbox = createSettingsCheckbox(R.string.allow_creating_tasks)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.allowCreatingTasks
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.allowCreatingTasks = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Dim Completed Tasks
+        checkbox = createSettingsCheckbox(R.string.dim_completed_tasks)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.dimCompletedTasks
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.dimCompletedTasks = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        //Default Task type
+        val defaultTask = createSettingsDoubleView(R.string.default_task_type, "")
+        updateDefaultTaskTypeText(defaultTask)
+        defaultTask.settingsDoubleViewHolder.setOnClickListener {
+            SelectEventTypeDialog(this, config.defaultTaskTypeId, true, false, true, true) {
+                config.defaultTaskTypeId = it.id!!
+                updateDefaultTaskTypeText(defaultTask)
+            }
+        }
+        holderBinding.root.addView(defaultTask.root)
+        // Add to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupEventsListsSection() {
+        val holderBinding = createHolder()
+        // Display events from the past
+        var displayPastEvents = config.displayPastEvents
+        val pastEvents = createSettingsDoubleView(R.string.display_past_events, getDisplayPastEventsText(displayPastEvents))
+        pastEvents.settingsDoubleViewHolder.setOnClickListener {
+            CustomIntervalPickerDialog(this, displayPastEvents * 60) {
+                val result = it / 60
+                displayPastEvents = result
+                config.displayPastEvents = result
+                pastEvents.settingsValue.text = getDisplayPastEventsText(result)
+            }
+        }
+        holderBinding.root.addView(pastEvents.root)
+        // Replace event description with location
+        val replace = createSettingsCheckbox(R.string.replace_description_with_location)
+        replace.apply {
+            settingsCheckbox.isChecked = config.replaceDescription
+            settingsCheckboxHolder.beVisibleIf(config.displayDescription)
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.replaceDescription = settingsCheckbox.isChecked
+            }
+        }
+        // Display description or location
+        var checkbox = createSettingsCheckbox(R.string.display_description_or_location)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.displayDescription
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.displayDescription = settingsCheckbox.isChecked
+                replace.settingsCheckboxHolder.beVisibleIf(settingsCheckbox.isChecked)
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        holderBinding.root.addView(replace.root)
+        // Show label for Birthdays & Anniversaries
+        checkbox = createSettingsCheckbox(R.string.show_birth_ann_description)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.showBirthdayAnniversaryDescription
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.showBirthdayAnniversaryDescription = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Add to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupWeeklyViewSection() {
+        val holderBinding = createHolder()
+        // Start Day at
+        val day = createSettingsDoubleView(R.string.start_day_at, getHoursString(config.startWeeklyAt))
+        day.settingsDoubleViewHolder.setOnClickListener {
+            val items = ArrayList<RadioItem>()
+            (0..16).mapTo(items) { RadioItem(it, getHoursString(it)) }
+
+            RadioGroupDialog(this, items, config.startWeeklyAt) {
+                config.startWeeklyAt = it as Int
+                day.settingsValue.text = getHoursString(it)
+            }
+        }
+        holderBinding.root.addView(day.root)
+        // Show events spanning across midnight at the top bar
+        var checkbox = createSettingsCheckbox(R.string.midnight_spanning)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.showMidnightSpanningEventsAtTop
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.showMidnightSpanningEventsAtTop = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Allow customizing day count
+        checkbox = createSettingsCheckbox(R.string.allow_customizing_day_count)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.allowCustomizeDayCount
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.allowCustomizeDayCount = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Start week with the current day
+        checkbox = createSettingsCheckbox(R.string.start_week_with_current_day)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.startWeekWithCurrentDay
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.startWeekWithCurrentDay = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Add to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupMonthlyViewSection() {
+        val holderBinding = createHolder()
+        // Show Week Numbers
+        var checkbox = createSettingsCheckbox(R.string.week_numbers)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.showWeekNumbers
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.showWeekNumbers = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Show a grid
+        checkbox = createSettingsCheckbox(R.string.show_a_grid)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.showGrid
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.showGrid = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // Add to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupWidgetsSection() {
+        val holderBinding = createHolder()
+        // Font Size
+        val fontSize = createSettingsDoubleView(R.string.font_size, getFontSizeText())
+        fontSize.settingsDoubleViewHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(FONT_SIZE_EXTRA_SMALL, getString(R.string.extra_small)),
+                RadioItem(FONT_SIZE_SMALL, getString(R.string.small)),
+                RadioItem(FONT_SIZE_MEDIUM, getString(R.string.medium)),
+                RadioItem(FONT_SIZE_LARGE, getString(R.string.large)),
+                RadioItem(FONT_SIZE_EXTRA_LARGE, getString(R.string.extra_large))
+            )
+
+            RadioGroupDialog(this@SettingsActivity, items, config.fontSize) {
+                config.fontSize = it as Int
+                fontSize.settingsValue.text = getFontSizeText()
+                updateWidgets()
+            }
+        }
+        holderBinding.root.addView(fontSize.root)
+        // Show Event description
+        val checkbox = createSettingsCheckbox(R.string.show_widget_description)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.showWidgetDescription
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.showWidgetDescription = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
+        // View to open from event list widget
+        val view = createSettingsDoubleView(R.string.view_to_open_from_widget, getDefaultViewText())
+        view.settingsDoubleViewHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(DAILY_VIEW, getString(R.string.daily_view)),
+                RadioItem(WEEKLY_VIEW, getString(R.string.weekly_view)),
+                RadioItem(MONTHLY_VIEW, getString(R.string.monthly_view)),
+                RadioItem(MONTHLY_DAILY_VIEW, getString(R.string.monthly_daily_view)),
+                RadioItem(YEARLY_VIEW, getString(R.string.yearly_view)),
+                RadioItem(EVENTS_LIST_VIEW, getString(R.string.simple_event_list)),
+                RadioItem(LAST_VIEW, getString(R.string.last_view))
+            )
+
+            RadioGroupDialog(this@SettingsActivity, items, config.listWidgetViewToOpen) {
+                config.listWidgetViewToOpen = it as Int
+                view.settingsValue.text = getDefaultViewText()
+                updateWidgets()
+            }
+        }
+        holderBinding.root.addView(view.root)
+        // Add holder to main view
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    private fun setupBackupSection() {
+        val holderBinding = createHolder()
+        // Export Settings
+        var view = createSettingsSingleView(R.string.export_settings)
+        view.settingsItemHolder.setOnClickListener { exportSettings() }
+        holderBinding.root.addView(view.root)
+        // Import Settings
+        view = createSettingsSingleView(R.string.import_settings)
+        view.settingsItemHolder.setOnClickListener {
+            if (isQPlus()) {
+                Intent(Intent.ACTION_GET_CONTENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "text/plain"
+
+                    try {
+                        startActivityForResult(this, PICK_IMPORT_SOURCE_INTENT)
+                    } catch (e: ActivityNotFoundException) {
+                        toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
+                    } catch (e: Exception) {
+                        showErrorToast(e)
+                    }
+                }
+            } else {
+                handlePermission(PERMISSION_READ_STORAGE) {
+                    if (it) {
+                        FilePickerDialog(this) {
+                            ensureBackgroundThread {
+                                parseFile(File(it).inputStream())
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        holderBinding.root.addView(view.root)
+        // Add to main layout
+        binding.settingsHolder.addView(holderBinding.root)
+    }
+
+    /*
     private fun checkPrimaryColor() {
         if (getProperAccentColor() != mStoredAccentColor) {
             ensureBackgroundThread {
@@ -174,165 +860,43 @@ class SettingsActivity : SimpleActivity() {
                 }
             }
         }
+    }*/
+
+    private fun updateReminderSound(alarmSound: AlarmSound) {
+        config.reminderSoundTitle = alarmSound.title
+        config.reminderSoundUri = alarmSound.uri
+        //binding.settingsReminderSound.text = alarmSound.title
     }
 
-    private fun setupCustomizeColors() {
-        binding.settingsCustomizeColorsHolder.setOnClickListener {
-            startCustomizationActivity()
-        }
-    }
-
-    private fun setupCustomizeNotifications() {
-        binding.settingsCustomizeNotificationsHolder.beVisibleIf(isOreoPlus())
-
-        if (binding.settingsCustomizeNotificationsHolder.isGone()) {
-            binding.settingsReminderSoundHolder.background = resources.getDrawable(R.drawable.ripple_top_corners, theme)
-        }
-
-        binding.settingsCustomizeNotificationsHolder.setOnClickListener {
-            launchCustomizeNotificationsIntent()
-        }
-    }
-
-    private fun setupUseEnglish() {
-        binding.settingsUseEnglishHolder.beVisibleIf((config.wasUseEnglishToggled || Locale.getDefault().language != "en") && !isTiramisuPlus())
-        binding.settingsUseEnglish.isChecked = config.useEnglish
-        binding.settingsUseEnglishHolder.setOnClickListener {
-            binding.settingsUseEnglish.toggle()
-            config.useEnglish = binding.settingsUseEnglish.isChecked
-            exitProcess(0)
-        }
-    }
-
-    private fun setupLanguage() {
-        binding.settingsLanguage.text = Locale.getDefault().displayLanguage
-        binding.settingsLanguageHolder.beVisibleIf(isTiramisuPlus())
-
-        if (binding.settingsUseEnglishHolder.isGone() && binding.settingsLanguageHolder.isGone()) {
-            binding.settingsManageEventTypesHolder.background = resources.getDrawable(R.drawable.ripple_top_corners, theme)
-        }
-
-        binding.settingsLanguageHolder.setOnClickListener {
-            launchChangeAppLanguageIntent()
-        }
-    }
-
-    private fun setupManageEventTypes() {
-        binding.settingsManageEventTypesHolder.setOnClickListener {
-            startActivity(Intent(this, ManageEventTypesActivity::class.java))
-        }
-    }
-
-    private fun setupManageQuickFilterEventTypes() {
-        binding.settingsManageQuickFilterEventTypesHolder.setOnClickListener {
-            showQuickFilterPicker()
-        }
-
-        eventsHelper.getEventTypes(this, false) {
-            binding.settingsManageQuickFilterEventTypesHolder.beGoneIf(it.size < 2)
-        }
-    }
-
-    private fun setupHourFormat() {
-        binding.settingsHourFormat.isChecked = config.use24HourFormat
-        binding.settingsHourFormatHolder.setOnClickListener {
-            binding.settingsHourFormat.toggle()
-            config.use24HourFormat = binding.settingsHourFormat.isChecked
-        }
-    }
-
-    private fun setupAllowCreatingTasks() {
-        binding.settingsAllowCreatingTasks.isChecked = config.allowCreatingTasks
-        binding.settingsAllowCreatingTasksHolder.setOnClickListener {
-            binding.settingsAllowCreatingTasks.toggle()
-            config.allowCreatingTasks = binding.settingsAllowCreatingTasks.isChecked
-        }
-    }
-
-    private fun setupCaldavSync() {
-        binding.settingsCaldavSync.isChecked = config.caldavSync
-        checkCalDAVBackgrounds()
-        binding.settingsCaldavSyncHolder.setOnClickListener {
-            if (config.caldavSync) {
-                toggleCaldavSync(false)
-            } else {
-                handlePermission(PERMISSION_WRITE_CALENDAR) {
-                    if (it) {
-                        handlePermission(PERMISSION_READ_CALENDAR) {
-                            if (it) {
-                                handleNotificationPermission { granted ->
-                                    if (granted) {
-                                        toggleCaldavSync(true)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun setupPullToRefresh() {
-        binding.settingsCaldavPullToRefreshHolder.beVisibleIf(config.caldavSync)
-        binding.settingsCaldavPullToRefresh.isChecked = config.pullToRefresh
-        checkCalDAVBackgrounds()
-        binding.settingsCaldavPullToRefreshHolder.setOnClickListener {
-            binding.settingsCaldavPullToRefresh.toggle()
-            config.pullToRefresh = binding.settingsCaldavPullToRefresh.isChecked
-        }
-    }
-
-    private fun checkCalDAVBackgrounds() {
-        if (config.caldavSync) {
-            binding.settingsCaldavSyncHolder.background = resources.getDrawable(R.drawable.ripple_top_corners, theme)
-            binding.settingsManageSyncedCalendarsHolder.background = resources.getDrawable(R.drawable.ripple_bottom_corners, theme)
-        } else {
-            binding.settingsCaldavSyncHolder.background = resources.getDrawable(R.drawable.ripple_all_corners, theme)
-        }
-    }
-
-    private fun setupManageSyncedCalendars() {
-        binding.settingsManageSyncedCalendarsHolder.beVisibleIf(config.caldavSync)
-        binding.settingsManageSyncedCalendarsHolder.setOnClickListener {
-            showCalendarPicker()
-        }
-    }
-
-    private fun toggleCaldavSync(enable: Boolean) {
+    private fun toggleCaldavSync(enable: Boolean): Boolean {
+        var success = false
         if (enable) {
-            showCalendarPicker()
+            success = showCalendarPicker()
         } else {
-            binding.settingsCaldavSync.isChecked = false
             config.caldavSync = false
-            binding.settingsManageSyncedCalendarsHolder.beGone()
-            binding.settingsCaldavPullToRefreshHolder.beGone()
 
             ensureBackgroundThread {
                 config.getSyncedCalendarIdsAsList().forEach {
                     calDAVHelper.deleteCalDAVCalendarEvents(it.toLong())
                 }
                 eventTypesDB.deleteEventTypesWithCalendarId(config.getSyncedCalendarIdsAsList())
-                updateDefaultEventTypeText()
+                //updateDefaultEventTypeText()
             }
         }
-        checkCalDAVBackgrounds()
+        return success
     }
 
-    private fun showCalendarPicker() {
+    private fun showCalendarPicker(): Boolean {
         val oldCalendarIds = config.getSyncedCalendarIdsAsList()
-
+        var success = false
         SelectCalendarsDialog(this) {
             val newCalendarIds = config.getSyncedCalendarIdsAsList()
             if (newCalendarIds.isEmpty() && !config.caldavSync) {
                 return@SelectCalendarsDialog
             }
-
-            binding.settingsManageSyncedCalendarsHolder.beVisibleIf(newCalendarIds.isNotEmpty())
-            binding.settingsCaldavPullToRefreshHolder.beVisibleIf(newCalendarIds.isNotEmpty())
-            binding.settingsCaldavSync.isChecked = newCalendarIds.isNotEmpty()
+            success = newCalendarIds.isNotEmpty()
             config.caldavSync = newCalendarIds.isNotEmpty()
-            if (binding.settingsCaldavSync.isChecked) {
+            if (success) {
                 toast(R.string.syncing)
             }
 
@@ -353,7 +917,7 @@ class SettingsActivity : SimpleActivity() {
 
                     syncCalDAVCalendars {
                         calDAVHelper.refreshCalendars(showToasts = true, scheduleNextSync = true) {
-                            if (binding.settingsCaldavSync.isChecked) {
+                            if (success) {
                                 toast(R.string.synchronization_completed)
                             }
                         }
@@ -369,200 +933,10 @@ class SettingsActivity : SimpleActivity() {
                 }
 
                 eventTypesDB.deleteEventTypesWithCalendarId(removedCalendarIds)
-                updateDefaultEventTypeText()
+                //updateDefaultEventTypeText()
             }
         }
-    }
-
-    private fun showQuickFilterPicker() {
-        SelectQuickFilterEventTypesDialog(this)
-    }
-
-    private fun setupSundayFirst() {
-        binding.settingsSundayFirst.isChecked = config.isSundayFirst
-        binding.settingsSundayFirstHolder.setOnClickListener {
-            binding.settingsSundayFirst.toggle()
-            config.isSundayFirst = binding.settingsSundayFirst.isChecked
-        }
-    }
-
-    private fun setupHighlightWeekends() {
-        binding.settingsHighlightWeekends.isChecked = config.highlightWeekends
-        binding.settingsHighlightWeekendsColorHolder.beVisibleIf(config.highlightWeekends)
-        setupHighlightWeekendColorBackground()
-        binding.settingsHighlightWeekendsHolder.setOnClickListener {
-            binding.settingsHighlightWeekends.toggle()
-            config.highlightWeekends = binding.settingsHighlightWeekends.isChecked
-            binding.settingsHighlightWeekendsColorHolder.beVisibleIf(config.highlightWeekends)
-            setupHighlightWeekendColorBackground()
-        }
-    }
-
-    private fun setupShowWhatsNew() {
-        binding.settingsShowWhatsNew.isChecked = config.showWhatsNewDialog
-        binding.settingsShowWhatsNewHolder.background = resources.getDrawable(R.drawable.ripple_background,theme)
-        binding.settingsShowWhatsNewHolder.setOnClickListener {
-            binding.settingsShowWhatsNew.toggle()
-            config.showWhatsNewDialog = binding.settingsShowWhatsNew.isChecked
-        }
-    }
-
-    private fun setupHighlightWeekendsColor() {
-        binding.settingsHighlightWeekendsColor.setFillWithStroke(config.highlightWeekendsColor, getProperBackgroundColor())
-        binding.settingsHighlightWeekendsColorHolder.setOnClickListener {
-            ColorPickerDialog(this, config.highlightWeekendsColor) { wasPositivePressed, color ->
-                if (wasPositivePressed) {
-                    config.highlightWeekendsColor = color
-                    binding.settingsHighlightWeekendsColor.setFillWithStroke(color, getProperBackgroundColor())
-                }
-            }
-        }
-    }
-
-    private fun setupHighlightWeekendColorBackground() {
-        if (binding.settingsHighlightWeekendsColorHolder.isVisible()) {
-            binding.settingsHighlightWeekendsHolder.background = resources.getDrawable(R.drawable.ripple_background, theme)
-        } else {
-            binding.settingsHighlightWeekendsHolder.background = resources.getDrawable(R.drawable.ripple_bottom_corners, theme)
-        }
-    }
-
-    private fun setupDeleteAllEvents() {
-        binding.settingsDeleteAllEventsHolder.setOnClickListener {
-            ConfirmationDialog(this, messageId = R.string.delete_all_events_confirmation) {
-                eventsHelper.deleteAllEvents()
-            }
-        }
-    }
-
-    private fun setupDisplayDescription() {
-        binding.settingsDisplayDescription.isChecked = config.displayDescription
-        setupDescriptionVisibility()
-        binding.settingsDisplayDescriptionHolder.setOnClickListener {
-            binding.settingsDisplayDescription.toggle()
-            config.displayDescription = binding.settingsDisplayDescription.isChecked
-            setupDescriptionVisibility()
-        }
-    }
-
-    private fun setupDescriptionVisibility() {
-        binding.settingsReplaceDescriptionHolder.beVisibleIf(config.displayDescription)
-        if (binding.settingsReplaceDescriptionHolder.isVisible()) {
-            binding.settingsDisplayDescriptionHolder.background = resources.getDrawable(R.drawable.ripple_background, theme)
-        } else {
-            binding.settingsDisplayDescriptionHolder.background = resources.getDrawable(R.drawable.ripple_bottom_corners, theme)
-        }
-    }
-
-    private fun setupReplaceDescription() {
-        binding.settingsReplaceDescription.isChecked = config.replaceDescription
-        binding.settingsReplaceDescriptionHolder.setOnClickListener {
-            binding.settingsReplaceDescription.toggle()
-            config.replaceDescription = binding.settingsReplaceDescription.isChecked
-        }
-    }
-
-    private fun setupBirthAnnLabel() {
-        binding.settingsShowBirthAnnDescription.isChecked = config.showBirthdayAnniversaryDescription
-        binding.settingsShowBirthAnnDescriptionHolder.setOnClickListener {
-            binding.settingsShowBirthAnnDescription.toggle()
-            config.showBirthdayAnniversaryDescription = binding.settingsShowBirthAnnDescription.isChecked
-        }
-    }
-
-    private fun setupWeeklyStart() {
-        binding.settingsStartWeeklyAt.text = getHoursString(config.startWeeklyAt)
-        binding.settingsStartWeeklyAtHolder.setOnClickListener {
-            val items = ArrayList<RadioItem>()
-            (0..16).mapTo(items) { RadioItem(it, getHoursString(it)) }
-
-            RadioGroupDialog(this@SettingsActivity, items, config.startWeeklyAt) {
-                config.startWeeklyAt = it as Int
-                binding.settingsStartWeeklyAt.text = getHoursString(it)
-            }
-        }
-    }
-
-    private fun setupMidnightSpanEvents() {
-        binding.settingsMidnightSpanEvent.isChecked = config.showMidnightSpanningEventsAtTop
-        binding.settingsMidnightSpanEventsHolder.setOnClickListener {
-            binding.settingsMidnightSpanEvent.toggle()
-            config.showMidnightSpanningEventsAtTop = binding.settingsMidnightSpanEvent.isChecked
-        }
-    }
-
-    private fun setupAllowCustomizeDayCount() {
-        binding.settingsAllowCustomizeDayCount.isChecked = config.allowCustomizeDayCount
-        binding.settingsAllowCustomizeDayCountHolder.setOnClickListener {
-            binding.settingsAllowCustomizeDayCount.toggle()
-            config.allowCustomizeDayCount = binding.settingsAllowCustomizeDayCount.isChecked
-        }
-    }
-
-    private fun setupStartWeekWithCurrentDay() {
-        binding.settingsStartWeekWithCurrentDay.isChecked = config.startWeekWithCurrentDay
-        binding.settingsStartWeekWithCurrentDayHolder.setOnClickListener {
-            binding.settingsStartWeekWithCurrentDay.toggle()
-            config.startWeekWithCurrentDay = binding.settingsStartWeekWithCurrentDay.isChecked
-        }
-    }
-
-    private fun setupWeekNumbers() {
-        binding.settingsWeekNumbers.isChecked = config.showWeekNumbers
-        binding.settingsWeekNumbersHolder.setOnClickListener {
-            binding.settingsWeekNumbers.toggle()
-            config.showWeekNumbers = binding.settingsWeekNumbers.isChecked
-        }
-    }
-
-    private fun setupShowGrid() {
-        binding.settingsShowGrid.isChecked = config.showGrid
-        binding.settingsShowGridHolder.setOnClickListener {
-            binding.settingsShowGrid.toggle()
-            config.showGrid = binding.settingsShowGrid.isChecked
-        }
-    }
-
-    private fun setupReminderSound() {
-        binding.settingsReminderSoundHolder.beGoneIf(isOreoPlus())
-        binding.settingsReminderSound.text = config.reminderSoundTitle
-
-        binding.settingsReminderSoundHolder.setOnClickListener {
-            SelectAlarmSoundDialog(this, config.reminderSoundUri, config.reminderAudioStream, GET_RINGTONE_URI, RingtoneManager.TYPE_NOTIFICATION, false,
-                onAlarmPicked = {
-                    if (it != null) {
-                        updateReminderSound(it)
-                    }
-                }, onAlarmSoundDeleted = {
-                    if (it.uri == config.reminderSoundUri) {
-                        val defaultAlarm = getDefaultAlarmSound(RingtoneManager.TYPE_NOTIFICATION)
-                        updateReminderSound(defaultAlarm)
-                    }
-                })
-        }
-    }
-
-    private fun updateReminderSound(alarmSound: AlarmSound) {
-        config.reminderSoundTitle = alarmSound.title
-        config.reminderSoundUri = alarmSound.uri
-        binding.settingsReminderSound.text = alarmSound.title
-    }
-
-    private fun setupReminderAudioStream() {
-        binding.settingsReminderAudioStream.text = getAudioStreamText()
-        binding.settingsReminderAudioStreamHolder.setOnClickListener {
-            val items = arrayListOf(
-                RadioItem(AudioManager.STREAM_ALARM, getString(R.string.alarm_stream)),
-                RadioItem(AudioManager.STREAM_SYSTEM, getString(R.string.system_stream)),
-                RadioItem(AudioManager.STREAM_NOTIFICATION, getString(R.string.notification_stream)),
-                RadioItem(AudioManager.STREAM_RING, getString(R.string.ring_stream))
-            )
-
-            RadioGroupDialog(this@SettingsActivity, items, config.reminderAudioStream) {
-                config.reminderAudioStream = it as Int
-                binding.settingsReminderAudioStream.text = getAudioStreamText()
-            }
-        }
+        return success
     }
 
     private fun getAudioStreamText() = getString(
@@ -574,190 +948,13 @@ class SettingsActivity : SimpleActivity() {
         }
     )
 
-    private fun setupVibrate() {
-        binding.settingsVibrate.isChecked = config.vibrateOnReminder
-        binding.settingsVibrateHolder.setOnClickListener {
-            binding.settingsVibrate.toggle()
-            config.vibrateOnReminder = binding.settingsVibrate.isChecked
-        }
-    }
-
-    private fun setupLoopReminders() {
-        binding.settingsLoopReminders.isChecked = config.loopReminders
-        binding.settingsLoopRemindersHolder.setOnClickListener {
-            binding.settingsLoopReminders.toggle()
-            config.loopReminders = binding.settingsLoopReminders.isChecked
-        }
-    }
-
-    private fun setupUseSameSnooze() {
-        binding.settingsSnoozeTime.beVisibleIf(config.useSameSnooze)
-        binding.settingsUseSameSnooze.isChecked = config.useSameSnooze
-        setupSnoozeBackgrounds()
-        binding.settingsUseSameSnoozeHolder.setOnClickListener {
-            binding.settingsUseSameSnooze.toggle()
-            config.useSameSnooze = binding.settingsUseSameSnooze.isChecked
-            binding.settingsSnoozeTimeHolder.beVisibleIf(config.useSameSnooze)
-            setupSnoozeBackgrounds()
-        }
-    }
-
-    private fun setupSnoozeBackgrounds() {
-        if (config.useSameSnooze) {
-            binding.settingsUseSameSnoozeHolder.background = resources.getDrawable(R.drawable.ripple_background, theme)
-        } else {
-            binding.settingsUseSameSnoozeHolder.background = resources.getDrawable(R.drawable.ripple_bottom_corners, theme)
-        }
-    }
-
-    private fun setupSnoozeTime() {
-        updateSnoozeTime()
-        binding.settingsSnoozeTimeHolder.setOnClickListener {
-            showPickSecondsDialogHelper(config.snoozeTime, true) {
-                config.snoozeTime = it / 60
-                updateSnoozeTime()
-            }
-        }
-    }
-
-    private fun updateSnoozeTime() {
-        binding.settingsSnoozeTime.text = formatMinutesToTimeString(config.snoozeTime)
-    }
-
-    private fun setupDefaultReminder() {
-        binding.settingsUseLastEventReminders.isChecked = config.usePreviousEventReminders
-        toggleDefaultRemindersVisibility(!config.usePreviousEventReminders)
-        binding.settingsUseLastEventRemindersHolder.setOnClickListener {
-            binding.settingsUseLastEventReminders.toggle()
-            config.usePreviousEventReminders = binding.settingsUseLastEventReminders.isChecked
-            toggleDefaultRemindersVisibility(!binding.settingsUseLastEventReminders.isChecked)
-        }
-    }
-
-    private fun setupDefaultReminder1() {
-        binding.settingsDefaultReminder1.text = getFormattedMinutes(config.defaultReminder1)
-        binding.settingsDefaultReminder1Holder.setOnClickListener {
-            showPickSecondsDialogHelper(config.defaultReminder1) {
-                config.defaultReminder1 = if (it == -1 || it == 0) it else it / 60
-                binding.settingsDefaultReminder1.text = getFormattedMinutes(config.defaultReminder1)
-            }
-        }
-    }
-
-    private fun setupDefaultReminder2() {
-        binding.settingsDefaultReminder2.text = getFormattedMinutes(config.defaultReminder2)
-        binding.settingsDefaultReminder2Holder.setOnClickListener {
-            showPickSecondsDialogHelper(config.defaultReminder2) {
-                config.defaultReminder2 = if (it == -1 || it == 0) it else it / 60
-                binding.settingsDefaultReminder2.text = getFormattedMinutes(config.defaultReminder2)
-            }
-        }
-    }
-
-    private fun setupDefaultReminder3() {
-        binding.settingsDefaultReminder3.text = getFormattedMinutes(config.defaultReminder3)
-        binding.settingsDefaultReminder3Holder.setOnClickListener {
-            showPickSecondsDialogHelper(config.defaultReminder3) {
-                config.defaultReminder3 = if (it == -1 || it == 0) it else it / 60
-                binding.settingsDefaultReminder3.text = getFormattedMinutes(config.defaultReminder3)
-            }
-        }
-    }
-
-    private fun toggleDefaultRemindersVisibility(show: Boolean) {
-        arrayOf(binding.settingsDefaultReminder1Holder, binding.settingsDefaultReminder2Holder,
-            binding.settingsDefaultReminder3Holder).forEach {
-            it.beVisibleIf(show)
-        }
-
-        if (show) {
-            binding.settingsUseLastEventRemindersHolder.background = resources.getDrawable(R.drawable.ripple_background, theme)
-        } else {
-            binding.settingsUseLastEventRemindersHolder.background = resources.getDrawable(R.drawable.ripple_bottom_corners, theme)
-        }
-    }
-
     private fun getHoursString(hours: Int) = String.format("%02d:00", hours)
-
-    private fun setupDisplayPastEvents() {
-        var displayPastEvents = config.displayPastEvents
-        updatePastEventsText(displayPastEvents)
-        binding.settingsDisplayPastEventsHolder.setOnClickListener {
-            CustomIntervalPickerDialog(this, displayPastEvents * 60) {
-                val result = it / 60
-                displayPastEvents = result
-                config.displayPastEvents = result
-                updatePastEventsText(result)
-            }
-        }
-    }
-
-    private fun updatePastEventsText(displayPastEvents: Int) {
-        binding.settingsDisplayPastEvents.text = getDisplayPastEventsText(displayPastEvents)
-    }
 
     private fun getDisplayPastEventsText(displayPastEvents: Int): String {
         return if (displayPastEvents == 0) {
             getString(R.string.never)
         } else {
             getFormattedMinutes(displayPastEvents, false)
-        }
-    }
-
-    private fun setupFontSize() {
-        binding.settingsFontSize.text = getFontSizeText()
-        binding.settingsFontSizeHolder.setOnClickListener {
-            val items = arrayListOf(
-                RadioItem(FONT_SIZE_EXTRA_SMALL, getString(R.string.extra_small)),
-                RadioItem(FONT_SIZE_SMALL, getString(R.string.small)),
-                RadioItem(FONT_SIZE_MEDIUM, getString(R.string.medium)),
-                RadioItem(FONT_SIZE_LARGE, getString(R.string.large)),
-                RadioItem(FONT_SIZE_EXTRA_LARGE, getString(R.string.extra_large))
-            )
-
-            RadioGroupDialog(this@SettingsActivity, items, config.fontSize) {
-                config.fontSize = it as Int
-                binding.settingsFontSize.text = getFontSizeText()
-                updateWidgets()
-            }
-        }
-    }
-
-    private fun setupShowWidgetDescription() {
-        binding.settingsShowWidgetDescription.isChecked = config.showWidgetDescription
-        binding.settingsShowWidgetDescriptionHolder.setOnClickListener {
-            binding.settingsShowWidgetDescription.toggle()
-            config.showWidgetDescription = binding.settingsShowWidgetDescription.isChecked
-        }
-    }
-
-    private fun setupCustomizeWidgetColors() {
-        binding.settingsCustomizeWidgetColorsHolder.setOnClickListener {
-            Intent(this, WidgetListConfigureActivity::class.java).apply {
-                putExtra(IS_CUSTOMIZING_COLORS, true)
-                startActivity(this)
-            }
-        }
-    }
-
-    private fun setupViewToOpenFromListWidget() {
-        binding.settingsListWidgetViewToOpen.text = getDefaultViewText()
-        binding.settingsListWidgetViewToOpenHolder.setOnClickListener {
-            val items = arrayListOf(
-                RadioItem(DAILY_VIEW, getString(R.string.daily_view)),
-                RadioItem(WEEKLY_VIEW, getString(R.string.weekly_view)),
-                RadioItem(MONTHLY_VIEW, getString(R.string.monthly_view)),
-                RadioItem(MONTHLY_DAILY_VIEW, getString(R.string.monthly_daily_view)),
-                RadioItem(YEARLY_VIEW, getString(R.string.yearly_view)),
-                RadioItem(EVENTS_LIST_VIEW, getString(R.string.simple_event_list)),
-                RadioItem(LAST_VIEW, getString(R.string.last_view))
-            )
-
-            RadioGroupDialog(this@SettingsActivity, items, config.listWidgetViewToOpen) {
-                config.listWidgetViewToOpen = it as Int
-                binding.settingsListWidgetViewToOpen.text = getDefaultViewText()
-                updateWidgets()
-            }
         }
     }
 
@@ -773,188 +970,51 @@ class SettingsActivity : SimpleActivity() {
         }
     )
 
-    private fun setupDimEvents() {
-        binding.settingsDimPastEvents.isChecked = config.dimPastEvents
-        binding.settingsDimPastEventsHolder.setOnClickListener {
-            binding.settingsDimPastEvents.toggle()
-            config.dimPastEvents = binding.settingsDimPastEvents.isChecked
-        }
-    }
-
-    private fun setupSyncBirthdays() {
-        binding.settingsSyncContactBirthdays.isChecked = config.addBirthdaysAutomatically
-        binding.settingsSyncContactBirthdaysHolder.setOnClickListener {
-            binding.settingsSyncContactBirthdays.toggle()
-            config.addBirthdaysAutomatically = binding.settingsSyncContactBirthdays.isChecked
-        }
-    }
-
-    private fun setupSyncAnniversaries() {
-        binding.settingsSyncContactAnniversaries.isChecked = config.addAnniversariesAutomatically
-        binding.settingsSyncContactAnniversariesHolder.setOnClickListener {
-            binding.settingsSyncContactAnniversaries.toggle()
-            config.addAnniversariesAutomatically = binding.settingsSyncContactAnniversaries.isChecked
-        }
-    }
-
-    /*private fun setupDefaultReminder1() {
-        binding.settingsDefaultReminder1.text = getFormattedMinutes(config.defaultReminder1)
-        binding.settingsDefaultReminder1Holder.setOnClickListener {
-            showPickSecondsDialogHelper(config.defaultReminder1) {
-                config.defaultReminder1 = if (it == -1 || it == 0) it else it / 60
-                binding.settingsDefaultReminder1.text = getFormattedMinutes(config.defaultReminder1)
-            }
-        }
-    } */
-    private fun setupDeleteOldEvents() {
-        binding.settingsDeleteOldEvents.isChecked = config.deleteOldEvents
-        binding.settingsDeleteEventsOlderThenHolder.beVisibleIf(config.deleteOldEvents)
-        binding.settingsDeleteOldEventsHolder.setOnClickListener {
-            binding.settingsDeleteOldEvents.toggle()
-            config.deleteOldEvents = binding.settingsDeleteOldEvents.isChecked
-            binding.settingsDeleteEventsOlderThenHolder.beVisibleIf(binding.settingsDeleteOldEvents.isChecked)
-        }
-        binding.settingsDeleteEventsOlderThenValue.text = String.format("%d Years", config.deleteEventsOlderThen)
-        binding.settingsDeleteEventsOlderThenHolder.setOnClickListener {
-            YearPickerDialog(this) {value ->
-                config.deleteEventsOlderThen = if (value < 1) 1 else value
-                binding.settingsDeleteEventsOlderThenValue.text = String.format("%d Years", value)
-            }
-        }
-    }
-
-    private fun setupDimCompletedTasks() {
-        binding.settingsDimCompletedTasks.isChecked = config.dimCompletedTasks
-        binding.settingsDimCompletedTasksHolder.setOnClickListener {
-            binding.settingsDimCompletedTasks.toggle()
-            config.dimCompletedTasks = binding.settingsDimCompletedTasks.isChecked
-        }
-    }
-
-    private fun setupDefaultTaskType() {
-        updateDefaultTaskTypeText()
-        //binding.settingsdefault_task_type.text = getString(R.string.regular_event)
-        binding.settingsDefaultTaskTypeHolder.setOnClickListener {
-            SelectEventTypeDialog(this, config.defaultTaskTypeId, true, false, true, true) {
-                config.defaultTaskTypeId = it.id!!
-                updateDefaultTaskTypeText()
-            }
-        }
-    }
-
-    private fun updateDefaultTaskTypeText() {
+    private fun updateDefaultTaskTypeText(doubleView: ItemSettingsDoubleTextviewBinding) {
         if (config.defaultTaskTypeId == -1L) {
             runOnUiThread {
-                binding.settingsDefaultTaskType.text = getString(R.string.last_used_one)
+                doubleView.settingsValue.text = getString(R.string.last_used_one)
             }
         } else {
             ensureBackgroundThread {
                 val eventType = eventTypesDB.getEventTypeWithId(config.defaultTaskTypeId)
                 if (eventType != null) {
                     runOnUiThread {
-                        binding.settingsDefaultTaskType.text = eventType.title
+                        doubleView.settingsValue.text = eventType.title
                     }
                 } else {
                     config.defaultTaskTypeId = -1
-                    updateDefaultTaskTypeText()
+                    updateDefaultTaskTypeText(doubleView)
                 }
             }
         }
     }
 
-    private fun setupAllowChangingTimeZones() {
-        binding.settingsAllowChangingTimeZones.isChecked = config.allowChangingTimeZones
-        binding.settingsAllowChangingTimeZonesHolder.setOnClickListener {
-            binding.settingsAllowChangingTimeZones.toggle()
-            config.allowChangingTimeZones = binding.settingsAllowChangingTimeZones.isChecked
-        }
-    }
-
-    private fun setupDefaultStartTime() {
-        updateDefaultStartTimeText()
-        binding.settingsDefaultStartTimeHolder.setOnClickListener {
-            val currentDefaultTime = when (config.defaultStartTime) {
-                DEFAULT_START_TIME_NEXT_FULL_HOUR -> DEFAULT_START_TIME_NEXT_FULL_HOUR
-                DEFAULT_START_TIME_CURRENT_TIME -> DEFAULT_START_TIME_CURRENT_TIME
-                else -> 0
-            }
-
-            val items = ArrayList<RadioItem>()
-            items.add(RadioItem(DEFAULT_START_TIME_CURRENT_TIME, getString(R.string.current_time)))
-            items.add(RadioItem(DEFAULT_START_TIME_NEXT_FULL_HOUR, getString(R.string.next_full_hour)))
-            items.add(RadioItem(0, getString(R.string.other_time)))
-
-            RadioGroupDialog(this@SettingsActivity, items, currentDefaultTime) {
-                if (it as Int == DEFAULT_START_TIME_NEXT_FULL_HOUR || it == DEFAULT_START_TIME_CURRENT_TIME) {
-                    config.defaultStartTime = it
-                    updateDefaultStartTimeText()
-                } else {
-                    val timeListener = TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
-                        config.defaultStartTime = hourOfDay * 60 + minute
-                        updateDefaultStartTimeText()
-                    }
-
-                    val currentDateTime = DateTime.now()
-                    TimePickerDialog(
-                        this,
-                        getTimePickerDialogTheme(),
-                        timeListener,
-                        currentDateTime.hourOfDay,
-                        currentDateTime.minuteOfHour,
-                        config.use24HourFormat
-                    ).show()
-                }
-            }
-        }
-    }
-
-    private fun updateDefaultStartTimeText() {
+   private fun updateDefaultStartTimeText(view: ItemSettingsDoubleTextviewBinding) {
         when (config.defaultStartTime) {
-            DEFAULT_START_TIME_CURRENT_TIME -> binding.settingsDefaultStartTime.text = getString(R.string.current_time)
-            DEFAULT_START_TIME_NEXT_FULL_HOUR -> binding.settingsDefaultStartTime.text = getString(R.string.next_full_hour)
+            DEFAULT_START_TIME_CURRENT_TIME -> view.settingsValue.text = getString(R.string.current_time)
+            DEFAULT_START_TIME_NEXT_FULL_HOUR -> view.settingsValue.text = getString(R.string.next_full_hour)
             else -> {
                 val hours = config.defaultStartTime / 60
                 val minutes = config.defaultStartTime % 60
-                binding.settingsDefaultStartTime.text = String.format("%02d:%02d", hours, minutes)
+                view.settingsValue.text = String.format("%02d:%02d", hours, minutes)
             }
         }
-    }
+   }
 
-    private fun setupDefaultDuration() {
-        updateDefaultDurationText()
-        binding.settingsDefaultDurationHolder.setOnClickListener {
-            CustomIntervalPickerDialog(this, config.defaultDuration * 60) {
-                val result = it / 60
-                config.defaultDuration = result
-                updateDefaultDurationText()
-            }
-        }
-    }
-
-    private fun updateDefaultDurationText() {
+    private fun updateDefaultDurationText(view: ItemSettingsDoubleTextviewBinding) {
         val duration = config.defaultDuration
-        binding.settingsDefaultDuration.text = if (duration == 0) {
+        view.settingsValue.text = if (duration == 0) {
             "0 ${getString(R.string.minutes_raw)}"
         } else {
             getFormattedMinutes(duration, false)
         }
     }
 
-    private fun setupDefaultEventType() {
-        updateDefaultEventTypeText()
-        //binding.settingsdefault_event_type.text = getString(R.string.last_used_one)
-        binding.settingsDefaultEventTypeHolder.setOnClickListener {
-            SelectEventTypeDialog(this, config.defaultEventTypeId, true, false, true, true) {
-                config.defaultEventTypeId = it.id!!
-                updateDefaultEventTypeText()
-            }
-        }
-    }
-
-    private fun updateDefaultEventTypeText() {
+    private fun updateDefaultEventTypeText(doubleView: ItemSettingsDoubleTextviewBinding) {
         if (config.defaultEventTypeId == -1L) {
             runOnUiThread {
-                binding.settingsDefaultEventType.text = getString(R.string.last_used_one)
+                doubleView.settingsValue.text = getString(R.string.last_used_one)
             }
         } else {
             ensureBackgroundThread {
@@ -962,18 +1022,17 @@ class SettingsActivity : SimpleActivity() {
                 if (eventType != null) {
                     config.lastUsedCaldavCalendarId = eventType.caldavCalendarId
                     runOnUiThread {
-                        binding.settingsDefaultEventType.text = eventType.title
+                        doubleView.settingsValue.text = eventType.title
                     }
                 } else {
                     config.defaultEventTypeId = -1
-                    updateDefaultEventTypeText()
+                    updateDefaultEventTypeText(doubleView)
                 }
             }
         }
     }
 
-    private fun setupExportSettings() {
-        binding.settingsExportHolder.setOnClickListener {
+    private fun exportSettings() {
             val configItems = LinkedHashMap<String, Any>().apply {
                 //------------ Secure Commons Options -------------------
                 put(LAST_VERSION, config.lastVersion)
@@ -1052,36 +1111,6 @@ class SettingsActivity : SimpleActivity() {
             }
 
             exportSettings(configItems)
-        }
-    }
-
-    private fun setupImportSettings() {
-        binding.settingsImportHolder.setOnClickListener {
-            if (isQPlus()) {
-                Intent(Intent.ACTION_GET_CONTENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "text/plain"
-
-                    try {
-                        startActivityForResult(this, PICK_IMPORT_SOURCE_INTENT)
-                    } catch (e: ActivityNotFoundException) {
-                        toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
-                    } catch (e: Exception) {
-                        showErrorToast(e)
-                    }
-                }
-            } else {
-                handlePermission(PERMISSION_READ_STORAGE) {
-                    if (it) {
-                        FilePickerDialog(this) {
-                            ensureBackgroundThread {
-                                parseFile(File(it).inputStream())
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private fun parseFile(inputStream: InputStream?) {

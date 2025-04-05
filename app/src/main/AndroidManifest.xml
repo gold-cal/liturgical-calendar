@@ -16,12 +16,13 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
-    <!-- <uses-permission
-        android:name="android.permission.USE_FINGERPRINT"
+    <!--<uses-permission
+        android:name="android.permission.USE_BIOMETRIC"
         tools:node="remove" /> -->
 
     <queries>
-        <package android:name="com.simplemobiletools.contacts.pro.debug" />
+        <package android:name="org.fossify.contacts.debug" />
+        <package android:name="org.fossify.contacts" />
         <package android:name="com.simplemobiletools.contacts.pro" />
     </queries>
 
@@ -132,12 +133,12 @@
             android:label="@string/about"
             android:parentActivityName=".activities.MainActivity" />
 
-        <activity
+        <!-- <activity
             android:name="com.secure.commons.activities.ContributorsActivity"
             android:configChanges="orientation"
             android:exported="false"
             android:label="@string/contributors"
-            android:parentActivityName="com.secure.commons.activities.AboutActivity" />
+            android:parentActivityName="com.secure.commons.activities.AboutActivity" /> -->
 
         <activity
             android:name="com.secure.commons.activities.FAQActivity"

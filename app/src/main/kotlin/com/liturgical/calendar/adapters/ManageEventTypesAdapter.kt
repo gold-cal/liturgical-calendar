@@ -6,8 +6,7 @@ import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
 import com.liturgical.calendar.databinding.ItemEventTypeBinding
 import com.liturgical.calendar.extensions.eventsHelper
-import com.liturgical.calendar.helpers.LITURGICAL_EVENT_TYPE_ID
-import com.liturgical.calendar.helpers.REGULAR_EVENT_TYPE_ID
+import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.interfaces.DeleteEventTypesListener
 import com.liturgical.calendar.models.EventType
 import com.secure.commons.adapters.MyRecyclerViewAdapter
@@ -163,13 +162,9 @@ class ManageEventTypesAdapter(
 
         for (key in selectedKeys) {
             val type = getItemWithKey(key) ?: continue
-            if (type.id == REGULAR_EVENT_TYPE_ID) {
+            if (type.id == REGULAR_EVENT_TYPE_ID || type.id == BIRTHDAY_EVENT_TYPE_ID ||
+                type.id == LITURGICAL_EVENT_TYPE_ID || type.id == ANNI_EVENT_TYPE_ID || type.id == HOLY_DAY_EVENT_TYPE_ID) {
                 activity.toast(R.string.cannot_delete_default_type)
-                eventTypesToDelete.remove(type)
-                toggleItemSelection(false, getItemKeyPosition(type.id!!.toInt()))
-                break
-            } else if (type.id == LITURGICAL_EVENT_TYPE_ID) {
-                activity.toast(R.string.connot_delete_liturgical_type)
                 eventTypesToDelete.remove(type)
                 toggleItemSelection(false, getItemKeyPosition(type.id!!.toInt()))
                 break

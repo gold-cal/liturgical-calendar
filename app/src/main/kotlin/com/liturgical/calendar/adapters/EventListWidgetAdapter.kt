@@ -3,13 +3,14 @@ package com.liturgical.calendar.adapters
 import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
-//import android.view.View
+import android.widget.ListView
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.liturgical.calendar.R
 import com.liturgical.calendar.R.id.event_item_holder
 import com.liturgical.calendar.R.id.event_section_background
 import com.liturgical.calendar.R.id.event_section_title
+import com.liturgical.calendar.R.id.write_permissions_dialog_otg_image
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.extensions.getWidgetFontSize
@@ -59,7 +60,7 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
     }
 
     override fun getViewAt(position: Int): RemoteViews {
-        context.config.viewPosition = position
+        //context.config.viewPosition = position
         val type = getItemViewType(position)
         val remoteView: RemoteViews
 
@@ -116,7 +117,6 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
             }
 
             setText(R.id.event_item_time, timeText)
-
             setVisibleIf(R.id.event_item_time, !item.isAllDay || showItemTime)
 
 
@@ -131,6 +131,9 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
             } else {
                 setVisibleIf(R.id.event_item_time, !item.isAllDay)
             }
+            /*val debugText = "P: ${position}, T: ${Formatter.getNowTime()}"
+            setText(R.id.event_item_time, debugText)
+            setVisibleIf(R.id.event_item_time, true)*/
 
             if (item.isTask && item.isTaskCompleted && dimCompletedTasks || dimPastEvents && item.isPastEvent) {
                 curTextColor = weakTextColor
@@ -158,6 +161,8 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
                 setInt(R.id.event_item_title, "setPaintFlags", Paint.ANTI_ALIAS_FLAG)
             }
 
+
+
             Intent().apply {
                 putExtra(IS_TASK, item.isTask)
                 putExtra(EVENT_ID, item.id)
@@ -177,6 +182,8 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
             setTextColor(event_section_title, curTextColor)
             setTextSize(event_section_title, fontSize - 3f)
             setText(event_section_title, item.title)
+            /*val debugText = "P: ${position}, T: ${Formatter.getNowTime()}"
+            setText(event_section_title, debugText)*/
 
             applyColorFilter(event_section_background, dayBackgroundColor)
 
@@ -194,6 +201,8 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
             setTextColor(event_section_title, curTextColor)
             setTextSize(event_section_title, fontSize)
             setText(event_section_title, item.title)
+            /*val debugText = "P: ${position}, T: ${Formatter.getNowTime()}"
+            setText(event_section_title, debugText)*/
         }
     }
 
@@ -205,7 +214,7 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
 
     override fun getLoadingView() = null
 
-    override fun getViewTypeCount() = 3
+    override fun getViewTypeCount() = 3  // ITEM_EVENT, ITEM_SECTION_DAY, ITEM_SECTION_MONTH
 
     override fun onCreate() {}
 

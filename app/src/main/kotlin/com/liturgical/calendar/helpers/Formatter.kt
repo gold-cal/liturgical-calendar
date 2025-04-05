@@ -42,6 +42,11 @@ object Formatter {
         return date
     }
 
+    fun getNowTime(): String {
+        val dateTime = getDateTimeFromTS(getNowSeconds())
+        return dateTime.toString(TIME_PATTERN)
+    }
+
     fun getDayTitle(context: Context, dayCode: String, addDayOfWeek: Boolean = true): String {
         val date = getDateFromCode(context, dayCode)
         val dateTime = getDateTimeFromCode(dayCode)
@@ -130,11 +135,7 @@ object Formatter {
 
     fun getDayCodeFromTS(ts: Long): String {
         val daycode = getDateTimeFromTS(ts).toString(DAYCODE_PATTERN)
-        return if (daycode.isNotEmpty()) {
-            daycode
-        } else {
-            "0"
-        }
+        return daycode.ifEmpty { "0" }
     }
 
     fun getUTCDayCodeFromTS(ts: Long) = getUTCDateTimeFromTS(ts).toString(DAYCODE_PATTERN)

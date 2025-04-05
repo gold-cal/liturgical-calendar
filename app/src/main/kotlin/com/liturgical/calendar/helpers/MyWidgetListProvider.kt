@@ -8,16 +8,20 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
+import androidx.core.content.ContextCompat.startActivity
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SplashActivity
+import com.liturgical.calendar.activities.WidgetListConfigureActivity
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.services.WidgetService
 import com.secure.commons.extensions.*
+import com.secure.commons.helpers.IS_CUSTOMIZING_COLORS
 import com.secure.commons.helpers.ensureBackgroundThread
 import org.joda.time.DateTime
 
 class MyWidgetListProvider : AppWidgetProvider() {
     //private val NEW_EVENT = "new_event"
+    private val OPEN_SETTINGS = "open_settings"
     private val UPDATE_CAL = "update_cal"
     private val LAUNCH_CAL = "launch_cal"
     //private val GO_TO_TODAY = "go_to_today"
@@ -39,7 +43,6 @@ class MyWidgetListProvider : AppWidgetProvider() {
                     applyColorFilter(R.id.widget_event_list_background, context.config.widgetBgColor)
                     setTextColor(R.id.widget_event_list_empty, textColor)
                     setTextSize(R.id.widget_event_list_empty, fontSize)
-
                     setTextColor(R.id.widget_event_list_today, textColor)
                     setTextSize(R.id.widget_event_list_today, fontSize)
                 }
@@ -47,6 +50,9 @@ class MyWidgetListProvider : AppWidgetProvider() {
                 views.setImageViewBitmap(R.id.widget_event_update_event, context.resources.getColoredBitmap(R.drawable.ic_update_vector, textColor))
                 setupIntent(context, views, UPDATE_CAL, R.id.widget_event_update_event)
                 setupIntent(context, views, LAUNCH_CAL, R.id.widget_event_list_today)
+
+                views.setImageViewBitmap(R.id.widget_event_settings, context.resources.getColoredBitmap(R.drawable.ic_settings_cog_vector, textColor))
+                setupIntent(context,views, OPEN_SETTINGS, R.id.widget_event_settings)
 
                 views.setImageViewBitmap(R.id.widget_event_go_to_today, context.resources.getColoredBitmap(R.drawable.ic_today_vector, textColor))
                 setupIntent(context, views, SCROLL_TO_TODAY, R.id.widget_event_go_to_today)
@@ -85,6 +91,7 @@ class MyWidgetListProvider : AppWidgetProvider() {
             UPDATE_CAL -> updateCalendar(context) //context.launchNewEventOrTaskActivity()
             LAUNCH_CAL -> launchCalenderInDefaultView(context)
             SCROLL_TO_TODAY -> scrollToToday(context) //goToToday(context)
+            OPEN_SETTINGS -> openSettings(context)
             else -> super.onReceive(context, intent)
         }
     }
@@ -146,6 +153,16 @@ class MyWidgetListProvider : AppWidgetProvider() {
             }
             appWidgetManager.updateAppWidget(it, view)
             appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widget_event_list)
+        }
+    }
+
+    private fun openSettings(context: Context) {
+        val appWidgetManager = AppWidgetManager.getInstance(context) ?: return
+        val widget = appWidgetManager.getAppWidgetIds(getComponentName(context))
+        Intent(context, WidgetListConfigureActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            putExtra(APP_WIDGET_ID, widget[0])
+            context.startActivity(this)
         }
     }
 }

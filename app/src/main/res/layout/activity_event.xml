@@ -24,22 +24,6 @@
         app:title="@string/app_launcher_name"
         app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle"/>
 
-    <!-- <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/event_app_bar_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/event_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
-            app:menu="@menu/menu_event"
-            app:title="@string/app_launcher_name"
-            app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
-
-    </com.google.android.material.appbar.AppBarLayout> -->
-
     <ScrollView
         android:id="@+id/event_scrollview"
         android:layout_width="match_parent"

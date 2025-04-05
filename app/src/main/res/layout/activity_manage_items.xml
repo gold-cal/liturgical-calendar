@@ -21,22 +21,6 @@
         app:title=""
         app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle"/>
 
-    <!-- <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/manage_event_types_app_bar_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/manage_event_types_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
-            app:menu="@menu/menu_event_types"
-            app:title="@string/manage_event_types"
-            app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
-
-    </com.google.android.material.appbar.AppBarLayout> -->
-
     <com.secure.commons.views.MyRecyclerView
         android:id="@+id/manage_items_list"
         android:layout_width="match_parent"

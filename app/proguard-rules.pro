@@ -1,4 +1,5 @@
 -keep class com.ligurgical.calendar.models.** { *; }
+-dontwarn javax.swing.tree.TreeNode
 
 -renamesourcefileattribute SourceFile
 -keepattributes SourceFile, LineNumberTable

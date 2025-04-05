@@ -1,7 +1,6 @@
 package com.liturgical.calendar.activities
 
 import android.os.Bundle
-import android.view.Menu
 import com.liturgical.calendar.R
 import com.liturgical.calendar.adapters.ManageEventTypesAdapter
 import com.liturgical.calendar.databinding.ActivityManageItemsBinding

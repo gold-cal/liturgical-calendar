@@ -119,7 +119,7 @@ class EventListAdapter(
     fun togglePrintMode() {
         isPrintVersion = !isPrintVersion
         textColor = if (isPrintVersion) {
-            resources.getColor(R.color.theme_light_text_color)
+            resources.getColor(R.color.theme_light_text_color, null)
         } else {
             activity.getProperTextColor()
         }

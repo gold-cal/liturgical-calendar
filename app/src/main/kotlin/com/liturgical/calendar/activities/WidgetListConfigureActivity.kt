@@ -60,7 +60,6 @@ class WidgetListConfigureActivity : SimpleActivity() {
             binding.configEventsList.adapter = this
         }
 
-        //period_picker_holder.background = ColorDrawable(getProperBackgroundColor())
         binding.periodPickerHolder.background.applyColorFilter(getProperBackgroundColor())
         binding.periodPickerValue.setOnClickListener { showPeriodSelector() }
 
@@ -73,7 +72,6 @@ class WidgetListConfigureActivity : SimpleActivity() {
 
         val primaryColor = getProperPrimaryColor()
         binding.configBgSeekbar.setColors(mTextColor, primaryColor, primaryColor)
-        //config_day_seekbar.setColors(mTextColor, primaryColor, primaryColor)
 
         updateSelectedPeriod(config.lastUsedEventSpan)
     }

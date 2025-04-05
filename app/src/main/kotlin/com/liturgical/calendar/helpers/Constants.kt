@@ -27,14 +27,19 @@ const val CALDAV = "Caldav"
 const val VIEW_TO_OPEN = "view_to_open"
 const val SHORTCUT_NEW_EVENT = "shortcut_new_event"
 const val SHORTCUT_NEW_TASK = "shortcut_new_task"
-const val REGULAR_EVENT_TYPE_ID = 1L
-const val LITURGICAL_EVENT_TYPE_ID = 3L
 const val TIME_ZONE = "time_zone"
 const val CURRENT_TIME_ZONE = "current_time_zone"
 const val IS_FIRST_RUN = "is_first_run"
 const val DELETE_OLD_EVENTS = "delete_old_events"
 const val DELETE_EVENTS_OLDER_THEN = "delete_events_older_then"
 const val TODAY_POSITION = "today_position"
+
+// EventType Ids
+const val REGULAR_EVENT_TYPE_ID = 1L
+const val BIRTHDAY_EVENT_TYPE_ID = 2L
+const val LITURGICAL_EVENT_TYPE_ID = 3L
+const val ANNI_EVENT_TYPE_ID = 4L
+const val HOLY_DAY_EVENT_TYPE_ID = 5L
 
 // Main window view
 const val MONTHLY_VIEW = 1
@@ -94,6 +99,7 @@ const val DISPLAY_EVENT_TYPES = "display_event_types"
 const val QUICK_FILTER_EVENT_TYPES = "quick_filter_event_types"
 const val LIST_WIDGET_VIEW_TO_OPEN = "list_widget_view_to_open"
 const val LIST_WIDGET_DAY_POSITION = "list_widget_day_position"
+const val APP_WIDGET_ID = "appWidgetId"
 const val CALDAV_SYNC = "caldav_sync"
 const val WIDGET_UPDATE = "widget_update"
 const val CALDAV_SYNCED_CALENDAR_IDS = "caldav_synced_calendar_ids"

@@ -3,43 +3,6 @@
     <string name="package_name">com.liturgical.calendar</string>
 
     <!-- Release notes -->
-    <string name="release_1">This is the initial release for the Liturgical Calendar</string>
-    <string name="release_2">Updated the widget layout and main app layouts\nCode improvements</string>
-    <string name="release_3">Updated about dialog</string>
-    <string name="release_4">Updated the list widget customization and layout</string>
-    <string name="release_5">Fixed widget not showing time\nUpdated widget layout\nAdded settings parameter for future use</string>
-    <string name="release_6">Updated birthday and anniversary event editing</string>
-    <string name="release_7">Fixed button text color to match accent color</string>
-    <string name="release_8">Fixed a crash when trying to edit a Birthday or Anniversary\n
-                             Added a colored background to the day of the widget background\n
-                             Updated layout for configuring the layout of the widget</string>
-    <string name="release_9">Updated go to today function for list Widget\n
-                             Updated About page\n
-                             Added code for adding Easter to calendar, but its not functional yet\n
-                             Fixed incorrect calendar items</string>
-    <string name="release_10">Added an option in settings to display labels for birthdays and anniversaries\n
-                              Made some UI improvements to the widget layout</string>
-    <string name="release_11">Updated layout for adding new events\n
-                              Updated calendar items\n
-                              Added reload button to widget</string>
-    <string name="release_12">Added Saints to Jan 14\n
-                              Added Our Lady of Sorrows to Sep 15\n
-                              Fixed Event titles not showing the entire title\n
-                              Fixed Task Icon getting very large on multi-line tasks\n
-                              Updated Task Creation Layout\n
-                              Added setting for default task type</string>
-    <string name="release_14">Fixed bug where changing the default event changed the default task type\n
-                              Updates to calendar items</string>
-    <string name="release_15">Updated widget refresh so it works after updating app\n
-                              Updated calendar refresh interval\n
-                              Added option to not show this view on app update under settings/general</string>
-    <string name="release_16">Fixed bug where task icon would not resize properly\n
-                              Fixed bug in the liturgical calendar refresh</string>
-    <string name="release_17">Squashed some bugs and fixed some formatting issues</string>
-    <string name="release_18">More bugs squashed!</string>
-    <string name="release_19">Compressed some resources to make smaller app size and improved performance\n
-                              Added option to show description in widget view\n
-                              Added option to unsync contact birthdays/anniversaries</string>
     <string name="release_20">Calendar now automatically adds EASTER!\n
                               Added some new rules for yearly event repetition\n
                               Easter dependent events to follow…</string>

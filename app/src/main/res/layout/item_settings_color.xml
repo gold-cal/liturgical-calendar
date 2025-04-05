@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settings_color_holder"
+    style="@style/SettingsHolderTextViewStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/ripple_all_corners">
+
+    <com.secure.commons.views.MyTextView
+        android:id="@+id/settings_color_text_label"
+        style="@style/SettingsTextLabelStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/settings_color"
+        android:layout_alignBottom="@+id/settings_color"
+        android:layout_toStartOf="@+id/settings_color"
+        android:gravity="center_vertical|start"
+        android:text="@string/highlight_weekends_color" />
+
+    <ImageView
+        android:id="@+id/settings_color"
+        android:layout_width="@dimen/color_sample_size"
+        android:layout_height="@dimen/color_sample_size"
+        android:layout_alignParentEnd="true"
+        android:clickable="false" />
+
+</RelativeLayout>

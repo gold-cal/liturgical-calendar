@@ -85,7 +85,8 @@ class EventsHelper(val context: Context) {
     fun getEventTypeWithCalDAVCalendarId(calendarId: Int) = eventTypesDB.getEventTypeWithCalDAVCalendarId(calendarId)
 
     fun deleteEventTypes(eventTypes: ArrayList<EventType>, deleteEvents: Boolean) {
-        val typesToDelete = eventTypes.asSequence().filter { it.caldavCalendarId == 0 && it.id != REGULAR_EVENT_TYPE_ID }.toMutableList()
+        val typesToDelete = eventTypes.asSequence().filter { it.caldavCalendarId == 0 && it.id != REGULAR_EVENT_TYPE_ID && it.id != BIRTHDAY_EVENT_TYPE_ID
+            && it.id != ANNI_EVENT_TYPE_ID }.toMutableList()
         val deleteIds = typesToDelete.map { it.id }.toMutableList()
         val deletedSet = deleteIds.map { it.toString() }.toHashSet()
         config.removeDisplayEventTypes(deletedSet)
@@ -126,13 +127,6 @@ class EventsHelper(val context: Context) {
 
         callback?.invoke(event.id!!)
     }
-
-    /*fun isTask(id: Long, callback: (contain: Boolean) -> Unit) {
-        ensureBackgroundThread {
-            val task = eventsDB.getTaskWithId(id)
-            callback(task != null)
-        }
-    }*/
 
     fun insertTask(task: Event, showToasts: Boolean, callback: () -> Unit) {
         task.id = eventsDB.insertOrUpdate(task)
@@ -301,7 +295,7 @@ class EventsHelper(val context: Context) {
     }
 
     fun getEventsSync(fromTS: Long, toTS: Long, eventId: Long = -1L, applyTypeFilter: Boolean, callback: (events: ArrayList<Event>) -> Unit) {
-        val birthDayEventId = getLocalBirthdaysEventTypeId(createIfNotExists = false)
+        val birthDayEventId = getBirthdaysEventTypeId(createIfNotExists = false)
         val anniversaryEventId = getAnniversariesEventTypeId(createIfNotExists = false)
 
         var events = ArrayList<Event>()
@@ -404,12 +398,12 @@ class EventsHelper(val context: Context) {
         return insertOrUpdateEventTypeSync(eventType)
     }
 
-    fun getLiturgicalEventTypeId(): Long {return  getLocalEventTypeIdWithClass(LITURGICAL_EVENT)}
+    fun getLiturgicalEventTypeId(): Long {return  getEventTypeIdWithClass(LITURGICAL_EVENT)}
 
     //fun getHolydayEventTypeId(): Long {return getLocalEventTypeIdWithClass(HOLYDAY_EVENT)}
 
-    fun getLocalBirthdaysEventTypeId(createIfNotExists: Boolean = true): Long {
-        var eventTypeId = getLocalEventTypeIdWithClass(BIRTHDAY_EVENT)
+    fun getBirthdaysEventTypeId(createIfNotExists: Boolean = true): Long {
+        var eventTypeId = getEventTypeIdWithClass(BIRTHDAY_EVENT)
         if (eventTypeId == -1L && createIfNotExists) {
             val birthdays = context.getString(R.string.birthdays)
             eventTypeId = createPredefinedEventType(birthdays, R.color.default_birthdays_color, BIRTHDAY_EVENT)
@@ -418,7 +412,7 @@ class EventsHelper(val context: Context) {
     }
 
     fun getAnniversariesEventTypeId(createIfNotExists: Boolean = true): Long {
-        var eventTypeId = getLocalEventTypeIdWithClass(ANNIVERSARY_EVENT)
+        var eventTypeId = getEventTypeIdWithClass(ANNIVERSARY_EVENT)
         if (eventTypeId == -1L && createIfNotExists) {
             val anniversaries = context.getString(R.string.anniversaries)
             eventTypeId = createPredefinedEventType(anniversaries, R.color.default_anniversaries_color, ANNIVERSARY_EVENT)
