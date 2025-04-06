@@ -1,4 +1,4 @@
 include ':app'
-//include 'commons'
+include 'commons'
 
-//project(':commons').projectDir = file( '/home/james/Projects/Commons/Secure-Commons/commons')
+project(':commons').projectDir = file( '/home/james/Projects/Commons/Secure-Commons/commons')
