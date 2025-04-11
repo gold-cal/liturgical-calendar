@@ -133,12 +133,11 @@
             android:label="@string/about"
             android:parentActivityName=".activities.MainActivity" />
 
-        <!-- <activity
-            android:name="com.secure.commons.activities.ContributorsActivity"
-            android:configChanges="orientation"
-            android:exported="false"
-            android:label="@string/contributors"
-            android:parentActivityName="com.secure.commons.activities.AboutActivity" /> -->
+        <activity
+            android:name="com.secure.commons.activities.CrashActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:label="Crash Report" />
 
         <activity
             android:name="com.secure.commons.activities.FAQActivity"

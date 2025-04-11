@@ -126,7 +126,8 @@ class EventActivity : SimpleActivity() {
             config.lastUsedLocalEventTypeId = REGULAR_EVENT_TYPE_ID
         }
 
-        setEventTypes()
+        val isSet = setEventTypes()
+        if (!isSet) return
 
         if (event != null) {
             mEvent = event
@@ -985,11 +986,21 @@ class EventActivity : SimpleActivity() {
         if (mIsSpecialEvent) setSpecialEvent()
     }
 
-    private fun setEventTypes() {
+    private fun setEventTypes(): Boolean {
         val birth = mStoredEventTypes.firstOrNull { it.type == BIRTHDAY_EVENT }
         if (birth != null) mBirthdayEventType = birth
+        else {
+            toast("Failed to get Birthday event type!")
+            return false
+        }
         val ann = mStoredEventTypes.firstOrNull { it.type == ANNIVERSARY_EVENT }
         if (ann != null) mAnniversaryEventType = ann
+        else {
+            toast("Failed to get Anniversary event type!")
+            return false
+        }
+
+        return true
     }
 
     private fun checkIsSpecialEvent() {

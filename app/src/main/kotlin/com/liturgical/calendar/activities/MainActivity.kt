@@ -85,6 +85,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
+
         setContentView(binding.root)
         appLaunched(BuildConfig.APPLICATION_ID)
         setupOptionsMenu()
@@ -146,7 +149,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
         addBirthdaysAnniversariesAtStart()
         // Add all the liturgical calendar stuff
-        addLiturgicalCalendar()
+        //addLiturgicalCalendar()
         // Add the birthday and anniversary calendar types
         //createEventTypes()
         // Check if there are old calendar items to delete
@@ -1399,7 +1402,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         updateViewPager(dayCode)
     }
 
-    private fun addLiturgicalCalendar() {
+    /*private fun addLiturgicalCalendar() {
         var tlcRefreshListener = config.tlcRefresh
         val refresh = config.isRefresh
         val todayDateTime = Formatter.getDateTimeFromCode(Formatter.getDayCodeFromTS(getNowSeconds())) // no time
@@ -1426,7 +1429,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 }
             }
         }
-    }
+    }*/
 
     /*private fun createEventTypes() {
         if (config.isFirstRun) {

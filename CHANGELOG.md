@@ -1,6 +1,12 @@
 Changelog
 ==========
 
+Version 1.2.2 *(2025-04-10)*
+----------------------------
+* Fixed a bug where birthdays would get duplicated when syncing with contacts
+* Added a crash handler
+* Updated dependencies
+* Code improvements and smaller app size
 
 Version 1.2 *(2025-03-21)*
 ----------------------------

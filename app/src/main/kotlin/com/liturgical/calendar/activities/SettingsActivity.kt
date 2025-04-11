@@ -1025,7 +1025,7 @@ class SettingsActivity : SimpleActivity() {
                         doubleView.settingsValue.text = eventType.title
                     }
                 } else {
-                    config.defaultEventTypeId = -1
+                    config.defaultEventTypeId = -1L
                     updateDefaultEventTypeText(doubleView)
                 }
             }
@@ -1174,8 +1174,8 @@ class SettingsActivity : SimpleActivity() {
                 CALDAV_SYNC -> config.caldavSync = value.toBoolean()
                 CALDAV_SYNCED_CALENDAR_IDS -> config.caldavSyncedCalendarIds = value.toString()
                 LAST_USED_CALDAV_CALENDAR -> config.lastUsedCaldavCalendarId = value.toInt()
-                LAST_USED_LOCAL_EVENT_TYPE_ID -> config.lastUsedLocalEventTypeId = value.toString().toLong()
-                LAST_USED_TASK_TYPE_ID -> config.lastUsedTaskTypeId = value.toString().toLong()
+                //LAST_USED_LOCAL_EVENT_TYPE_ID -> config.lastUsedLocalEventTypeId = value.toString().toLong()
+                //LAST_USED_TASK_TYPE_ID -> config.lastUsedTaskTypeId = value.toString().toLong()
                 REMINDER_AUDIO_STREAM -> config.reminderAudioStream = value.toInt()
                 REPLACE_DESCRIPTION -> config.replaceDescription = value.toBoolean()
                 DISPLAY_DESCRIPTION -> config.displayDescription = value.toBoolean()
@@ -1190,8 +1190,8 @@ class SettingsActivity : SimpleActivity() {
                 PULL_TO_REFRESH -> config.pullToRefresh = value.toBoolean()
                 DEFAULT_START_TIME -> config.defaultStartTime = value.toInt()
                 DEFAULT_DURATION -> config.defaultDuration = value.toInt()
-                DEFAULT_EVENT_TYPE_ID -> config.defaultEventTypeId = value.toString().toLong()
-                DEFAULT_TASK_TYPE_ID -> config.defaultTaskTypeId = value.toString().toLong()
+                //DEFAULT_EVENT_TYPE_ID -> config.defaultEventTypeId = value.toString().toLong()
+                //DEFAULT_TASK_TYPE_ID -> config.defaultTaskTypeId = value.toString().toLong()
                 ALLOW_CHANGING_TIME_ZONES -> config.allowChangingTimeZones = value.toBoolean()
                 ADD_BIRTHDAYS_AUTOMATICALLY -> config.addBirthdaysAutomatically = value.toBoolean()
                 ADD_ANNIVERSARIES_AUTOMATICALLY -> config.addAnniversariesAutomatically = value.toBoolean()
