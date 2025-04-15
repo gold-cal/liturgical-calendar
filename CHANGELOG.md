@@ -1,6 +1,10 @@
 Changelog
 ==========
 
+Version 1.2.2 *(2025-04-14)*
+----------------------------
+* Fixed crash when exporting settings
+
 Version 1.2.2 *(2025-04-10)*
 ----------------------------
 * Fixed a bug where birthdays would get duplicated when syncing with contacts
