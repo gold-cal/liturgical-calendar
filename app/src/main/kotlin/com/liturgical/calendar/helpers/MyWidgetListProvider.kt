@@ -147,7 +147,7 @@ class MyWidgetListProvider : AppWidgetProvider() {
             if (context.config.listWidgetDayPosition == 0) {
                 view.setScrollPosition(R.id.widget_event_list, context.config.currentScrollPosition)
             } else if (context.config.viewPosition <= context.config.listWidgetDayPosition) {
-                view.setScrollPosition(R.id.widget_event_list, context.config.listWidgetDayPosition + 10)
+                view.setScrollPosition(R.id.widget_event_list, context.config.currentScrollPosition + 10)
             } else {
                 view.setScrollPosition(R.id.widget_event_list, context.config.listWidgetDayPosition)
             }

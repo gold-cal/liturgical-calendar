@@ -39,6 +39,7 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
     private var showDescription = context.config.showWidgetDescription
     private var showBirthAnnDes = context.config.showBirthdayAnniversaryDescription
     private var fontSize = context.getWidgetFontSize()
+    private var datasetChanged = false
     //private var mediumMargin = context.resources.getDimension(R.dimen.medium_margin).toInt()
     private var tinyMargin = context.resources.getDimension(R.dimen.tiny_margin).toInt()
 
@@ -59,10 +60,18 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
         showBirthAnnDes = context.config.showBirthdayAnniversaryDescription
     }
 
+    /*private fun goToToday() {
+        val view = RemoteViews(context.packageName, R.layout.widget_event_list)
+        view.setScrollPosition(R.id.widget_event_list, context.config.currentScrollPosition)
+        datasetChanged = false
+    }*/
+
     override fun getViewAt(position: Int): RemoteViews {
-        //context.config.viewPosition = position
+        context.config.viewPosition = position
         val type = getItemViewType(position)
         val remoteView: RemoteViews
+
+        //if (datasetChanged) goToToday()
 
         if (type == ITEM_EVENT) {
             val event = events[position] as ListEvent
@@ -161,8 +170,6 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
                 setInt(R.id.event_item_title, "setPaintFlags", Paint.ANTI_ALIAS_FLAG)
             }
 
-
-
             Intent().apply {
                 putExtra(IS_TASK, item.isTask)
                 putExtra(EVENT_ID, item.id)
@@ -222,9 +229,11 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
 
     override fun onDataSetChanged() {
         initConfigValues()
+        val displayPastEvents = context.config.displayPastEvents
+        //datasetChanged = displayPastEvents != 0
         val period = intent.getIntExtra(EVENT_LIST_PERIOD, 0)
         val currentDate = DateTime()
-        val fromTS = currentDate.seconds() - context.config.displayPastEvents * 60
+        val fromTS = currentDate.seconds() - displayPastEvents * 60
         val toTS = when (period) {
             0 -> currentDate.plusYears(1).seconds()
             EVENT_PERIOD_TODAY -> currentDate.withTime(23, 59, 59, 999).seconds()

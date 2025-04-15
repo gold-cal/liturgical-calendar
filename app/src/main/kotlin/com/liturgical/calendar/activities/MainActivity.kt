@@ -149,9 +149,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
         addBirthdaysAnniversariesAtStart()
         // Add all the liturgical calendar stuff
-        //addLiturgicalCalendar()
+        addLiturgicalCalendar()
         // Add the birthday and anniversary calendar types
-        //createEventTypes()
+        createEventTypes()
         // Check if there are old calendar items to delete
         checkDeleteOldEvents()
 
@@ -1402,7 +1402,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         updateViewPager(dayCode)
     }
 
-    /*private fun addLiturgicalCalendar() {
+    private fun addLiturgicalCalendar() {
         var tlcRefreshListener = config.tlcRefresh
         val refresh = config.isRefresh
         val todayDateTime = Formatter.getDateTimeFromCode(Formatter.getDayCodeFromTS(getNowSeconds())) // no time
@@ -1429,9 +1429,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 }
             }
         }
-    }*/
+    }
 
-    /*private fun createEventTypes() {
+    private fun createEventTypes() {
         if (config.isFirstRun) {
             ensureBackgroundThread {
                 val nameB = getString(R.string.birthdays)
@@ -1443,7 +1443,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 }
             }
         }
-    }*/
+    }
 
     private fun  checkDeleteOldEvents() {
         // check if this feature has been enabled

@@ -289,11 +289,11 @@ class WeekFragmentsHolder : MyFragmentHolder(), WeekFragmentListener {
     }
 
     override fun getFullFragmentHeight() =
-        weekHolder!!.weekViewHolder.height - weekHolder!!.weekViewSeekbar.height - weekHolder!!.weekViewDaysCountDivider.divider.height
+        weekHolder!!.weekViewHolder.height - weekHolder!!.weekViewSeekbar.height - weekHolder!!.weekViewDaysCountDivider.height
 
     override fun printView() {
         weekHolder!!.apply {
-            weekViewDaysCountDivider.divider.beGone()
+            weekViewDaysCountDivider.beGone()
             weekViewSeekbar.beGone()
             weekViewDaysCount.beGone()
             addHours(resources.getColor(R.color.theme_light_text_color, null))
@@ -304,7 +304,7 @@ class WeekFragmentsHolder : MyFragmentHolder(), WeekFragmentListener {
                 requireContext().printBitmap(weekHolder!!.weekViewHolder.getViewBitmap())
 
                 Handler(Looper.getMainLooper()).postDelayed({
-                    weekViewDaysCountDivider.divider.beVisible()
+                    weekViewDaysCountDivider.beVisible()
                     weekViewSeekbar.beVisible()
                     weekViewDaysCount.beVisible()
                     addHours()
