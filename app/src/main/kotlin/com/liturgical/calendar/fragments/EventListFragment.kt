@@ -17,10 +17,7 @@ import com.liturgical.calendar.databinding.FragmentEventListBinding
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.EVENTS_LIST_VIEW
 import com.liturgical.calendar.helpers.Formatter
-import com.liturgical.calendar.models.Event
-import com.liturgical.calendar.models.ListEvent
-import com.liturgical.calendar.models.ListItem
-import com.liturgical.calendar.models.ListSectionDay
+import com.liturgical.calendar.models.*
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.MONTH_SECONDS
 import com.secure.commons.interfaces.RefreshRecyclerViewListener

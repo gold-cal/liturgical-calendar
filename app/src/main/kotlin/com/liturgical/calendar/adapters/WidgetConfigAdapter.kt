@@ -1,8 +1,6 @@
 package com.liturgical.calendar.adapters
 
-/* This adapter sets up the view for configuring the widget colors
-* TODO: Make this view and normal list view use the same item_event.xml
-*/
+/*** This adapter sets up the view for configuring the widget colors ***/
 
 import android.view.Menu
 import android.view.View
@@ -29,16 +27,10 @@ class WidgetConfigAdapter(
     recyclerView: MyRecyclerView, itemClick: (Any) -> Unit
 ) : MyRecyclerViewAdapter(activity, recyclerView, itemClick) {
 
-    //private val allDayString = resources.getString(R.string.all_day)
-    //private val displayDescription = activity.config.displayDescription
-    //private val replaceDescription = activity.config.replaceDescription
     private val dimPastEvents = activity.config.dimPastEvents
     private val dimCompletedTasks = activity.config.dimCompletedTasks
     private val now = getNowSeconds()
-    //private var use24HourFormat = activity.config.use24HourFormat
-    //private var currentItemsHash = listItems.hashCode()
     private var isPrintVersion = false
-    //private val mediumMargin = activity.resources.getDimension(R.dimen.medium_margin).toInt()
 
     init {
         setupDragListener(true)
@@ -97,31 +89,6 @@ class WidgetConfigAdapter(
         else -> ITEM_SECTION_MONTH
     }
 
-    /*fun toggle24HourFormat(use24HourFormat: Boolean) {
-        this.use24HourFormat = use24HourFormat
-        notifyDataSetChanged()
-    }*/
-
-    /*fun updateListItems(newListItems: ArrayList<ListItem>) {
-        if (newListItems.hashCode() != currentItemsHash) {
-            currentItemsHash = newListItems.hashCode()
-            listItems = newListItems.clone() as ArrayList<ListItem>
-            recyclerView.resetItemCount()
-            notifyDataSetChanged()
-            finishActMode()
-        }
-    }*/
-
-    /*fun togglePrintMode() {
-        isPrintVersion = !isPrintVersion
-        textColor = if (isPrintVersion) {
-            resources.getColor(R.color.theme_light_text_color)
-        } else {
-            activity.getProperTextColor()
-        }
-        notifyDataSetChanged()
-    }*/
-
     private fun setupListEvent(view: View, listEvent: ListEvent) {
         EventListItemWidgetBinding.bind(view).apply {
             eventItemHolder.isSelected = selectedKeys.contains(listEvent.hashCode())
@@ -131,18 +98,18 @@ class WidgetConfigAdapter(
             if (listEvent.isAllDay) eventItemTime.beGone()
             if (listEvent.startTS != listEvent.endTS) {
                 if (!listEvent.isAllDay) {
-                    eventItemTime.text = "${eventItemTime.text} - ${Formatter.getTimeFromTS(root.context, listEvent.endTS)}"
+                    val itemTimeText = "${eventItemTime.text} - ${Formatter.getTimeFromTS(root.context, listEvent.endTS)}"
+                    eventItemTime.text = itemTimeText
                 }
 
                 val startCode = Formatter.getDayCodeFromTS(listEvent.startTS)
                 val endCode = Formatter.getDayCodeFromTS(listEvent.endTS)
                 if (startCode != endCode) {
-                    eventItemTime.text = "${eventItemTime.text} (${Formatter.getDateDayTitle(endCode)})"
+                    val itemTimeText = "${eventItemTime.text} (${Formatter.getDateDayTitle(endCode)})"
+                    eventItemTime.text = itemTimeText
                 }
             }
 
-            //event_item_description.text = if (replaceDescription) listEvent.location else listEvent.description.replace("\n", " ")
-            //event_item_description.beVisibleIf(displayDescription && event_item_description.text.isNotEmpty())
             eventItemColorBar.applyColorFilter(listEvent.color)
 
             var newTextColor = textColor
@@ -165,7 +132,6 @@ class WidgetConfigAdapter(
 
             eventItemTime.setTextColor(newTextColor)
             eventItemTitle.setTextColor(newTextColor)
-            //event_item_description.setTextColor(newTextColor)
             eventItemTaskImage.applyColorFilter(newTextColor)
             eventItemTaskImage.beVisibleIf(listEvent.isTask)
         }
@@ -186,32 +152,4 @@ class WidgetConfigAdapter(
             eventSectionTitle.setTextColor(properAccentColor)
         }
     }
-
-    //private fun shareEvents() = activity.shareEvents(getSelectedEventIds())
-
-    /*private fun getSelectedEventIds() =
-        listItems.filter { it is ListEvent && selectedKeys.contains(it.hashCode()) }.map { (it as ListEvent).id }.toMutableList() as ArrayList<Long>*/
-
-    /*private fun askConfirmDelete() {
-        val eventIds = getSelectedEventIds()
-        val eventsToDelete = listItems.filter { selectedKeys.contains((it as? ListEvent)?.hashCode()) } as List<ListEvent>
-        val timestamps = eventsToDelete.mapNotNull { (it as? ListEvent)?.startTS }
-
-        val hasRepeatableEvent = eventsToDelete.any { it.isRepeatable }
-        DeleteEventDialog(activity, eventIds, hasRepeatableEvent) {
-            listItems.removeAll(eventsToDelete)
-
-            ensureBackgroundThread {
-                val nonRepeatingEventIDs = eventsToDelete.filter { !it.isRepeatable }.mapNotNull { it.id }.toMutableList()
-                activity.eventsHelper.deleteEvents(nonRepeatingEventIDs, true)
-
-                val repeatingEventIDs = eventsToDelete.filter { it.isRepeatable }.map { it.id }
-                activity.handleEventDeleting(repeatingEventIDs, timestamps, it)
-                activity.runOnUiThread {
-                    listener?.refreshItems()
-                    finishActMode()
-                }
-            }
-        }
-    }*/
 }

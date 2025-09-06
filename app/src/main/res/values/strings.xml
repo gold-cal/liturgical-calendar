@@ -240,6 +240,7 @@
     <string name="last_used_one">Last used one</string>
     <string name="other_time">Other time</string>
     <string name="highlight_weekends">Highlight weekends on some views</string>
+    <string name="allow_dbg">Allow App Debug (for current instance)</string>
     <string name="show_whats_new">Show whats new dialog</string>
     <string name="highlight_weekends_color">Color of highlighted weekends</string>
     <string name="allow_changing_time_zones">Allow changing event time zones</string>

@@ -26,6 +26,7 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
     private val dimPastEvents = activity.config.dimPastEvents
     private val dimCompletedTasks = activity.config.dimCompletedTasks
     private var isPrintVersion = false
+    private var isDgb = activity.config.allowAppDbg
     private val mediumMargin = activity.resources.getDimension(R.dimen.medium_margin).toInt()
 
     init {
@@ -87,7 +88,9 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
             eventItemTitle.text = event.title
             eventItemTitle.checkViewStrikeThrough(event.isTaskCompleted())
             eventItemTime.text = if (event.getIsAllDay()) "" else Formatter.getTimeFromTS(root.context, event.startTS)
-            if (event.getIsAllDay()) eventItemTime.beGone()
+            if (!isDgb) {
+                if (event.getIsAllDay()) eventItemTime.beGone()
+            }
             if (event.startTS != event.endTS && !event.getIsAllDay()) {
                 val startDayCode = Formatter.getDayCodeFromTS(event.startTS)
                 val endDayCode = Formatter.getDayCodeFromTS(event.endTS)
@@ -97,11 +100,19 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
                 val endTimeString = Formatter.getTimeFromTS(root.context, event.endTS)
                 val startDayString = if (startDayCode != dayCode) " ($startDate)" else ""
                 val endDayString = if (endDayCode != dayCode) " ($endDate)" else ""
-                eventItemTime.text = "$startTimeString$startDayString - $endTimeString$endDayString"
+                val text = "$startTimeString$startDayString - $endTimeString$endDayString"
+                eventItemTime.text = text
             }
 
-            eventItemDescription.text = if (replaceDescriptionWithLocation) event.location else event.description.replace("\n", " ")
-            eventItemDescription.beVisibleIf(displayDescription && eventItemDescription.text.isNotEmpty())
+            if (isDgb) {
+                var text = "importId: " + event.importId
+                eventItemTime.text = text
+                text = "source: " + event.source
+                eventItemDescription.text = text
+            } else {
+                eventItemDescription.text = if (replaceDescriptionWithLocation) event.location else event.description.replace("\n", " ")
+                eventItemDescription.beVisibleIf(displayDescription && eventItemDescription.text.isNotEmpty())
+            }
             eventItemColorBar.background.applyColorFilter(event.color)
 
             var newTextColor = textColor

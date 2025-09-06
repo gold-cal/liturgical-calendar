@@ -17,12 +17,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.print.PrintHelper
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.EventActivity
@@ -522,13 +521,13 @@ fun Context.addDayEvents(day: DayMonthly, linearLayout: LinearLayout, res: Resou
             it.endTS
         }
     }.thenBy { it.title }).forEach {
-        val backgroundDrawable = res.getDrawable(R.drawable.day_monthly_event_background, null)
-        backgroundDrawable.applyColorFilter(it.color)
+        val backgroundDrawable = ResourcesCompat.getDrawable(res, R.drawable.day_monthly_event_background, null)
+        backgroundDrawable?.applyColorFilter(it.color)
         eventLayoutParams.setMargins(dividerMargin, 0, dividerMargin, dividerMargin)
 
         var textColor = it.color.getContrastColor()
         if (!day.isThisMonth) {
-            backgroundDrawable.alpha = 64
+            backgroundDrawable?.alpha = 64
             textColor = textColor.adjustAlpha(0.25f)
         }
         DayMonthlyEventViewBinding.inflate(LayoutInflater.from(applicationContext), null, false).apply {
@@ -596,21 +595,23 @@ fun Context.getEventListItems(events: List<Event>, addSectionDays: Boolean = tru
             prevCode = code
         }
 
-        val listEvent =
-            ListEvent(
-                it.id!!,
-                it.startTS,
-                it.endTS,
-                it.title,
-                it.description,
-                it.getIsAllDay(),
-                it.color,
-                it.location,
-                it.isPastEvent,
-                it.repeatInterval > 0,
-                it.isTask(),
-                it.isTaskCompleted(),
-                isSpecialEvent
+        // if storedView is EVENTS_LIST_VIEW & allowDbg is true, setup listDbg instead
+        val listEvent = ListEvent(
+            it.id!!,
+            it.startTS,
+            it.endTS,
+            it.title,
+            it.description,
+            it.getIsAllDay(),
+            it.color,
+            it.location,
+            it.isPastEvent,
+            it.repeatInterval > 0,
+            it.isTask(),
+            it.isTaskCompleted(),
+            isSpecialEvent,
+            it.importId,
+            it.source
             )
         listItems.add(listEvent)
     }

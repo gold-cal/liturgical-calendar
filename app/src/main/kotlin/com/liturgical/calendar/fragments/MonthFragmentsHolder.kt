@@ -108,8 +108,7 @@ class MonthFragmentsHolder : MyFragmentHolder(), NavigationListener {
     override fun showGoToDateDialog() {
         requireActivity().setTheme(requireContext().getDatePickerDialogTheme())
         val dateBinding = DatePickerBinding.inflate(layoutInflater)
-        //val datePicker = dateBinding.findViewById<DatePicker>(R.id.date_picker)
-        // TODO: Find a better way to do this
+
         dateBinding.datePicker.findViewById<View>(Resources.getSystem().getIdentifier("day", "id", "android")).beGone()
 
         val dateTime = getCurrentDate()!!
@@ -117,7 +116,7 @@ class MonthFragmentsHolder : MyFragmentHolder(), NavigationListener {
 
         activity?.getAlertDialogBuilder()!!
             .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { dialog, which -> datePicked(dateTime, dateBinding.datePicker) }
+            .setPositiveButton(R.string.ok) { _, _ -> datePicked(dateTime, dateBinding.datePicker) }
             .apply {
                 activity?.setupDialogStuff(dateBinding.root, this)
             }

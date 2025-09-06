@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.Fragment
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.MainActivity
@@ -120,8 +121,7 @@ class MonthFragment : Fragment(), MonthlyCalendar {
                 listener?.goLeft()
             }
 
-            // TODO: convert this to ResourcesAppCompat
-            val pointerLeft = requireContext().getDrawable(R.drawable.ic_chevron_left_vector)
+            val pointerLeft = AppCompatResources.getDrawable(context, R.drawable.ic_chevron_left_vector)
             pointerLeft?.isAutoMirrored = true
             setImageDrawable(pointerLeft)
         }
@@ -133,8 +133,7 @@ class MonthFragment : Fragment(), MonthlyCalendar {
                 listener?.goRight()
             }
 
-            // TODO: convert this to ResourcesAppCompat
-            val pointerRight = requireContext().getDrawable(R.drawable.ic_chevron_right_vector)
+            val pointerRight = AppCompatResources.getDrawable(context, R.drawable.ic_chevron_right_vector)
             pointerRight?.isAutoMirrored = true
             setImageDrawable(pointerRight)
         }

@@ -264,6 +264,16 @@ class SettingsActivity : SimpleActivity() {
         }
         holderBinding.root.addView(checkbox.root)
         holderBinding.root.addView(colorBinding.root)
+        // Allow Using debug (for current instance)
+        checkbox = createSettingsCheckbox(R.string.allow_dbg)
+        checkbox.apply {
+            settingsCheckbox.isChecked = config.allowAppDbg
+            settingsCheckboxHolder.setOnClickListener {
+                settingsCheckbox.toggle()
+                config.allowAppDbg = settingsCheckbox.isChecked
+            }
+        }
+        holderBinding.root.addView(checkbox.root)
         // Add all to main view
         binding.settingsHolder.addView(holderBinding.root)
     }

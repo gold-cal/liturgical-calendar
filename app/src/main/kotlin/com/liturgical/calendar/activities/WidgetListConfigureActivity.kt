@@ -267,7 +267,9 @@ class WidgetListConfigureActivity : SimpleActivity() {
                 false,
                 false,
                 false,
-                false
+                false,
+                "",
+                ""
             )
         )
         time = dateTime.withHourOfDay(8)
@@ -285,7 +287,9 @@ class WidgetListConfigureActivity : SimpleActivity() {
                 false,
                 false,
                 false,
-                false
+                false,
+                "",
+                ""
             )
         )
 
@@ -309,7 +313,9 @@ class WidgetListConfigureActivity : SimpleActivity() {
                 false,
                 false,
                 false,
-                false
+                false,
+                "",
+                ""
             )
         )
         time = dateTime.withHourOfDay(13)
@@ -327,7 +333,9 @@ class WidgetListConfigureActivity : SimpleActivity() {
                 false,
                 false,
                 false,
-                false
+                false,
+                "",
+                ""
             )
         )
         time = dateTime.withHourOfDay(18)
@@ -345,7 +353,9 @@ class WidgetListConfigureActivity : SimpleActivity() {
                 false,
                 false,
                 false,
-                false
+                false,
+                "",
+                ""
             )
         )
 

@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="package_name">com.liturgical.calendar</string>
+    
+    <string name="pentecost_24">Twenty Fourth Sunday after Pentecost</string>
+    <string name="pentecost_25">Twenty Fifth Sunday after Pentecost</string>
+    <string name="pentecost_26">Twenty Sixth Sunday after Pentecost</string>
+    <string name="pentecost_27">Twenty Seventh Sunday after Pentecost</string>
+    
+    <string name="epiphany_3">Third Sunday after Epiphany</string>
+    <string name="epiphany_4">Fourth Sunday after Epiphany</string>
+    <string name="epiphany_5">Fifth Sunday after Epiphany</string>
+    <string name="epiphany_6">Sixth Sunday after Epiphany</string>
 
     <!-- Release notes -->
     <string name="release_20">Calendar now automatically adds EASTER!\n

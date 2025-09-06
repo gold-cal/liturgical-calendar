@@ -84,6 +84,19 @@ data class Event(
         startTS = newStartTS
         endTS = newEndTS
     }
+    
+    /** Shifting the feasts after Epiphany to after Pentecost
+    * NOTES:
+    * Septuagesima is 9 weeks before Easter
+    *   - If it is less than 3 weeks from Jan. 6, then the 3rd sunday after Epiphany is in Pentecost
+    *   - Jan 6 -> Septuagesima < 3 weeks: 3, 4, 5, 6 sundays are in pentecost
+    *   - Jan 6 -> Septuagesima < 4 weeks: 4, 5, 6 sundays are in pentecost
+    *   - Jan 6 -> Septuagesima < 5 weeks: 5, 6 sundays are in pentecost
+    *   - Jan 6 -> Septuagesima < 6 weeks: 6 sunday is in pentecost
+    *   - Jan 6 -> Septuagesima < 7 weeks: no sundays in epiphany in pentecost
+    */
+    
+    //private fun checkEpiphanyShift(currStart: DateTime,)
 
     private fun shiftDate(currStart: DateTime, shiftBit: Int, shiftValue: Int): DateTime {
         val newDateTime = when (shiftBit) {

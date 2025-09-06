@@ -12,10 +12,7 @@ import com.liturgical.calendar.databinding.EventListSectionMonthBinding
 import com.liturgical.calendar.dialogs.DeleteEventDialog
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.*
-import com.liturgical.calendar.models.ListEvent
-import com.liturgical.calendar.models.ListItem
-import com.liturgical.calendar.models.ListSectionDay
-import com.liturgical.calendar.models.ListSectionMonth
+import com.liturgical.calendar.models.*
 import com.secure.commons.adapters.MyRecyclerViewAdapter
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.MEDIUM_ALPHA
@@ -33,6 +30,7 @@ class EventListAdapter(
     private val replaceDescription = activity.config.replaceDescription
     private val dimPastEvents = activity.config.dimPastEvents
     private val dimCompletedTasks = activity.config.dimCompletedTasks
+    private val isDbg = activity.config.allowAppDbg
     private val now = getNowSeconds()
     private var use24HourFormat = activity.config.use24HourFormat
     private var currentItemsHash = listItems.hashCode()
@@ -138,23 +136,34 @@ class EventListAdapter(
                 if (root.context.config.showBirthdayAnniversaryDescription) {
                     showDescription = false
                 } else {
-                    eventItemTime.beGone()
+                    if (!isDbg) eventItemTime.beGone()
                 }
             }
             if (listEvent.startTS != listEvent.endTS) {
                 if (!listEvent.isAllDay) {
-                    eventItemTime.text = "${eventItemTime.text} - ${Formatter.getTimeFromTS(root.context, listEvent.endTS)}"
+                    val text = "${eventItemTime.text} - ${Formatter.getTimeFromTS(root.context, listEvent.endTS)}"
+                    eventItemTime.text = text
                 }
 
                 val startCode = Formatter.getDayCodeFromTS(listEvent.startTS)
                 val endCode = Formatter.getDayCodeFromTS(listEvent.endTS)
                 if (startCode != endCode) {
-                    eventItemTime.text = "${eventItemTime.text} (${Formatter.getDateDayTitle(endCode)})"
+                    val text = "${eventItemTime.text} (${Formatter.getDateDayTitle(endCode)})"
+                    eventItemTime.text = text
                 }
             }
+            if (isDbg) {
+                val text = "importId: " + listEvent.importId
+                eventItemTime.text = text
+            }
 
-            eventItemDescription.text = if (replaceDescription) listEvent.location else listEvent.description.replace("\n", " ")
-            eventItemDescription.beVisibleIf(displayDescription && eventItemDescription.text.isNotEmpty() && showDescription)
+            if (isDbg) {
+                val text = "source: " + listEvent.source
+                eventItemDescription.text = text
+            } else {
+                eventItemDescription.text = if (replaceDescription) listEvent.location else listEvent.description.replace("\n", " ")
+                eventItemDescription.beVisibleIf(displayDescription && eventItemDescription.text.isNotEmpty() && showDescription)
+            }
             eventItemColorBar.background.applyColorFilter(listEvent.color)
 
             var newTextColor = textColor

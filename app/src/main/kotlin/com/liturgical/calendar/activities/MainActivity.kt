@@ -93,6 +93,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         setupOptionsMenu()
         refreshMenuItems()
 
+        // Set debug view to false
+        if (config.allowAppDbg) config.allowAppDbg = false
         //checkWhatsNewDialog()
         binding.calendarFab.beVisibleIf(config.storedView != YEARLY_VIEW && config.storedView != WEEKLY_VIEW)
         binding.calendarFab.setOnClickListener {
@@ -760,7 +762,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     }
                 }
             }
-            // TODO: make it support foss contact app
+
             /*if (config.addCustomEventsAutomatically) {
                 //adPrivateEvents(false, privateContacts, config.customEventReminders) { eventsFound, eventsAdded ->
                     addContactEvents(false, true, config.customEventReminders, 0, 0) { // eventsFound, eventsAdded) {
@@ -1342,12 +1344,6 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             FAQItem(R.string.faq_4_title, R.string.faq_4_text)
         )
 
-        /*if (!resources.getBoolean(R.bool.hide_google_relations)) {
-            faqItems.add(FAQItem(R.string.faq_2_title_commons, R.string.faq_2_text_commons))
-            faqItems.add(FAQItem(R.string.faq_6_title_commons, R.string.faq_6_text_commons))
-            faqItems.add(FAQItem(R.string.faq_7_title_commons, R.string.faq_7_text_commons))
-
-        }*/
         val showItems = AboutItems(true, true, forkedFromUrl, sourceCodeUrl)
 
         startAboutActivity(R.string.app_name, licenses, BuildConfig.VERSION_NAME, faqItems, true, showItems)

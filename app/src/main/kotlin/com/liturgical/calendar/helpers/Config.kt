@@ -16,6 +16,10 @@ class Config(context: Context) : BaseConfig(context) {
     companion object {
         fun newInstance(context: Context) = Config(context)
     }
+
+    var allowAppDbg: Boolean
+        get() = prefs.getBoolean(ALLOW_APP_DBG, false)
+        set(allowAppDbg) = prefs.edit().putBoolean(ALLOW_APP_DBG, allowAppDbg).apply()
     
     var isFirstRun: Boolean
         get() = prefs.getBoolean(IS_FIRST_RUN, true)

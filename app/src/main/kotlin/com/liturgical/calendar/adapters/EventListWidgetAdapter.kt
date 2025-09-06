@@ -300,7 +300,9 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
                     event.repeatInterval > 0,
                     event.isTask(),
                     event.isTaskCompleted(),
-                    isSpecialEvent
+                    isSpecialEvent,
+                    "",
+                    ""
                 )
                 listItems.add(listEvent)
             }

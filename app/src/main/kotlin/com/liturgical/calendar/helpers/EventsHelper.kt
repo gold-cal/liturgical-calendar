@@ -166,12 +166,12 @@ class EventsHelper(val context: Context) {
         callback?.invoke()
     }
 
-    /* TODO Make this function so that it can't delete the TLC calendar */
+    /* Deletes all events in the calendar */
     fun deleteAllEvents() {
         ensureBackgroundThread {
             val eventIds = eventsDB.getEventIds().toMutableList()
             deleteEvents(eventIds, true)
-            config.isFirstRun = true
+            config.isFirstRun = true // set to true so it re-imports the liturgical calendar
         }
     }
 
@@ -309,7 +309,7 @@ class EventsHelper(val context: Context) {
                     val typesList = context.config.getDisplayEventTypesAsList()
 
                     events.addAll(eventsDB.getOneTimeEventsFromToWithTypes(toTS, fromTS, typesList).toMutableList() as ArrayList<Event>)
-                } catch (e: Exception) {
+                } catch (ignore: Exception) {
                 }
             }
         } else {
