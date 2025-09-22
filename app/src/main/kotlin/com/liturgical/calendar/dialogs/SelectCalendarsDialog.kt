@@ -16,7 +16,7 @@ import com.secure.commons.views.MyAppCompatCheckbox
 
 class SelectCalendarsDialog(val activity: SimpleActivity, val callback: () -> Unit) {
     private var prevAccount = ""
-    private var binding = DialogSelectCalendarsBinding.inflate(activity.layoutInflater)
+    private var binding = DialogSelectCalendarsBinding.inflate(activity.layoutInflater, null, false)
 
     init {
         val ids = activity.config.getSyncedCalendarIdsAsList()
@@ -53,7 +53,7 @@ class SelectCalendarsDialog(val activity: SimpleActivity, val callback: () -> Un
     }
 
     private fun addCalendar(tag: Int, shouldCheck: Boolean) {
-        val calendarItem = CalendarItemCalendarBinding.inflate(activity.layoutInflater, binding.dialogSelectCalendarsHolder, false)
+        val calendarItem = CalendarItemCalendarBinding.inflate(activity.layoutInflater, null, false)
         calendarItem.calendarItemCalendarSwitch.apply {
             this.tag = tag
             this.text = text
@@ -66,7 +66,7 @@ class SelectCalendarsDialog(val activity: SimpleActivity, val callback: () -> Un
     }
 
     private fun addAccount(text: String) {
-        val calendarItem = CalendarItemAccountBinding.inflate(activity.layoutInflater, binding.dialogSelectCalendarsHolder, false)
+        val calendarItem = CalendarItemAccountBinding.inflate(activity.layoutInflater, null, false)
         calendarItem.calendarItemAccount.text = text
         binding.dialogSelectCalendarsHolder.addView(calendarItem.root)
     }

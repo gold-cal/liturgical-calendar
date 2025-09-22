@@ -40,6 +40,7 @@ import com.liturgical.calendar.jobs.CalDAVUpdateListener
 import com.liturgical.calendar.models.CheckEvent
 import com.liturgical.calendar.models.Event
 import com.liturgical.calendar.models.ListEvent
+import com.liturgical.calendar.models.TraceData
 import com.secure.commons.dialogs.FilePickerDialog
 import com.secure.commons.dialogs.RadioGroupDialog
 import com.secure.commons.extensions.*
@@ -48,6 +49,7 @@ import com.secure.commons.interfaces.RefreshRecyclerViewListener
 import com.secure.commons.models.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
 import java.text.SimpleDateFormat
@@ -57,6 +59,7 @@ import kotlin.collections.ArrayList
 class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     private val PICK_IMPORT_SOURCE_INTENT = 1
     private val PICK_EXPORT_FILE_INTENT = 2
+    private val PICK_TRACE_FILE_INTENT = 3
 
     private var showCalDAVRefreshToast = false
     private var mShouldFilterBeVisible = false
@@ -67,6 +70,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     private var goToTodayButton: MenuItem? = null
     private var currentFragments = ArrayList<MyFragmentHolder>()
     private var eventTypesToExport = ArrayList<Long>()
+    private var traceData = ""
 
     private var mStoredTextColor = 0
     private var mStoredBackgroundColor = 0
@@ -156,7 +160,6 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         createEventTypes()
         // Check if there are old calendar items to delete
         checkDeleteOldEvents()
-
     }
 
     override fun onResume() {
@@ -301,6 +304,11 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         } else if (requestCode == PICK_EXPORT_FILE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
             val outputStream = contentResolver.openOutputStream(resultData.data!!)
             exportEventsTo(eventTypesToExport, outputStream)
+        } else if (requestCode == PICK_TRACE_FILE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+            if (traceData != "") {
+                val outputStream = contentResolver.openOutputStream(resultData.data!!)
+                saveTraceTo(outputStream, traceData)
+            }
         }
     }
 
@@ -662,6 +670,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                                 }
                             }
                         }
+                        runOnUiThread{
+                            if (traceData != "") tryExportTrace()
+                        }
                     }
                 }
             } else {
@@ -788,22 +799,85 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         )
     }
 
+    private fun checkBirthAnnSource() {
+        val existingBirthdays = eventsDB.getAllEventsWithType(BIRTHDAY_EVENT_TYPE_ID).filter {
+            it.source != SOURCE_CONTACT_BIRTHDAY
+        }
+        if (existingBirthdays.isNotEmpty()) {
+            for (birthday in existingBirthdays) {
+                birthday.source = SOURCE_CONTACT_BIRTHDAY
+                eventsDB.insertOrUpdate(birthday)
+            }
+        }
+        val existingAnn = eventsDB.getAllEventsWithType(ANNI_EVENT_TYPE_ID).filter {
+            it.source != SOURCE_CONTACT_ANNIVERSARY
+        }
+        if (existingAnn.isNotEmpty()) {
+            for (ann in existingAnn) {
+                ann.source = SOURCE_CONTACT_ANNIVERSARY
+                eventsDB.insertOrUpdate(ann)
+            }
+        }
+    }
+
+    private fun saveTraceTo(outputStream: OutputStream?, output: String) {
+        ensureBackgroundThread {
+            Tracer().exportTrace(outputStream, output)
+        }
+    }
+
+    private fun tryExportTrace() {
+        if (isQPlus()) {
+            ExportEventsDialog(this, config.lastExportPath, true) { file, _ ->
+                hideKeyboard()
+
+                Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TITLE, file.name)
+                    addCategory(Intent.CATEGORY_OPENABLE)
+
+                    try {
+                        startActivityForResult(this, PICK_TRACE_FILE_INTENT)
+                    } catch (e: ActivityNotFoundException) {
+                        toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
+                    } catch (e: Exception) {
+                        showErrorToast(e)
+                    }
+                }
+            }
+        }
+        /*ensureBackgroundThread {
+            val fileOutputStream = openFileOutput("trace.txt", Context.MODE_APPEND)
+            saveTraceTo(fileOutputStream, traceData)
+            fileOutputStream.close()
+        }*/
+    }
+
     private fun doesEventExist(checkEvents: ArrayList<CheckEvent>, importId: String, contactName: String,
-                               timestamp: Long, source: String): Boolean {
+                               timestamp: Long, source: String): TraceData {
         var doesEventExist = false
+        var trace = ""
         // check to make sure locally added events don't get duplicated
         for (checkEvent in checkEvents) {
             val currDate = Formatter.getDateFromTS(checkEvent.startTS)
             val newDate = Formatter.getDateFromTS(timestamp)
             // has to be on the same day
             if (checkEvent.importId == importId) {
-                if (checkEvent.startTS != timestamp) {
+                trace = "$trace-----------------------;"
+                trace = trace + "Event.Title: " + checkEvent.title + ";"
+                trace = trace + "contactName: " + contactName + ";"
+                trace += "Event.importId: " + checkEvent.importId + ";"
+                trace += "newImportId: $importId;"
+                if (currDate != newDate) {
                     val deleted = eventsDB.deleteBirthdayAnniversary(source, importId)
                     if (deleted == 1) {
+                        trace += "currDate: $currDate, newDate: $newDate;"
+                        trace += "Date Not The Same: Event Added!;"
                         doesEventExist = false
                         break
                     }
                 } else {
+                    trace += "Date Is the Same: Event Not Added!;"
                     doesEventExist = true
                     break
                 }
@@ -811,7 +885,11 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             // if the date and name are the same, don't update it
             // locally added events take precedence
             else if (currDate == newDate) {
+                trace = "$trace-----------------------;"
+                trace += "Event.Title: " + checkEvent.title + ";"
+                trace += "contactName: $contactName;"
                 if (checkEvent.title == contactName) {
+                    trace += "Names are the Same: Event Not Added!;"
                     doesEventExist = true
                     break
                 }
@@ -822,9 +900,11 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     val currNameLength = currEventNameSplit.size
                     val newNameLength = newEventNameSplit.size
                     if (currNameLength > 1 && newNameLength > 1) {
-                        val currName = currEventNameSplit[currNameLength - 1]
+                        val currName = currEventNameSplit[currNameLength -1]
                         val newName = newEventNameSplit[newNameLength - 1]
                         if (currName == newName) {
+                            trace += "currName: $currName, newName: $newName;"
+                            trace += "Last Names are not the same: Event is Added!;"
                             doesEventExist = false
                             break
                             // mark it to check for duplicate
@@ -834,18 +914,32 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     else {
                         val currName = currEventNameSplit[0]
                         val newName = newEventNameSplit[0]
+                        trace += "currName: $currName, newName: $newName;"
                         doesEventExist = currName == newName
+                        val added = if (doesEventExist) "False" else "True"
+                        trace += "Event Added: $added;"
                         break
                     }
                 }
             }
+            // Neither option is true, spit out some information
+            /*trace = "$trace-----------SKIPPED------------;"
+            trace += "Event.Title: >" + checkEvent.title + "<;"
+            trace += "contactName: >$contactName<;"
+            trace += "Event.importId: >" + checkEvent.importId + "<;"
+            trace += "newImportId: >$importId<;"
+            trace += "currDate: >$currDate<, newDate: >$newDate<;"*/
         }
-        return doesEventExist
+        return TraceData(doesEventExist, trace)
     }
 
     private fun addContactEvents(birthdays: Boolean, reminders: ArrayList<Int>, initEventsFound: Int, initEventsAdded: Int, callback: (Int) -> Unit) {
+        // Change source on oll birthdays to contact-birthday
+        checkBirthAnnSource()
+
         var eventsFound = initEventsFound
         var eventsAdded = initEventsAdded
+        var trace = ""
         val uri = Data.CONTENT_URI
         val projection = arrayOf(
             Contacts.DISPLAY_NAME,
@@ -900,7 +994,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                         repeatInterval = YEAR, repeatRule = REPEAT_SAME_DAY, eventType = eventTypeId, source = source, lastUpdated = lastUpdated
                     )
 
-                    val doesEventExist = doesEventExist(checkEvents, event.importId, name, timestamp, source)
+                    val traceData = doesEventExist(checkEvents, event.importId, name, timestamp, source)
+                    trace += traceData.trace
                     //val importIDsToDelete = ArrayList<String>()
                     /*for ((key, value) in importIDs) {
                         if (key == contactId && value != timestamp) {
@@ -916,7 +1011,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     }*/
 
                     eventsFound++
-                    if (!doesEventExist) { // !importIDs.containsKey(contactId)) {
+                    if (!traceData.eventExists) { // !importIDs.containsKey(contactId)) {
                         eventsHelper.insertEvent(event, false, false) {
                             eventsAdded++
                         }
@@ -926,6 +1021,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 }
             }
         }
+        //traceData = trace
 
         runOnUiThread {
             callback(if (eventsAdded == 0 && eventsFound > 0) -1 else eventsAdded)
@@ -987,7 +1083,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                         repeatInterval = YEAR, repeatRule = REPEAT_SAME_DAY, eventType = eventTypeId, source = source, lastUpdated = lastUpdated
                     )
 
-                    val doesEventExist = doesEventExist(checkEvents, event.importId, contact.name, timestamp, source)
+                    val traceData = doesEventExist(checkEvents, event.importId, contact.name, timestamp, source)
 
                     /*
                     val importIDsToDelete = ArrayList<String>()
@@ -1005,7 +1101,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     }*/
 
                     eventsFound++
-                    if (!doesEventExist) { //     !importIDs.containsKey(contact.contactId.toString())) {
+                    if (!traceData.eventExists) { //     !importIDs.containsKey(contact.contactId.toString())) {
                         eventsHelper.insertEvent(event, false, false) {
                             eventsAdded++
                         }

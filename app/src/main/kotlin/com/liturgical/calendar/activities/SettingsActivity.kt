@@ -890,7 +890,6 @@ class SettingsActivity : SimpleActivity() {
                     calDAVHelper.deleteCalDAVCalendarEvents(it.toLong())
                 }
                 eventTypesDB.deleteEventTypesWithCalendarId(config.getSyncedCalendarIdsAsList())
-                //updateDefaultEventTypeText()
             }
         }
         return success

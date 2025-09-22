@@ -27,7 +27,6 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
     private val ITEM_SECTION_MONTH = 2
     //private val GO_TO_TODAY = "go_to_today"
 
-    //private val allDayString = context.resources.getString(R.string.all_day)
     private var events = ArrayList<ListItem>()
     private var textColor = context.config.widgetTextColor
     private var dayBackgroundColor = context.config.widgetDayColor

@@ -20,7 +20,6 @@ import com.secure.commons.views.MyRecyclerView
 class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, recyclerView: MyRecyclerView, var dayCode: String, itemClick: (Any) -> Unit) :
     MyRecyclerViewAdapter(activity, recyclerView, itemClick) {
 
-    //private val allDayString = resources.getString(R.string.all_day)
     private val displayDescription = activity.config.displayDescription
     private val replaceDescriptionWithLocation = activity.config.replaceDescription
     private val dimPastEvents = activity.config.dimPastEvents
@@ -73,7 +72,7 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
     fun togglePrintMode() {
         isPrintVersion = !isPrintVersion
         textColor = if (isPrintVersion) {
-            resources.getColor(R.color.theme_light_text_color)
+            resources.getColor(R.color.theme_light_text_color, null)
         } else {
             activity.getProperTextColor()
         }
