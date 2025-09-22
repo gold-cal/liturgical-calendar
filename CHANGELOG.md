@@ -1,13 +1,21 @@
 Changelog
 ==========
+Version 1.2.7 *(2025-04-14)*
+----------------------------
+* Fixed some formatting issues in the settings
+* Added more debug information
+* Improved birthday and anniversary importing to prevent duplicates
 
-Version 1.2.2 *(2025-04-14)*
+Version 1.2.4 pre-release *(2025-04-14)*
+----------------------------
+* Added some debug views
+
+Version 1.2.3 *(2025-04-14)*
 ----------------------------
 * Fixed crash when exporting settings
 
 Version 1.2.2 *(2025-04-10)*
 ----------------------------
-* Fixed a bug where birthdays would get duplicated when syncing with contacts
 * Added a crash handler
 * Updated dependencies
 * Code improvements and smaller app size
