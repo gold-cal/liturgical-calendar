@@ -49,7 +49,6 @@ import com.secure.commons.interfaces.RefreshRecyclerViewListener
 import com.secure.commons.models.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
 import java.text.SimpleDateFormat
@@ -653,10 +652,12 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         handlePermission(PERMISSION_READ_CONTACTS) { isTrue ->
             if (isTrue) {
                 SetRemindersDialog(this, BIRTHDAY_EVENT) { birthdayReminders ->
-                    val privateCursor = getMyContactsCursor(false, false)
+                    //val privateCursor = getMyContactsCursor(false, false)
+                    val eventsFound = 0
+                    val eventsAdded = 0
                     ensureBackgroundThread {
-                        val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-                        addPrivateEvents(true, privateContacts, birthdayReminders) { eventsFound, eventsAdded ->
+                        //val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
+                        //addPrivateEvents(true, privateContacts, birthdayReminders) { eventsFound, eventsAdded ->
                             addContactEvents(true, birthdayReminders, eventsFound, eventsAdded) {
                                 when {
                                     it > 0 -> {
@@ -668,7 +669,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                                     it == -1 -> toast(R.string.no_new_birthdays)
                                     else -> toast(R.string.no_birthdays)
                                 }
-                            }
+                            //}
                         }
                         runOnUiThread{
                             if (traceData != "") tryExportTrace()
@@ -685,11 +686,13 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         handlePermission(PERMISSION_READ_CONTACTS) { isTrue ->
             if (isTrue) {
                 SetRemindersDialog(this, ANNIVERSARY_EVENT) { anniversaryReminders ->
-                    val privateCursor = getMyContactsCursor(false, false)
+                    //val privateCursor = getMyContactsCursor(false, false)
+                    val eventsFound = 0
+                    val eventsAdded = 0
 
                     ensureBackgroundThread {
-                        val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-                        addPrivateEvents(false, privateContacts, anniversaryReminders) { eventsFound, eventsAdded ->
+                        //val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
+                        //addPrivateEvents(false, privateContacts, anniversaryReminders) { eventsFound, eventsAdded ->
                             addContactEvents(false, anniversaryReminders, eventsFound, eventsAdded) {
                                 when {
                                     it > 0 -> {
@@ -702,7 +705,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                                     else -> toast(R.string.no_anniversaries)
                                 }
                             }
-                        }
+                        //}
                     }
                 }
             } else {
@@ -746,12 +749,14 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             return
         }
 
-        val privateCursor = getMyContactsCursor(false, false)
+        //val privateCursor = getMyContactsCursor(false, false)
+        val eventsFound = 0
+        val eventsAdded = 0
 
         ensureBackgroundThread {
-            val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
+            //val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
             if (config.addBirthdaysAutomatically) {
-                addPrivateEvents(true, privateContacts, config.birthdayReminders) { eventsFound, eventsAdded ->
+                //addPrivateEvents(true, privateContacts, config.birthdayReminders) { eventsFound, eventsAdded ->
                     addContactEvents(true, config.birthdayReminders, eventsFound, eventsAdded) {
                         if (it > 0) {
                             toast(R.string.birthdays_added)
@@ -759,11 +764,11 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                             setupQuickFilter()
                         }
                     }
-                }
+                //}
             }
 
             if (config.addAnniversariesAutomatically) {
-                addPrivateEvents(false, privateContacts, config.anniversaryReminders) { eventsFound, eventsAdded ->
+                //addPrivateEvents(false, privateContacts, config.anniversaryReminders) { eventsFound, eventsAdded ->
                     addContactEvents(false, config.anniversaryReminders, eventsFound, eventsAdded) {
                         if (it > 0) {
                             toast(R.string.anniversaries_added)
@@ -771,7 +776,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                             setupQuickFilter()
                         }
                     }
-                }
+                //}
             }
 
             /*if (config.addCustomEventsAutomatically) {
@@ -799,7 +804,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         )
     }
 
-    private fun checkBirthAnnSource() {
+    /*private fun checkBirthAnnSource() {
         val existingBirthdays = eventsDB.getAllEventsWithType(BIRTHDAY_EVENT_TYPE_ID).filter {
             it.source != SOURCE_CONTACT_BIRTHDAY
         }
@@ -818,7 +823,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 eventsDB.insertOrUpdate(ann)
             }
         }
-    }
+    }*/
 
     private fun saveTraceTo(outputStream: OutputStream?, output: String) {
         ensureBackgroundThread {
@@ -856,28 +861,28 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     private fun doesEventExist(checkEvents: ArrayList<CheckEvent>, importId: String, contactName: String,
                                timestamp: Long, source: String): TraceData {
         var doesEventExist = false
-        var trace = ""
+        //var trace = ""
         // check to make sure locally added events don't get duplicated
         for (checkEvent in checkEvents) {
             val currDate = Formatter.getDateFromTS(checkEvent.startTS)
             val newDate = Formatter.getDateFromTS(timestamp)
             // has to be on the same day
             if (checkEvent.importId == importId) {
-                trace = "$trace-----------------------;"
-                trace = trace + "Event.Title: " + checkEvent.title + ";"
-                trace = trace + "contactName: " + contactName + ";"
-                trace += "Event.importId: " + checkEvent.importId + ";"
-                trace += "newImportId: $importId;"
+                //trace = "$trace-----------------------;"
+                //trace = trace + "Event.Title: " + checkEvent.title + ";"
+                //trace = trace + "contactName: " + contactName + ";"
+                //trace += "Event.importId: " + checkEvent.importId + ";"
+                //trace += "newImportId: $importId;"
                 if (currDate != newDate) {
                     val deleted = eventsDB.deleteBirthdayAnniversary(source, importId)
                     if (deleted == 1) {
-                        trace += "currDate: $currDate, newDate: $newDate;"
-                        trace += "Date Not The Same: Event Added!;"
+                        //trace += "currDate: $currDate, newDate: $newDate;"
+                        //trace += "Date Not The Same: Event Added!;"
                         doesEventExist = false
                         break
                     }
                 } else {
-                    trace += "Date Is the Same: Event Not Added!;"
+                    //trace += "Date Is the Same: Event Not Added!;"
                     doesEventExist = true
                     break
                 }
@@ -885,11 +890,11 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             // if the date and name are the same, don't update it
             // locally added events take precedence
             else if (currDate == newDate) {
-                trace = "$trace-----------------------;"
-                trace += "Event.Title: " + checkEvent.title + ";"
-                trace += "contactName: $contactName;"
+                //trace = "$trace-----------------------;"
+                //trace += "Event.Title: " + checkEvent.title + ";"
+                //trace += "contactName: $contactName;"
                 if (checkEvent.title == contactName) {
-                    trace += "Names are the Same: Event Not Added!;"
+                    //trace += "Names are the Same: Event Not Added!;"
                     doesEventExist = true
                     break
                 }
@@ -903,8 +908,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                         val currName = currEventNameSplit[currNameLength -1]
                         val newName = newEventNameSplit[newNameLength - 1]
                         if (currName == newName) {
-                            trace += "currName: $currName, newName: $newName;"
-                            trace += "Last Names are not the same: Event is Added!;"
+                            //trace += "currName: $currName, newName: $newName;"
+                            //trace += "Last Names are not the same: Event is Added!;"
                             doesEventExist = false
                             break
                             // mark it to check for duplicate
@@ -914,10 +919,10 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     else {
                         val currName = currEventNameSplit[0]
                         val newName = newEventNameSplit[0]
-                        trace += "currName: $currName, newName: $newName;"
+                        //trace += "currName: $currName, newName: $newName;"
                         doesEventExist = currName == newName
-                        val added = if (doesEventExist) "False" else "True"
-                        trace += "Event Added: $added;"
+                        //val added = if (doesEventExist) "False" else "True"
+                        //trace += "Event Added: $added;"
                         break
                     }
                 }
@@ -930,12 +935,10 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             trace += "newImportId: >$importId<;"
             trace += "currDate: >$currDate<, newDate: >$newDate<;"*/
         }
-        return TraceData(doesEventExist, trace)
+        return TraceData(doesEventExist, "") // trace)
     }
 
     private fun addContactEvents(birthdays: Boolean, reminders: ArrayList<Int>, initEventsFound: Int, initEventsAdded: Int, callback: (Int) -> Unit) {
-        // Change source on oll birthdays to contact-birthday
-        checkBirthAnnSource()
 
         var eventsFound = initEventsFound
         var eventsAdded = initEventsAdded
@@ -953,19 +956,18 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         //val type = if (birthdays) CommonDataKinds.Event.TYPE_BIRTHDAY else if (custom) CommonDataKinds.Event.TYPE_CUSTOM else CommonDataKinds.Event.TYPE_ANNIVERSARY
         val selectionArgs = arrayOf(CommonDataKinds.Event.CONTENT_ITEM_TYPE, type.toString())
 
+        val eventTypeId = if (birthdays) eventsHelper.getBirthdaysEventTypeId() else eventsHelper.getAnniversariesEventTypeId()
         val dateFormats = getDateFormats()
         val yearDateFormats = getDateFormatsWithYear()
-        val existingEvents = if (birthdays) eventsDB.getBirthdays() else eventsDB.getAnniversaries()
+        val existingEvents = if (birthdays) eventsDB.getAllEventsWithType(eventTypeId)
+                            else eventsDB.getAllEventsWithType(eventTypeId)
         //val existingEvents = if (birthdays) eventsDB.getBirthdays() else if (custom) eventsDB.getCustom() else eventsDB.getAnniversaries()
         val checkEvents = ArrayList<CheckEvent>()
-        //val importIDs = HashMap<String, Long>()
         existingEvents.forEach {
             val event = CheckEvent(it.title, it.startTS, it.importId, it.lastUpdated)
             checkEvents.add(event)
-            //importIDs[it.importId] = it.startTS
         }
 
-        val eventTypeId = if (birthdays) eventsHelper.getBirthdaysEventTypeId() else eventsHelper.getAnniversariesEventTypeId()
         //val eventTypeId = if (birthdays) eventsHelper.getLocalBirthdaysEventTypeId() else if (custom) else eventsHelper.getAnniversariesEventTypeId()
         val source = if (birthdays) SOURCE_CONTACT_BIRTHDAY else SOURCE_CONTACT_ANNIVERSARY
         //val source = if (birthdays) SOURCE_CONTACT_BIRTHDAY else if (custom) SOURCE_CONTACT_CUSTOM else SOURCE_CONTACT_ANNIVERSARY
@@ -996,22 +998,9 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
                     val traceData = doesEventExist(checkEvents, event.importId, name, timestamp, source)
                     trace += traceData.trace
-                    //val importIDsToDelete = ArrayList<String>()
-                    /*for ((key, value) in importIDs) {
-                        if (key == contactId && value != timestamp) {
-                            val deleted = eventsDB.deleteBirthdayAnniversary(source, key)
-                            if (deleted == 1) {
-                                importIDsToDelete.add(key)
-                            }
-                        }
-                    }
-
-                    importIDsToDelete.forEach {
-                        importIDs.remove(it)
-                    }*/
 
                     eventsFound++
-                    if (!traceData.eventExists) { // !importIDs.containsKey(contactId)) {
+                    if (!traceData.eventExists) {
                         eventsHelper.insertEvent(event, false, false) {
                             eventsAdded++
                         }
@@ -1028,7 +1017,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         }
     }
 
-    private fun addPrivateEvents(
+    /*private fun addPrivateEvents(
         birthdays: Boolean,
         contacts: ArrayList<SimpleContact>,
         reminders: ArrayList<Int>,
@@ -1045,22 +1034,17 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             val eventTypeId = if (birthdays) eventsHelper.getBirthdaysEventTypeId() else eventsHelper.getAnniversariesEventTypeId()
             val source = if (birthdays) SOURCE_CONTACT_BIRTHDAY else SOURCE_CONTACT_ANNIVERSARY
 
-            val existingEvents = if (birthdays) eventsDB.getBirthdays() else eventsDB.getAnniversaries()
+            val existingEvents = if (birthdays) eventsDB.getAllEventsWithType(BIRTHDAY_EVENT_TYPE_ID)
+                                else eventsDB.getAllEventsWithType(ANNI_EVENT_TYPE_ID)
             val checkEvents = ArrayList<CheckEvent>()
-            //val importIDs = HashMap<String, Long>()
             existingEvents.forEach {
                 val event = CheckEvent(it.title, it.startTS, it.importId, it.lastUpdated)
                 checkEvents.add(event)
-                //importIDs[it.importId] = it.startTS
             }
 
             contacts.forEach { contact ->
                 val events = if (birthdays) contact.birthdays else contact.anniversaries
-                //var description = ""
-                //if (config.showBirthdayAnniversaryDescription) {
-                //    description = if (birthdays) getString(R.string.birthday)
-                //    else getString(R.string.anniversary)
-                //}
+
                 events.forEach { birthdayAnniversary ->
                     // private contacts are created in Simple Contacts Pro, so we can guarantee that they exist only in these 2 formats
                     val format = if (birthdayAnniversary.startsWith("--")) {
@@ -1085,23 +1069,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
                     val traceData = doesEventExist(checkEvents, event.importId, contact.name, timestamp, source)
 
-                    /*
-                    val importIDsToDelete = ArrayList<String>()
-                    for ((key, value) in importIDs) {
-                        if (key == contact.contactId.toString() && value != timestamp) {
-                            val deleted = eventsDB.deleteBirthdayAnniversary(source, key)
-                            if (deleted == 1) {
-                                importIDsToDelete.add(key)
-                            }
-                        }
-                    }
-
-                    importIDsToDelete.forEach {
-                        importIDs.remove(it)
-                    }*/
-
                     eventsFound++
-                    if (!traceData.eventExists) { //     !importIDs.containsKey(contact.contactId.toString())) {
+                    if (!traceData.eventExists) {
                         eventsHelper.insertEvent(event, false, false) {
                             eventsAdded++
                         }
@@ -1113,7 +1082,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         }
 
         callback(eventsFound, eventsAdded)
-    }
+    }*/
 
     private fun updateView(view: Int) {
         binding.calendarFab.beVisibleIf(view != YEARLY_VIEW && view != WEEKLY_VIEW)

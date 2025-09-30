@@ -69,14 +69,14 @@ interface EventsDao {
     @Query("SELECT * FROM events WHERE source = \'$SOURCE_LITURGICAL_CALENDAR\'")
     fun getLiturgicalEvents(): List<Event>
 
-    @Query("SELECT * FROM events WHERE source = \'$SOURCE_CONTACT_BIRTHDAY\' AND type = $TYPE_EVENT")
-    fun getBirthdays(): List<Event>
+    /*@Query("SELECT * FROM events WHERE source = \'$SOURCE_CONTACT_BIRTHDAY\' AND type = $TYPE_EVENT")
+    fun getBirthdays(): List<Event>*/
 
-    @Query("SELECT * FROM events WHERE source = \'$SOURCE_CONTACT_CUSTOM\' AND type = $TYPE_EVENT")
-    fun getCustom(): List<Event>
+    /*@Query("SELECT * FROM events WHERE source = \'$SOURCE_CONTACT_CUSTOM\' AND type = $TYPE_EVENT")
+    fun getCustom(): List<Event>*/
 
-    @Query("SELECT * FROM events WHERE source = \'$SOURCE_CONTACT_ANNIVERSARY\' AND type = $TYPE_EVENT")
-    fun getAnniversaries(): List<Event>
+    /*@Query("SELECT * FROM events WHERE source = \'$SOURCE_CONTACT_ANNIVERSARY\' AND type = $TYPE_EVENT")
+    fun getAnniversaries(): List<Event>*/
 
     @Query("SELECT * FROM events WHERE import_id != \"\" AND type = $TYPE_EVENT")
     fun getEventsWithImportIds(): List<Event>

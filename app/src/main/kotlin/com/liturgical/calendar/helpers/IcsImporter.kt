@@ -222,8 +222,9 @@ class IcsImporter(val activity: SimpleActivity) {
 
                         val eventType = eventTypes.firstOrNull { it.id == curEventTypeId }
                         val source = if (liturgical) SOURCE_LITURGICAL_CALENDAR
-                                else if (curEventTypeId == BIRTHDAY_EVENT_TYPE_ID) SOURCE_CONTACT_BIRTHDAY
-                                else if (curEventTypeId == ANNI_EVENT_TYPE_ID) SOURCE_CONTACT_ANNIVERSARY
+                                // TODO: add this to new version
+                                //else if (curEventTypeId == BIRTHDAY_EVENT_TYPE_ID) SOURCE_CONTACT_BIRTHDAY
+                                //else if (curEventTypeId == ANNI_EVENT_TYPE_ID) SOURCE_CONTACT_ANNIVERSARY
                                 else if (calDAVCalendarId == 0 || eventType?.isSyncedEventType() == false) SOURCE_IMPORTED_ICS
                                 else "$CALDAV-$calDAVCalendarId"
                         val event = Event(

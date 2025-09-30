@@ -1,5 +1,6 @@
 Changelog
 ==========
+
 Version 1.2.7 *(2025-04-14)*
 ----------------------------
 * Fixed some formatting issues in the settings

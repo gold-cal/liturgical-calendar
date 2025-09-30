@@ -85,8 +85,10 @@ class EventsHelper(val context: Context) {
     fun getEventTypeWithCalDAVCalendarId(calendarId: Int) = eventTypesDB.getEventTypeWithCalDAVCalendarId(calendarId)
 
     fun deleteEventTypes(eventTypes: ArrayList<EventType>, deleteEvents: Boolean) {
-        val typesToDelete = eventTypes.asSequence().filter { it.caldavCalendarId == 0 && it.id != REGULAR_EVENT_TYPE_ID && it.id != BIRTHDAY_EVENT_TYPE_ID
-            && it.id != ANNI_EVENT_TYPE_ID }.toMutableList()
+        val typesToDelete = eventTypes.asSequence().filter { it.caldavCalendarId == 0 && it.id != REGULAR_EVENT_TYPE_ID
+            // TODO: add this to new version
+            //&& it.id != BIRTHDAY_EVENT_TYPE_ID && it.id != ANNI_EVENT_TYPE_ID
+        }.toMutableList()
         val deleteIds = typesToDelete.map { it.id }.toMutableList()
         val deletedSet = deleteIds.map { it.toString() }.toHashSet()
         config.removeDisplayEventTypes(deletedSet)
@@ -121,7 +123,8 @@ class EventsHelper(val context: Context) {
         context.updateWidgets()
         context.scheduleNextEventReminder(event, showToasts)
 
-        if (addToCalDAV && config.caldavSync && event.source != SOURCE_DEFAULT_CALENDAR && event.source != SOURCE_IMPORTED_ICS) {
+        if (addToCalDAV && config.caldavSync && event.source != SOURCE_DEFAULT_CALENDAR &&
+            event.source != SOURCE_IMPORTED_ICS && event.source != SOURCE_LITURGICAL_CALENDAR) {
             context.calDAVHelper.insertCalDAVEvent(event)
         }
 
@@ -146,7 +149,9 @@ class EventsHelper(val context: Context) {
                 event.id = eventsDB.insertOrUpdate(event)
 
                 context.scheduleNextEventReminder(event, false)
-                if (addToCalDAV && event.source != SOURCE_DEFAULT_CALENDAR && event.source != SOURCE_IMPORTED_ICS && config.caldavSync) {
+                if (addToCalDAV && event.source != SOURCE_DEFAULT_CALENDAR &&
+                    event.source != SOURCE_IMPORTED_ICS && config.caldavSync &&
+                    event.source != SOURCE_LITURGICAL_CALENDAR) {
                     context.calDAVHelper.insertCalDAVEvent(event)
                 }
             }
@@ -160,7 +165,8 @@ class EventsHelper(val context: Context) {
 
         context.updateWidgets()
         context.scheduleNextEventReminder(event, showToasts)
-        if (updateAtCalDAV && event.source != SOURCE_DEFAULT_CALENDAR && config.caldavSync) {
+        if (updateAtCalDAV && event.source != SOURCE_DEFAULT_CALENDAR && config.caldavSync &&
+            event.source != SOURCE_LITURGICAL_CALENDAR) {
             context.calDAVHelper.updateCalDAVEvent(event)
         }
         callback?.invoke()

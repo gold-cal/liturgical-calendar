@@ -45,14 +45,30 @@ class SelectCalendarsDialog(val activity: SimpleActivity, val callback: () -> Un
     }
 
     private fun addCalendarItem(isEvent: Boolean, text: String, tag: Int = 0, shouldCheck: Boolean = false) {
-        if (isEvent) {
+        val itemBinding = if (isEvent) {
+            CalendarItemCalendarBinding.inflate(activity.layoutInflater, binding.dialogSelectCalendarsHolder, false).apply {
+                calendarItemCalendarSwitch.tag = tag
+                calendarItemCalendarSwitch.text = text
+                calendarItemCalendarSwitch.isChecked = shouldCheck
+                root.setOnClickListener {
+                    calendarItemCalendarSwitch.toggle()
+                }
+            }
+        } else {
+            CalendarItemAccountBinding.inflate(activity.layoutInflater, binding.dialogSelectCalendarsHolder, false).apply {
+                calendarItemAccount.text = text
+            }
+        }
+
+        binding.dialogSelectCalendarsHolder.addView(itemBinding.root)
+        /*if (isEvent) {
             addCalendar(tag, shouldCheck)
         } else {
             addAccount(text)
-        }
+        }*/
     }
 
-    private fun addCalendar(tag: Int, shouldCheck: Boolean) {
+    /*private fun addCalendar(tag: Int, shouldCheck: Boolean) {
         val calendarItem = CalendarItemCalendarBinding.inflate(activity.layoutInflater, null, false)
         calendarItem.calendarItemCalendarSwitch.apply {
             this.tag = tag
@@ -69,7 +85,7 @@ class SelectCalendarsDialog(val activity: SimpleActivity, val callback: () -> Un
         val calendarItem = CalendarItemAccountBinding.inflate(activity.layoutInflater, null, false)
         calendarItem.calendarItemAccount.text = text
         binding.dialogSelectCalendarsHolder.addView(calendarItem.root)
-    }
+    }*/
 
     private fun confirmSelection() {
         val calendarIds = ArrayList<Int>()

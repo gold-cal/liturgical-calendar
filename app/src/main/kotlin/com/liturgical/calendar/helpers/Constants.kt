@@ -37,9 +37,10 @@ const val TODAY_POSITION = "today_position"
 
 // EventType Ids
 const val REGULAR_EVENT_TYPE_ID = 1L
-const val BIRTHDAY_EVENT_TYPE_ID = 2L
+// TODO: add this to new Version
+//const val BIRTHDAY_EVENT_TYPE_ID = 2L
 const val LITURGICAL_EVENT_TYPE_ID = 3L
-const val ANNI_EVENT_TYPE_ID = 4L
+//const val ANNI_EVENT_TYPE_ID = 4L
 const val HOLY_DAY_EVENT_TYPE_ID = 5L
 
 // Main window view

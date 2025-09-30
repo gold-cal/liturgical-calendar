@@ -3,14 +3,12 @@ package com.liturgical.calendar.adapters
 import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
-import android.widget.ListView
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.liturgical.calendar.R
 import com.liturgical.calendar.R.id.event_item_holder
 import com.liturgical.calendar.R.id.event_section_background
 import com.liturgical.calendar.R.id.event_section_title
-import com.liturgical.calendar.R.id.write_permissions_dialog_otg_image
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.extensions.getWidgetFontSize
@@ -38,7 +36,9 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
     private var showDescription = context.config.showWidgetDescription
     private var showBirthAnnDes = context.config.showBirthdayAnniversaryDescription
     private var fontSize = context.getWidgetFontSize()
-    private var datasetChanged = false
+    private var loadMoreEvents = false
+    private var lastDate = DateTime()
+    //private var datasetChanged = false
     //private var mediumMargin = context.resources.getDimension(R.dimen.medium_margin).toInt()
     private var tinyMargin = context.resources.getDimension(R.dimen.tiny_margin).toInt()
 
@@ -59,16 +59,21 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
         showBirthAnnDes = context.config.showBirthdayAnniversaryDescription
     }
 
-    /*private fun goToToday() {
-        val view = RemoteViews(context.packageName, R.layout.widget_event_list)
-        view.setScrollPosition(R.id.widget_event_list, context.config.currentScrollPosition)
-        datasetChanged = false
-    }*/
-
     override fun getViewAt(position: Int): RemoteViews {
         context.config.viewPosition = position
         val type = getItemViewType(position)
         val remoteView: RemoteViews
+
+        if (events.size > 30) {
+            val eventsLeft = events.size - position
+            if (eventsLeft < 25) {
+                loadMoreEvents = true
+                val fromTS = lastDate.plusDays(1).seconds()
+                val toTS = lastDate.plusDays(31).seconds()
+                getEvents(fromTS, toTS)
+                lastDate = lastDate.plusDays(31)
+            }
+        }
 
         //if (datasetChanged) goToToday()
 
@@ -233,12 +238,15 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
         val period = intent.getIntExtra(EVENT_LIST_PERIOD, 0)
         val currentDate = DateTime()
         val fromTS = currentDate.seconds() - displayPastEvents * 60
-        val toTS = when (period) {
+        val toTS = currentDate.plusDays(30).seconds()
+        lastDate = currentDate.plusDays(30)
+        /*val toTS = when (period) {
             0 -> currentDate.plusYears(1).seconds()
             EVENT_PERIOD_TODAY -> currentDate.withTime(23, 59, 59, 999).seconds()
             else -> currentDate.plusSeconds(period).seconds()
-        }
-        context.eventsHelper.getEventsSync(fromTS, toTS, applyTypeFilter = true) {
+        }*/
+        getEvents(fromTS, toTS)
+        /*context.eventsHelper.getEventsSync(fromTS, toTS, applyTypeFilter = true) {
             val listItems = ArrayList<ListItem>(it.size)
             val replaceDescription = context.config.replaceDescription
             val sorted = it.sortedWith(compareBy<Event> { event ->
@@ -307,6 +315,90 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
             }
 
             this@EventListWidgetAdapter.events = listItems
+        }*/
+    }
+
+    private fun getEvents(fromTS: Long, toTS: Long) {
+        var skipMonth = false
+        if (loadMoreEvents) skipMonth = true
+        context.eventsHelper.getEventsSync(fromTS, toTS, applyTypeFilter = true) {
+            val listItems = ArrayList<ListItem>(it.size)
+            val replaceDescription = context.config.replaceDescription
+            val sorted = it.sortedWith(compareBy<Event> { event ->
+                if (event.getIsAllDay()) {
+                    Formatter.getDayStartTS(Formatter.getDayCodeFromTS(event.startTS)) - 1
+                } else {
+                    event.startTS
+                }
+            }.thenBy { event ->
+                if (event.getIsAllDay()) {
+                    Formatter.getDayEndTS(Formatter.getDayCodeFromTS(event.endTS))
+                } else {
+                    event.endTS
+                }
+            }.thenBy { event -> event.title }.thenBy { event -> if (replaceDescription) event.location else event.description })
+
+            var prevCode = ""
+            var prevMonthLabel = ""
+            val now = getNowSeconds()
+            val today = Formatter.getDateDayTitle(Formatter.getDayCodeFromTS(now))
+            var isSpecialEvent: Boolean
+
+            sorted.forEach { event ->
+                val code = Formatter.getDayCodeFromTS(event.startTS)
+                val monthLabel = Formatter.getLongMonthYear(context, code)
+                isSpecialEvent = event.source == SOURCE_CONTACT_BIRTHDAY || event.source == SOURCE_CONTACT_ANNIVERSARY
+
+                if (skipMonth) {
+                    skipMonth = false
+                    prevMonthLabel = monthLabel
+                }
+
+                if (monthLabel != prevMonthLabel) {
+                    val listSectionMonth = ListSectionMonth(monthLabel)
+                    listItems.add(listSectionMonth)
+                    prevMonthLabel = monthLabel
+                }
+
+                if (code != prevCode) {
+                    val day = Formatter.getDateDayTitle(code)
+                    val isToday = day == today
+                    val isPastSection = if (isToday) {
+                        context.config.currentScrollPosition = listItems.size
+                        false
+                    } else {
+                        event.startTS < now
+                    }
+                    val listSection = ListSectionDay(day, code, dayBackgroundColor, isToday, isPastSection)
+                    listItems.add(listSection)
+                    prevCode = code
+                }
+
+                val listEvent = ListEvent(
+                    event.id!!,
+                    event.startTS,
+                    event.endTS,
+                    event.title,
+                    event.description,
+                    event.getIsAllDay(),
+                    event.color,
+                    event.location,
+                    event.isPastEvent,
+                    event.repeatInterval > 0,
+                    event.isTask(),
+                    event.isTaskCompleted(),
+                    isSpecialEvent,
+                    "",
+                    ""
+                )
+                listItems.add(listEvent)
+            }
+            if (loadMoreEvents) {
+                loadMoreEvents
+                this@EventListWidgetAdapter.events.addAll(listItems)
+            } else {
+                this@EventListWidgetAdapter.events = listItems
+            }
         }
     }
 

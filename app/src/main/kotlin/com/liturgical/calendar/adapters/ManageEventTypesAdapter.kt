@@ -162,8 +162,9 @@ class ManageEventTypesAdapter(
 
         for (key in selectedKeys) {
             val type = getItemWithKey(key) ?: continue
-            if (type.id == REGULAR_EVENT_TYPE_ID || type.id == BIRTHDAY_EVENT_TYPE_ID ||
-                type.id == LITURGICAL_EVENT_TYPE_ID || type.id == ANNI_EVENT_TYPE_ID || type.id == HOLY_DAY_EVENT_TYPE_ID) {
+            if (type.id == REGULAR_EVENT_TYPE_ID ||  // TODO: Add this to vew version
+                // type.id == BIRTHDAY_EVENT_TYPE_ID || type.id == ANNI_EVENT_TYPE_ID ||
+                type.id == LITURGICAL_EVENT_TYPE_ID || type.id == HOLY_DAY_EVENT_TYPE_ID) {
                 activity.toast(R.string.cannot_delete_default_type)
                 eventTypesToDelete.remove(type)
                 toggleItemSelection(false, getItemKeyPosition(type.id!!.toInt()))

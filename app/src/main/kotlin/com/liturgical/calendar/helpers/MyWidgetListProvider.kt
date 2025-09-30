@@ -8,14 +8,12 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
-import androidx.core.content.ContextCompat.startActivity
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SplashActivity
 import com.liturgical.calendar.activities.WidgetListConfigureActivity
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.services.WidgetService
 import com.secure.commons.extensions.*
-import com.secure.commons.helpers.IS_CUSTOMIZING_COLORS
 import com.secure.commons.helpers.ensureBackgroundThread
 import org.joda.time.DateTime
 
