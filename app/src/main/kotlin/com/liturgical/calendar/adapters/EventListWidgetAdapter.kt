@@ -67,10 +67,12 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
         if (events.size > 30) {
             val eventsLeft = events.size - position
             if (eventsLeft < 25) {
+                //val lastDate = Formatter.getDateTimeFromTS(context.config.lastLoadedDate)
                 loadMoreEvents = true
                 val fromTS = lastDate.plusDays(1).seconds()
                 val toTS = lastDate.plusDays(31).seconds()
                 getEvents(fromTS, toTS)
+                //context.config.lastLoadedDate = lastDate.plusDays(31).seconds()/1000L
                 lastDate = lastDate.plusDays(31)
             }
         }
@@ -239,6 +241,7 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
         val currentDate = DateTime()
         val fromTS = currentDate.seconds() - displayPastEvents * 60
         val toTS = currentDate.plusDays(30).seconds()
+        //context.config.lastLoadedDate = currentDate.plusDays(30).seconds()/1000L
         lastDate = currentDate.plusDays(30)
         /*val toTS = when (period) {
             0 -> currentDate.plusYears(1).seconds()

@@ -45,9 +45,9 @@ data class Event(
     @ColumnInfo(name = "extended_rule") var extendedRule: Int = 0
 ) : Serializable {
 
-    companion object {
+    /*companion object {
         private const val SERIAL_VERSION_UID = -32456795132345616L
-    }
+    }*/
 
     fun addIntervalTime(original: Event) {
         val oldStart = Formatter.getDateTimeFromTS(startTS)
@@ -58,10 +58,12 @@ data class Event(
                     repeatInterval % YEAR == 0 -> when (repeatRule) {
                         REPEAT_SAME_DAY -> addYearsWithSameDay(oldStart)
                         REPEAT_ORDER_WEEKDAY_USE_LAST -> addXthDayInterval(oldStart, original, true)
-                        REPEAT_SAME_DAY_WITH_EXCEPTION -> handleYearlyException(oldStart, original, extendedRule)
+                        REPEAT_SAME_DAY_WITH_EXCEPTION -> handleYearlyException(oldStart, original)
                         REPEAT_ORDER_WEEKDAY -> addXthDayInterval(oldStart, original, false)
+                        REPEAT_ORDER_WEEKDAY_WITH_EXCEPTION -> handleYearlyException(oldStart, original)
                         REPEAT_AFTER_FM -> calculateEaster(oldStart)
                         REPEAT_HNOJ -> calculateHNOJ(oldStart)
+                        REPEAT_ORDER_WEEKDAY_USE_LAST_W_EXCEPTION -> handleYearlyException(oldStart, original)
                         else -> addYearWithRepeatRule(oldStart, repeatRule)
                     }
                     repeatInterval % MONTH == 0 -> when (repeatRule) {
@@ -109,69 +111,113 @@ data class Event(
         return newDateTime
     }
 
-    private fun handleShiftBit(currStart: DateTime, extendedRule: Int): DateTime {
+    private fun handleShiftBit(currStart: DateTime, extendedRule: Int, reverseRule: Boolean = false): DateTime {
         val shift = extendedRule.getBits(XOR_SHIFT).ushr(SHIFT)
         var shiftBit = EX_RULE_SPD
         var isFinished = false
         var newDateTime = currStart
         while (!isFinished) {
-            // if the bit is not set check the next condition
-            if ((extendedRule or shiftBit) == 0) {
-                shiftBit = shiftBit.shl(1)
-                // if the bit is greater the SMW, no bit is set, so return
-                if (shiftBit > EX_RULE_SMW) return currStart
-            } else {
+            if (reverseRule) {
+                shiftBit = if ((extendedRule and EX_RULE_SPD) != 0) EX_RULE_SMD
+                else if ((extendedRule and EX_RULE_SMD) != 0) EX_RULE_SPD
+                else if ((extendedRule and EX_RULE_SPW) != 0) EX_RULE_SMW
+                else if ((extendedRule and EX_RULE_SMW) != 0) EX_RULE_SPW
+                else return currStart
                 isFinished = true
                 newDateTime = shiftDate(currStart, shiftBit, shift)
+            } else {
+                // if the bit is not set check the next condition
+                if ((extendedRule and shiftBit) == 0) {
+                    shiftBit = shiftBit.shl(1)
+                    // if the bit is greater then SMW, no bit is set, so return
+                    if (shiftBit > EX_RULE_SMW) return currStart
+                } else {
+                    isFinished = true
+                    newDateTime = shiftDate(currStart, shiftBit, shift)
+                }
             }
         }
         return newDateTime
     }
 
-    private fun handleYearlyException(currStart: DateTime, original: Event, extendedRule: Int): DateTime {
-        var newDateTime = currStart.plusYears(repeatInterval / YEAR)
+    private fun handleYearlyException(currStart: DateTime, original: Event): DateTime {
+        var newDateTime = addYearsWithSameDay(currStart)
+        var normalDateTime = currStart
         val origDay = Formatter.getDateTimeFromTS(original.startTS)
+        // check and make sure the date is the same as the original event
+        if ((flags and FLAG_EXCEPTION) == FLAG_EXCEPTION) {
+            if (repeatRule == REPEAT_SAME_DAY_WITH_EXCEPTION) { //currStart.monthOfYear != origDay.monthOfYear || currStart.dayOfMonth != origDay.dayOfMonth)
+                val yearShift = newDateTime.year - origDay.year
+                newDateTime = origDay.plusYears(yearShift)
+            } else {
+                /*var year = origDay.year
+                var shiftDays = 0
+                while (year < newDateTime.year) {
+                    shiftDays += if (isLeapYear(year)) 2 else 1
+                    year++
+                }
+                newDateTime = origDay.plusYears(year - origDay.year).minusDays(shiftDays) */
+                normalDateTime = handleShiftBit(currStart, extendedRule, true)
+
+            }
+            // remove exception flag
+            flags = flags xor FLAG_EXCEPTION
+        }
+
+        if (repeatRule != REPEAT_SAME_DAY_WITH_EXCEPTION) {
+            newDateTime = when (repeatRule) {
+                REPEAT_ORDER_WEEKDAY_WITH_EXCEPTION -> addXthDayInterval(normalDateTime, original, false)
+                REPEAT_ORDER_WEEKDAY_USE_LAST_W_EXCEPTION -> addXthDayInterval(normalDateTime, original, true)
+                else -> newDateTime
+            }
+        }
         var isException = false
-        val date = extendedRule.getBits(XOR_RANGE_TO).ushr(RANGE_TO)
+        var date = extendedRule.getBits(XOR_RANGE_TO).ushr(RANGE_TO)
         // Check if it is a range
         if ((extendedRule and EX_RULE_R) != 0) {
             var from = extendedRule.getBits(XOR_RANGE_FROM).ushr(RANGE_FROM)
             /** TODO: Need to add range check*/
         } else {
             // check if exception day lands on the same day as newDateTime
-            if ((extendedRule and EX_RULE_EPD) != 0) {
-                val ePD = addYearWithRepeatRule(currStart, (date or FM_ADD_DAYS_RULE))
+            // these are in a specific order
+            if ((extendedRule and EX_RULE_W) != 0) {
+                if (date == 0) date = 7
+                if (newDateTime.dayOfWeek == date) isException = true
+            } else if ((extendedRule and EX_RULE_DM) != 0) {
+                if ((extendedRule and EX_RULE_GT) != 0) {
+                    if (newDateTime.dayOfMonth > date) isException = true
+                } else if ((extendedRule and EX_RULE_LT) != 0) {
+                    if (newDateTime.dayOfMonth < date) isException = true
+                } else if (newDateTime.dayOfMonth == date) isException = true
+            } else if ((extendedRule and EX_RULE_EPD) != 0) {
+                val ePD = addYearWithRepeatRule(currStart, (date or RULE_ADD_DAYS))
                 if (newDateTime == ePD) isException = true
             } else if ((extendedRule and EX_RULE_EMD) != 0) {
-                val eMD = addYearWithRepeatRule(currStart, (date or FM_MINUS_DAYS_RULE))
+                val eMD = addYearWithRepeatRule(currStart, (date or RULE_MINUS_DAYS))
                 if (newDateTime == eMD) isException = true
             } else if ((extendedRule and EX_RULE_EPW) != 0) {
-                val ePW = addYearWithRepeatRule(currStart, (date or FM_ADD_WEEKS_RULE))
+                val ePW = addYearWithRepeatRule(currStart, (date or RULE_ADD_WEEKS))
                 if (newDateTime == ePW) isException = true
             } else if ((extendedRule and EX_RULE_EMW) != 0) {
-                val eMW = addYearWithRepeatRule(currStart, (date or FM_MINUS_WEEKS_RULE))
+                val eMW = addYearWithRepeatRule(currStart, (date or RULE_MINUS_WEEKS))
                 if (newDateTime == eMW) isException = true
             }
         }
         if (isException) {
             newDateTime = handleShiftBit(newDateTime, extendedRule)
-        } else { // check and make sure the date is the same as the original event
-            if (newDateTime.monthOfYear != origDay.monthOfYear || newDateTime.dayOfMonth != origDay.dayOfMonth) {
-                val yearShift = newDateTime.year - origDay.year
-                newDateTime = origDay.plusYears(yearShift)
-            }
+            flags = flags or FLAG_EXCEPTION
         }
         return newDateTime
     }
 
     // if an event should happen on 29th Feb. with Same Day yearly repetition, show it only on leap years
     private fun addYearsWithSameDay(currStart: DateTime): DateTime {
-        var newDateTime = currStart.plusYears(repeatInterval / YEAR)
+        var newDateTime = getNextYearlyOccurrence(currStart) //currStart.plusYears(repeatInterval / YEAR)
 
         // Date may slide within the same month
         if (newDateTime.dayOfMonth != currStart.dayOfMonth) {
             while (newDateTime.dayOfMonth().maximumValue < currStart.dayOfMonth) {
-                newDateTime = newDateTime.plusYears(repeatInterval / YEAR)
+                newDateTime = getNextYearlyOccurrence(currStart) //newDateTime.plusYears(repeatInterval / YEAR)
             }
             newDateTime = newDateTime.withDayOfMonth(currStart.dayOfMonth)
         }
@@ -198,17 +244,17 @@ data class Event(
         var newDateTime = calculateEaster(currStart)
         var rule = repeatRule
         // have to keep these in this order largest to smallest
-        if (repeatRule > FM_MINUS_WEEKS_RULE) {
-            rule = rule xor FM_MINUS_WEEKS_RULE
+        if (repeatRule > RULE_MINUS_WEEKS) {
+            rule = rule xor RULE_MINUS_WEEKS
             newDateTime = newDateTime.minusWeeks(rule)
-        } else if (repeatRule > FM_MINUS_DAYS_RULE) {
-            rule = rule xor FM_MINUS_DAYS_RULE
+        } else if (repeatRule > RULE_MINUS_DAYS) {
+            rule = rule xor RULE_MINUS_DAYS
             newDateTime = newDateTime.minusDays(rule)
-        } else if (repeatRule > FM_ADD_WEEKS_RULE) {
-            rule = rule xor FM_ADD_WEEKS_RULE
+        } else if (repeatRule > RULE_ADD_WEEKS) {
+            rule = rule xor RULE_ADD_WEEKS
             newDateTime = newDateTime.plusWeeks(rule)
-        } else if (repeatRule > FM_ADD_DAYS_RULE) {
-            rule = rule xor FM_ADD_DAYS_RULE
+        } else if (repeatRule > RULE_ADD_DAYS) {
+            rule = rule xor RULE_ADD_DAYS
             newDateTime = newDateTime.plusDays(rule)
         }
 
@@ -231,6 +277,10 @@ data class Event(
 
     private fun isLeapYear(year: Int) : Boolean {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+    }
+
+    private fun getNextYearlyOccurrence(currStart: DateTime): DateTime {
+        return currStart.plusYears(repeatInterval / YEAR)
     }
 
     private fun calculateEaster(currStart: DateTime): DateTime{
@@ -343,6 +393,9 @@ data class Event(
 
         return properMonth.withDayOfMonth(wantedDay)
     }
+
+    /************ Public Functions ************/
+    /******************************************/
 
     fun getIsAllDay() = flags and FLAG_ALL_DAY != 0
     fun hasMissingYear() = flags and FLAG_MISSING_YEAR != 0

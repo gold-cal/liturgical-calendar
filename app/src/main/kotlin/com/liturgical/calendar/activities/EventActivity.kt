@@ -90,10 +90,6 @@ class EventActivity : SimpleActivity() {
         setupOptionsMenu()
         refreshMenuItems()
 
-        if (checkAppSideloading()) {
-            return
-        }
-
         val intent = intent ?: return
         mWasContactsPermissionChecked = hasPermission(PERMISSION_READ_CONTACTS)
 

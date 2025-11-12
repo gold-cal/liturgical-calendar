@@ -15,15 +15,24 @@ import kotlin.math.floor
 import kotlin.math.pow
 
 class Parser {
-    // EXRRULE:EXT=EXP;EXCEPTION=D,39-E,PD-SMW,2-R,23,30
+    // TODO: Need to re-evaluate the Range exception
+    // Easter Dependent (single day exception): EXRRULE:EXT=EXP;EXCEPTION=D,39-E,PD-SMW,2-R,23,30
+    // Easter Dependent (multiple day exception): EXRRULE:EXT=EXP;EXCEPTION=R,23,30-E,PD-SMW,2
+    // Week Day dependent: EXRRULE: EXT=EXP;EXCEPTION=WD,SU-SPD,1
+    //    - The week day cannot be greater than 31
+    // Day of month dependent: EXRRULE: EXT=EXP;EXCEPTION=DM,24,GT-SMW,1
     /** EXCEPTION Format:
+     * The "-" separates the groups of data
      * D = Date of exception in ddmm or dd format
      *     If E, then it equals the number of days or weeks of event
-     * E = Dependent on Easter
-     * PD = Plus Days
-     * PW = PLUS Weeks
-     * MD = Minus Days
-     * MW = Minus Weeks
+     * DM = Day of Month (Int) The date cannot be larger than 31, and the month
+     *     is the month of the current event.
+     * E = Dependent on Easter:
+     *     PD = Plus Days
+     *     PW = Plus Weeks
+     *     MD = Minus Days
+     *     MW = Minus Weeks
+     * WD = Day of Week (mon, tue, ...)
      * R = Range of exception
      * SPD or SMW : S = shift date
      *              D = Days  P = Plus
@@ -35,8 +44,8 @@ class Parser {
 
         for (part in parts) {
             val keyValue = part.split(",")
-            if (keyValue.size <= 1) {continue}
-            var buf = 0
+            if (keyValue.size <= 1) continue
+            var buf: Int
             val key = keyValue[0]
             var value = keyValue[1]
             exceptionRule = when (key) {
@@ -48,6 +57,25 @@ class Parser {
                     MD -> exceptionRule or EX_RULE_EMD
                     MW -> exceptionRule or EX_RULE_EMW
                     else -> exceptionRule
+                }
+                "DM" -> { buf = if (value.toInt() > 31) continue else value.toInt().shl(1)
+                    var extra = 0
+                    if (keyValue.size > 2) {
+                        when (keyValue[2]) {
+                            "GT" -> extra = EX_RULE_GT
+                            "LT" -> extra = EX_RULE_LT
+                        }
+                    }
+                    exceptionRule or buf or EX_RULE_DM or extra
+                }
+                "WD" -> when (value) {
+                    MO -> exceptionRule or EX_RULE_MO or EX_RULE_W
+                    TU -> exceptionRule or EX_RULE_TU or EX_RULE_W
+                    WE -> exceptionRule or EX_RULE_WE or EX_RULE_W
+                    TH -> exceptionRule or EX_RULE_TH or EX_RULE_W
+                    FR -> exceptionRule or EX_RULE_FR or EX_RULE_W
+                    SA -> exceptionRule or EX_RULE_SA or EX_RULE_W
+                    else -> exceptionRule or EX_RULE_W
                 }
                 SPD -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
                     exceptionRule or EX_RULE_SPD or buf
@@ -98,7 +126,12 @@ class Parser {
                 }
                 EXT -> when (value) {
                     HOLY_NAME_JESUS -> newRepeatRule = REPEAT_HNOJ
-                    EXP -> newRepeatRule = REPEAT_SAME_DAY_WITH_EXCEPTION
+                    EXP -> newRepeatRule = when (repeatRule) {
+                        REPEAT_ORDER_WEEKDAY_USE_LAST -> REPEAT_ORDER_WEEKDAY_USE_LAST_W_EXCEPTION
+                        REPEAT_ORDER_WEEKDAY -> REPEAT_ORDER_WEEKDAY_WITH_EXCEPTION
+                        REPEAT_SAME_DAY -> REPEAT_SAME_DAY_WITH_EXCEPTION
+                        else -> repeatRule
+                    }
                     FLAG_OFA -> newFlags = newFlags or FLAG_FISH_OFA
                     FLAG_OA_TF -> newFlags = newFlags or FLAG_FISH_OA_TF
                     FLAG_TFA -> newFlags = newFlags or FLAG_FISH_TFA
@@ -107,10 +140,10 @@ class Parser {
                     else -> newRepeatRule = repeatRule
                 }
                 EXCEPTION -> newExtendedRule = parseExceptionRule(value)
-                FM_PLUS_DAYS -> newRepeatRule = FM_ADD_DAYS_RULE + value.toInt()
-                FM_PLUS_WEEKS -> newRepeatRule = FM_ADD_WEEKS_RULE + value.toInt()
-                FM_MINUS_DAYS -> newRepeatRule = FM_MINUS_DAYS_RULE + value.toInt()
-                FM_MINUS_WEEKS -> newRepeatRule = FM_MINUS_WEEKS_RULE + value.toInt()
+                FM_PLUS_DAYS -> newRepeatRule = RULE_ADD_DAYS + value.toInt()
+                FM_PLUS_WEEKS -> newRepeatRule = RULE_ADD_WEEKS + value.toInt()
+                FM_MINUS_DAYS -> newRepeatRule = RULE_MINUS_DAYS + value.toInt()
+                FM_MINUS_WEEKS -> newRepeatRule = RULE_MINUS_WEEKS + value.toInt()
                 else -> newRepeatRule = repeatRule
             }
         }
@@ -227,17 +260,17 @@ class Parser {
     }
 
     private fun getExCode(repeatRule: Int) = when {
-        repeatRule > FM_MINUS_WEEKS_RULE -> FM_MINUS_WEEKS
-        repeatRule > FM_MINUS_DAYS_RULE -> FM_MINUS_DAYS
-        repeatRule > FM_ADD_WEEKS_RULE -> FM_PLUS_WEEKS
+        repeatRule > RULE_MINUS_WEEKS -> FM_MINUS_WEEKS
+        repeatRule > RULE_MINUS_DAYS -> FM_MINUS_DAYS
+        repeatRule > RULE_ADD_WEEKS -> FM_PLUS_WEEKS
         else -> FM_PLUS_DAYS
     }
 
     private fun getExNumber(repeatRule: Int) = when {
-        repeatRule > FM_MINUS_WEEKS_RULE -> (FM_MINUS_WEEKS_RULE xor repeatRule)
-        repeatRule > FM_MINUS_DAYS_RULE -> (FM_MINUS_DAYS_RULE xor repeatRule)
-        repeatRule > FM_ADD_WEEKS_RULE -> (FM_ADD_WEEKS_RULE xor repeatRule)
-        else -> (FM_ADD_DAYS_RULE xor repeatRule)
+        repeatRule > RULE_MINUS_WEEKS -> (RULE_MINUS_WEEKS xor repeatRule)
+        repeatRule > RULE_MINUS_DAYS -> (RULE_MINUS_DAYS xor repeatRule)
+        repeatRule > RULE_ADD_WEEKS -> (RULE_ADD_WEEKS xor repeatRule)
+        else -> (RULE_ADD_DAYS xor repeatRule)
     }
 
     // from Daily, 5x... to RRULE:FREQ=DAILY;COUNT=5

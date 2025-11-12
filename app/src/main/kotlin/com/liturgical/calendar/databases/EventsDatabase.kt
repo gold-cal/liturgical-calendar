@@ -113,6 +113,7 @@ abstract class EventsDatabase : RoomDatabase() {
                     liturgicalEvent,
                     context.resources.getColor(R.color.default_liturgical_color, null))
                 db!!.EventTypesDao().insertOrUpdate(eventType)
+                context.config.addDisplayEventType(LITURGICAL_EVENT_TYPE_ID.toString())
             }
         }
 

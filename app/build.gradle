@@ -17,8 +17,8 @@ android {
         minSdkVersion 23
         targetSdkVersion 34
 
-        versionCode 33
-        versionName "1.2.8"
+        versionCode 34
+        versionName "1.2.9"
         
         multiDexEnabled true
         setProperty("archivesBaseName", "Liturgical-Calendar-" + versionName)
@@ -89,7 +89,7 @@ android {
 dependencies {
     //implementation project(":commons")
     //implementation "com.andrognito.patternlockview:patternlockview:1.0.0"
-    implementation "com.github.gold-cal:secure-commons:1.1"
+    implementation "com.github.gold-cal:secure-commons:1.4.1"
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "androidx.documentfile:documentfile:1.0.1"

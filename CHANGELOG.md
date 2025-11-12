@@ -1,13 +1,24 @@
 Changelog
 ==========
 
-Version 1.2.7 *(2025-04-14)*
+Version 1.2.9 *(2025-11-11)*
+----------------------------
+* Added the Sundays of Advent
+* Minor code improvements
+
+Version 1.2.8 *(2025-09-29)*
+----------------------------
+* Fixed a bug where syncing external calendars would cause duplicating events
+* Many bug fixes
+* Improved scrolling in list widget
+
+Version 1.2.7 *(2025-09-22)*
 ----------------------------
 * Fixed some formatting issues in the settings
 * Added more debug information
 * Improved birthday and anniversary importing to prevent duplicates
 
-Version 1.2.4 pre-release *(2025-04-14)*
+Version 1.2.4 pre-release *(2025-09-05)*
 ----------------------------
 * Added some debug views
 

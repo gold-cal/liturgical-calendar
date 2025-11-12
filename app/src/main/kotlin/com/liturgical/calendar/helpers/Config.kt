@@ -37,6 +37,10 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(IS_REFRESH, true)
         set(isRefresh) = prefs.edit().putBoolean(IS_REFRESH, isRefresh).apply()
 
+    /*var lastLoadedDate: Long
+        get() = prefs.getLong(LAST_LOADED_DATE, 0L)
+        set(lastLoadedDate) = prefs.edit().putLong(LAST_LOADED_DATE, lastLoadedDate).apply()*/
+
     var tlcRefresh: Long
         get() = prefs.getLong(TLC_REFRESH, 0L)
         set(tlcRefresh) = prefs.edit().putLong(TLC_REFRESH, tlcRefresh).apply()

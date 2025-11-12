@@ -10,13 +10,6 @@ import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import com.liturgical.calendar.R
-import com.liturgical.calendar.databinding.ActivitySettingsBinding
-import com.liturgical.calendar.databinding.ItemSettingsCheckboxBinding
-import com.liturgical.calendar.databinding.ItemSettingsColorBinding
-import com.liturgical.calendar.databinding.ItemSettingsDoubleTextviewBinding
-import com.liturgical.calendar.databinding.ItemSettingsHolderBinding
-import com.liturgical.calendar.databinding.ItemSettingsLabelBinding
-import com.liturgical.calendar.databinding.ItemSettingsSingleTextviewBinding
 import com.liturgical.calendar.dialogs.SelectCalendarsDialog
 import com.liturgical.calendar.dialogs.SelectEventTypeDialog
 import com.liturgical.calendar.dialogs.SelectQuickFilterEventTypesDialog
@@ -24,6 +17,13 @@ import com.liturgical.calendar.dialogs.YearPickerDialog
 import com.liturgical.calendar.extensions.*
 import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.models.EventType
+import com.secure.commons.databinding.ActivitySettingsBinding
+import com.secure.commons.databinding.ItemSettingsCheckboxBinding
+import com.secure.commons.databinding.ItemSettingsColorBinding
+import com.secure.commons.databinding.ItemSettingsDoubleTextviewBinding
+import com.secure.commons.databinding.ItemSettingsHolderBinding
+import com.secure.commons.databinding.ItemSettingsLabelBinding
+import com.secure.commons.databinding.ItemSettingsSingleTextviewBinding
 import com.secure.commons.dialogs.*
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.*
@@ -40,12 +40,9 @@ class SettingsActivity : SimpleActivity() {
     private val PICK_IMPORT_SOURCE_INTENT = 2
     private val binding by viewBinding(ActivitySettingsBinding::inflate)
 
-    //private var mStoredAccentColor = 0
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        //mStoredAccentColor = getProperAccentColor()
     }
 
     override fun onResume() {

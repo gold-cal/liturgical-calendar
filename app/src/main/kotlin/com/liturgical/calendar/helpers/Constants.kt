@@ -148,6 +148,7 @@ const val SHOW_BIRTH_ANN_DESCRIPTION = "show_birth_ann_description"
 const val SHOW_WIDGET_DESCRIPTION = "show_widget_description"
 const val CURRENT_SCROLL_POSITION = "current_scroll_position"
 const val VIEW_POSITION = "view_position"
+//const val LAST_LOADED_DATE = "last_loaded_date"
 
 // TLC values
 const val TLC_REFRESH = "tlc_refresh"
@@ -162,22 +163,23 @@ const val REPEAT_SAME_DAY = 1                           // i.e. 25th every month
 const val REPEAT_ORDER_WEEKDAY_USE_LAST = 2             // i.e. every last sunday. 4th if a month has 4 sundays, 5th if 5 (or last sunday in june, if yearly)
 const val REPEAT_ORDER_WEEKDAY = 4                      // i.e. every 4th sunday, even if a month has 4 sundays only (will stay 4th even at months with 5)
 
-// repeat_rule for yearly repetition
+// repeat_rule for yearly repetition only
 const val REPEAT_SAME_DAY_WITH_EXCEPTION = 3
-// const val REPEAT_AFTER_DAY = 5
+const val REPEAT_ORDER_WEEKDAY_WITH_EXCEPTION = 5
 const val REPEAT_BEFORE_FM = 6
 const val REPEAT_AFTER_FM = 7
 const val REPEAT_HNOJ = 8  // (HNOJ) = Holy Name Of Jesus
+const val REPEAT_ORDER_WEEKDAY_USE_LAST_W_EXCEPTION = 9
 
 // Repeat_Rule Bits
 // The first part of the Int is used to hold the count, up to 500 days
 // Then the rest are bits:
-const val FM_ADD_DAYS_RULE = 0x200
-const val FM_ADD_WEEKS_RULE = 0x400
-const val FM_MINUS_DAYS_RULE = 0x800
-const val FM_MINUS_WEEKS_RULE = 0x1000
-// Empty = 0x2000
-// Empty = 0x4000
+const val RULE_ADD_DAYS = 0x200
+const val RULE_ADD_WEEKS = 0x400
+const val RULE_MINUS_DAYS = 0x800
+const val RULE_MINUS_WEEKS = 0x1000
+//const val RULE_FM_DEPENDENT = 0x2000
+//const val RULE_WEEK_DAY = 0x4000
 //  = 0x8000
 
 
@@ -194,7 +196,7 @@ const val FLAG_FISH_TFA = 0x20
 const val FLAG_FISH_OFA = 0x40
 const val FLAG_FISH_OA_TF = 0x80
 const val FLAG_FISH_TA = 0x100
-//const val FLAG_EXCEPTION = 0x200
+const val FLAG_EXCEPTION = 0x200
 
 /** If FLAG_EXCEPTION is set
  * An Exception can only occur when the exception date or range lands on the date of the
@@ -203,14 +205,15 @@ const val FLAG_FISH_TA = 0x100
  * Event extended_rule has this format:
  * 32                23          17              9               1
  * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
- *                    | d shift |  range or 0  |  date or range |
+ *                    | d shift |  range, W, 0  |  date or range |
  * date or range: This is the exception date that the day has to equal before the exception
- *                will be applied.
- * range or 0: If this value is 0, the date or range is as above, otherwise it is considered
- *             part of the range of dates from this value.
+ *                will be applied, or it is the end of the range (RANGE_TO)
+ * range, W, 0: If this value is 0, the "date or range" is the date used, otherwise the range is from this
+ *             value to the first value (RANGE_FROM). If W is set, this value contains the day of the week that the
+ *             exception will happen (Sun = 0, Mon = 1, ...)
  * d shift: This is the number of days that the event will be shifted, up to 31 is allowed
  *          OR the number of weeks shifted, up to 31 weeks allowed
- * starting with bit 23, the values are as follows
+ * starting with bit 23, the values are as follows:
  */
 // up to 9 bits available,
 const val EX_RULE_SPD = 0x400000  // set if the d shift should be added to the original date
@@ -222,6 +225,20 @@ const val EX_RULE_EMD = 0x8000000
 const val EX_RULE_EPW = 0x10000000
 const val EX_RULE_EMW = 0x20000000
 const val EX_RULE_R =   0x40000000 // Range
+const val EX_RULE_W =   0xC000000  // Week: set when the day is dependent on the day of week (mon, tue, ...)
+                                   // = EX_RULE_EPD + EX_RULE_EMD
+const val EX_RULE_DM =  0x30000000 // = EX_RULE_EPW + EX_RULE_EMW
+const val EX_RULE_GT =  0x200      // Day greater than
+const val EX_RULE_LT =  0x400      // Day less than
+// Week day dependent values, uses the 'date or range' section
+//const val EX_RULE_SU = 0x0
+const val EX_RULE_MO = 0x2
+const val EX_RULE_TU = 0x4
+const val EX_RULE_WE = 0x6
+const val EX_RULE_TH = 0x8
+const val EX_RULE_FR = 0xA
+const val EX_RULE_SA = 0xC
+
 //------------ End -------------------------
 // Constants for getting the shift, range and date from above
 const val RANGE_TO = 1
@@ -230,6 +247,8 @@ const val SHIFT = 17
 const val XOR_SHIFT =      0x7FC1FFFF
 const val XOR_RANGE_FROM = 0x7FFE01FF
 const val XOR_RANGE_TO =   0x7FFFFE01
+//const val EX_MD_DAY =      0x7FFFFFE0
+//const val EX_MD_MONTH =    0x7FFFFE1F
 
 // constants related to ICS file exporting / importing
 const val BEGIN_CALENDAR = "BEGIN:VCALENDAR"
@@ -300,6 +319,7 @@ const val PD = "PD"
 const val PW = "PW"
 const val MD = "MD"
 const val MW = "MW"
+const val WD = "WD"
 const val SPD = "SPD"
 const val SMD = "SMD"
 const val SPW = "SPW"
