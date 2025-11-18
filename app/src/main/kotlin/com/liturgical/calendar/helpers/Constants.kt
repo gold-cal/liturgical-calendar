@@ -170,6 +170,7 @@ const val REPEAT_BEFORE_FM = 6
 const val REPEAT_AFTER_FM = 7
 const val REPEAT_HNOJ = 8  // (HNOJ) = Holy Name Of Jesus
 const val REPEAT_ORDER_WEEKDAY_USE_LAST_W_EXCEPTION = 9
+const val REPEAT_WEEKDAY_DEPENDENT = 10
 
 // Repeat_Rule Bits
 // The first part of the Int is used to hold the count, up to 500 days
@@ -198,7 +199,7 @@ const val FLAG_FISH_OA_TF = 0x80
 const val FLAG_FISH_TA = 0x100
 const val FLAG_EXCEPTION = 0x200
 
-/** If FLAG_EXCEPTION is set
+/* If FLAG_EXCEPTION is set
  * An Exception can only occur when the exception date or range lands on the date of the
  * current event.
  * The first bit is set if the event contains any EXRRULEs
@@ -247,6 +248,7 @@ const val SHIFT = 17
 const val XOR_SHIFT =      0x7FC1FFFF
 const val XOR_RANGE_FROM = 0x7FFE01FF
 const val XOR_RANGE_TO =   0x7FFFFE01
+const val XOR_MONTH =      0x7FFFFFF0
 //const val EX_MD_DAY =      0x7FFFFFE0
 //const val EX_MD_MONTH =    0x7FFFFE1F
 
@@ -304,6 +306,7 @@ const val DATE = "DATE"
 // EXRRULE Properties
 const val EXT = "EXT"  // Extended
 const val EXCEPTION = "EXCEPTION"
+const val DEP = "DEP" // Dependent
 const val FULL_MOON = "FM"
 const val FM_PLUS_WEEKS = "FM-PW"
 const val FM_PLUS_DAYS = "FM-PD"
@@ -314,7 +317,7 @@ const val FM_MINUS_WEEKS = "FM-MW"
 const val BEFORE = "BEFORE"
 const val AFTER = "AFTER"
 const val HOLY_NAME_JESUS = "HNJ"
-const val EXP = "EXP"
+const val EXP = "EXP" // Exception
 const val PD = "PD"
 const val PW = "PW"
 const val MD = "MD"
@@ -324,6 +327,7 @@ const val SPD = "SPD"
 const val SMD = "SMD"
 const val SPW = "SPW"
 const val SMW = "SMW"
+const val FLAG = "FLAG"
 const val FLAG_TFPA = "TFPA"
 const val FLAG_TFA = "TFA"
 const val FLAG_OFA = "OFA"

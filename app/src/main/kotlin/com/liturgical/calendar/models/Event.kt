@@ -64,7 +64,8 @@ data class Event(
                         REPEAT_AFTER_FM -> calculateEaster(oldStart)
                         REPEAT_HNOJ -> calculateHNOJ(oldStart)
                         REPEAT_ORDER_WEEKDAY_USE_LAST_W_EXCEPTION -> handleYearlyException(oldStart, original)
-                        else -> addYearWithRepeatRule(oldStart, repeatRule)
+                        REPEAT_WEEKDAY_DEPENDENT -> calculateEventShift(oldStart, original)
+                        else -> addYearWithRepeatRule(oldStart)
                     }
                     repeatInterval % MONTH == 0 -> when (repeatRule) {
                         REPEAT_SAME_DAY -> addMonthsWithSameDay(oldStart, original)
@@ -87,7 +88,7 @@ data class Event(
         endTS = newEndTS
     }
     
-    /** Shifting the feasts after Epiphany to after Pentecost
+    /* Shifting the feasts after Epiphany to after Pentecost
     * NOTES:
     * Septuagesima is 9 weeks before Easter
     *   - If it is less than 3 weeks from Jan. 6, then the 3rd sunday after Epiphany is in Pentecost
@@ -96,9 +97,134 @@ data class Event(
     *   - Jan 6 -> Septuagesima < 5 weeks: 5, 6 sundays are in pentecost
     *   - Jan 6 -> Septuagesima < 6 weeks: 6 sunday is in pentecost
     *   - Jan 6 -> Septuagesima < 7 weeks: no sundays in epiphany in pentecost
+    *  Septuagesima is 9 weeks before Easter
+    *  NOTE: When Epiphany lands on Thu, Fri, or Sat, there are enough sundays for all
+    *        the Sundays in Epiphany, otherwise one of the sundays does not get said.
+    *
+    *         If the number of Sundays       |
+    *             after Pentecost            |  The Mass is that of the:
+    *     Is:   24    25    26    27    28   |
+    * On the:                          24th  |  3rd after Epiphany
+    * On the:                    24th  25th  |  4th after Epiphany
+    * On the:              24th  25th  26th  |  5th after Epiphany
+    * On the:        24th  25th  26th  27th  |  6th after Epiphany
+    * On the:  24th  25th  26th  27th  28th  |  last after Pentecost
     */
-    
-    //private fun checkEpiphanyShift(currStart: DateTime,)
+
+    private fun shiftEpiphany(currStart: DateTime, weeks: Int, day: Int, epiphanyWeekDay: Int): DateTime {
+        var newDateTime = currStart.minusYears(1)
+        var checkDay = 0
+        if (weeks < 3) {
+            checkDay = day
+        } else if (weeks < 4) { // weeks = 3, so 4th, 5th, and 6th are in pentecost
+            checkDay = day - 1
+        } else if (weeks < 5) { // weeks = 4, so 5th and 6th are in pentecost
+            checkDay = day - 2
+        } else if (weeks < 6) {
+            checkDay = day - 3
+        }
+        if (epiphanyWeekDay != 4 && epiphanyWeekDay != 5 && epiphanyWeekDay != 6) // Thu, Fri, Sat
+            checkDay--
+
+        newDateTime = when (checkDay) {
+            3 -> { description += " ($title)"
+                title = "Twenty-Fourth Sunday after Pentecost" // 0x41F
+                addYearWithRepeatRule(newDateTime, 0x41F) }
+            4 -> { description += " ($title)"
+                title = "Twenty-Fifth Sunday after Pentecost" // 0x420
+                addYearWithRepeatRule(newDateTime, 0x420) }
+            5 -> { description += " ($title)"
+                title = "Twenty-Sixth Sunday after Pentecost" // 0x421
+                addYearWithRepeatRule(newDateTime, 0x421) }
+            6 -> { description += " ($title)"
+                title = "Twenty-Seventh Sunday after Pentecost" // 0x422
+                addYearWithRepeatRule(newDateTime, 0x422) }
+            else -> {
+                // remove exception flag so it checks that it is landing on the
+                // correct date the flowing year
+                flags = flags xor FLAG_EXCEPTION
+                shiftDateDependentEvent(currStart)
+            }
+        }
+        return newDateTime
+    }
+
+    /* How the Extended rule is used in this function (Refer to Constants.kt for more info)
+     * 32                23          17              9               1
+     * 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+     *        W           | d shift |     month     |     date      |
+     * If W is set, then the days are dependent on the day of week they land on otherwise
+     * if W is not set, they stay on their normal date.
+     */
+    private fun shiftDateDependentEvent(currStart: DateTime): DateTime {
+        val day = extendedRule.getBits(XOR_RANGE_TO).ushr(RANGE_TO)
+        val month = extendedRule.getBits(XOR_RANGE_FROM).ushr(RANGE_FROM)
+        //val origDay = Formatter.getDateTimeFromTS(original.startTS)
+        var dependentDate = DateTime(currStart.year + 1, month, day, 5, 0)
+        val daysToSunday = dependentDate.dayOfWeek
+        if (daysToSunday != 7) dependentDate = dependentDate.minusDays(daysToSunday)
+
+        /*if ((extendedRule and EX_RULE_W) != 0) {
+            newDateTime = addXthDayInterval(currStart, original, false)
+        } else {
+            newDateTime = addYearsWithSameDay(newDateTime)
+        }*/
+
+        return handleShiftBit(dependentDate)
+    }
+
+    private fun calculateEventShift(currStart: DateTime, original: Event): DateTime {
+        var newDateTime = shiftDateDependentEvent(currStart)
+
+        if ((flags and FLAG_EXCEPTION) == FLAG_EXCEPTION) {
+            val recalculate = false
+            while (!recalculate) {
+                // check and make sure the title is set back to original
+                if (title != original.title) title = original.title
+                if (description != original.description) description = original.description
+                // calculate the number of weeks to Septuagesima
+                var janSix = DateTime(newDateTime.year, 1, 6, 5, 0)
+                val epiphanyWeekDay = janSix.dayOfWeek
+                val septuagesimaRule = RULE_MINUS_WEEKS + 9
+                val septuagesima = addYearWithRepeatRule(newDateTime.minusYears(1), septuagesimaRule)
+                var days = 7 - janSix.dayOfWeek
+                if (days != 0) janSix = janSix.plusDays(days)
+                var weeks = 0
+                var isFinished = false
+                while (!isFinished) {
+                    weeks++
+                    janSix = janSix.plusWeeks(1)
+                    if (janSix.monthOfYear == septuagesima.monthOfYear) {
+                        if (janSix.dayOfMonth == septuagesima.dayOfMonth)
+                            isFinished = true
+                    }
+                }
+
+                if (weeks > 5) return newDateTime
+
+                val key = title.split(" ")
+                days = when (key[0]) {
+                    "Third" -> 3
+                    "Fourth" -> 4
+                    "Fifth" -> 5
+                    "Sixth" -> 6
+                    else -> 7
+                }
+
+                // if the number of weeks after epiphany is less than the sunday after epiphany (days)
+                // then the sunday is in pentecost or not said
+                if (weeks >= days) return newDateTime
+
+                newDateTime = shiftEpiphany(newDateTime, weeks, days, epiphanyWeekDay)
+                // if the FLAG_EXCEPTION is not set, recalculate date
+                if ((flags and FLAG_EXCEPTION) != FLAG_EXCEPTION) {
+                    // reset flag
+                    flags = flags or FLAG_EXCEPTION
+                } else return newDateTime
+            }
+        }
+        return newDateTime
+    }
 
     private fun shiftDate(currStart: DateTime, shiftBit: Int, shiftValue: Int): DateTime {
         val newDateTime = when (shiftBit) {
@@ -111,7 +237,7 @@ data class Event(
         return newDateTime
     }
 
-    private fun handleShiftBit(currStart: DateTime, extendedRule: Int, reverseRule: Boolean = false): DateTime {
+    private fun handleShiftBit(currStart: DateTime, reverseRule: Boolean = false): DateTime {
         val shift = extendedRule.getBits(XOR_SHIFT).ushr(SHIFT)
         var shiftBit = EX_RULE_SPD
         var isFinished = false
@@ -150,15 +276,7 @@ data class Event(
                 val yearShift = newDateTime.year - origDay.year
                 newDateTime = origDay.plusYears(yearShift)
             } else {
-                /*var year = origDay.year
-                var shiftDays = 0
-                while (year < newDateTime.year) {
-                    shiftDays += if (isLeapYear(year)) 2 else 1
-                    year++
-                }
-                newDateTime = origDay.plusYears(year - origDay.year).minusDays(shiftDays) */
-                normalDateTime = handleShiftBit(currStart, extendedRule, true)
-
+                normalDateTime = handleShiftBit(currStart, true)
             }
             // remove exception flag
             flags = flags xor FLAG_EXCEPTION
@@ -204,7 +322,7 @@ data class Event(
             }
         }
         if (isException) {
-            newDateTime = handleShiftBit(newDateTime, extendedRule)
+            newDateTime = handleShiftBit(newDateTime)
             flags = flags or FLAG_EXCEPTION
         }
         return newDateTime
@@ -240,20 +358,33 @@ data class Event(
     }
 
     // the repeat rule contains information on how to calculate the date repetition
-    private fun addYearWithRepeatRule(currStart: DateTime, repeatRule: Int): DateTime {
+    private fun addYearWithRepeatRule(currStart: DateTime, customRepeatRule: Int = 0): DateTime {
+        val newRepeatRule = if (customRepeatRule == 0) repeatRule else customRepeatRule
         var newDateTime = calculateEaster(currStart)
-        var rule = repeatRule
+
+        // check and make sure there are more than 23 weeks in pentecost
+        if (title == "Twenty-Third Sunday after Pentecost") {
+            // Pentecost is 7 weeks after Easter add 23 weeks, and see if it land after the 19th of november
+            // 7 + 23 = 30
+            val weeksInPentecost = newDateTime.plusWeeks(30)
+            if (weeksInPentecost.monthOfYear == 11 && weeksInPentecost.dayOfMonth > 18) {
+                // move it to the following year
+                newDateTime = calculateEaster(newDateTime)
+            }
+        }
+
+        var rule = newRepeatRule
         // have to keep these in this order largest to smallest
-        if (repeatRule > RULE_MINUS_WEEKS) {
+        if (newRepeatRule > RULE_MINUS_WEEKS) {
             rule = rule xor RULE_MINUS_WEEKS
             newDateTime = newDateTime.minusWeeks(rule)
-        } else if (repeatRule > RULE_MINUS_DAYS) {
+        } else if (newRepeatRule > RULE_MINUS_DAYS) {
             rule = rule xor RULE_MINUS_DAYS
             newDateTime = newDateTime.minusDays(rule)
-        } else if (repeatRule > RULE_ADD_WEEKS) {
+        } else if (newRepeatRule > RULE_ADD_WEEKS) {
             rule = rule xor RULE_ADD_WEEKS
             newDateTime = newDateTime.plusWeeks(rule)
-        } else if (repeatRule > RULE_ADD_DAYS) {
+        } else if (newRepeatRule > RULE_ADD_DAYS) {
             rule = rule xor RULE_ADD_DAYS
             newDateTime = newDateTime.plusDays(rule)
         }

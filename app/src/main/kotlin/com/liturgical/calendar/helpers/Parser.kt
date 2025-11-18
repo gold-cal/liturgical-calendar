@@ -18,13 +18,17 @@ class Parser {
     // TODO: Need to re-evaluate the Range exception
     // Easter Dependent (single day exception): EXRRULE:EXT=EXP;EXCEPTION=D,39-E,PD-SMW,2-R,23,30
     // Easter Dependent (multiple day exception): EXRRULE:EXT=EXP;EXCEPTION=R,23,30-E,PD-SMW,2
-    // Week Day dependent: EXRRULE: EXT=EXP;EXCEPTION=WD,SU-SPD,1
+    // Week Day Exception: EXRRULE: EXT=EXP;EXCEPTION=WD,SU-SPD,1
     //    - The week day cannot be greater than 31
-    // Day of month dependent: EXRRULE: EXT=EXP;EXCEPTION=DM,24,GT-SMW,1
-    /** EXCEPTION Format:
+    // Day of month Exception: EXRRULE: EXT=EXP;EXCEPTION=DM,24,GT-SMW,1
+    // Day of month Dependent: EXRRULE: EXT=DEP;EXCEPTION=DD,1,6-SPW,2
+    /* EXCEPTION Format:
      * The "-" separates the groups of data
      * D = Date of exception in ddmm or dd format
      *     If E, then it equals the number of days or weeks of event
+     * DD = Day Dependent: The next yearly occurrence is always calculated from this value
+     *     Format: DD, month, day
+     *     Month cannot be greater than 12, and day cannot be greater than 31
      * DM = Day of Month (Int) The date cannot be larger than 31, and the month
      *     is the month of the current event.
      * E = Dependent on Easter:
@@ -49,7 +53,7 @@ class Parser {
             val key = keyValue[0]
             var value = keyValue[1]
             exceptionRule = when (key) {
-                "D" -> { buf = if (value.toInt() > 255) continue else value.toInt() shl 1
+                "D" -> { buf = if (value.toInt() > 255) continue else value.toInt().shl(RANGE_TO)
                         exceptionRule or buf }
                 "E" -> when (value) {
                     PD -> exceptionRule or EX_RULE_EPD
@@ -58,7 +62,12 @@ class Parser {
                     MW -> exceptionRule or EX_RULE_EMW
                     else -> exceptionRule
                 }
-                "DM" -> { buf = if (value.toInt() > 31) continue else value.toInt().shl(1)
+                "DD" -> { if (keyValue.size < 3) continue
+                    buf = if (value.toInt() > 12) continue else value.toInt().shl(RANGE_FROM)
+                    val extra = keyValue[2].toInt().shl(RANGE_TO)
+                    exceptionRule or buf or extra
+                }
+                "DM" -> { buf = if (value.toInt() > 31) continue else value.toInt().shl(RANGE_TO)
                     var extra = 0
                     if (keyValue.size > 2) {
                         when (keyValue[2]) {
@@ -77,22 +86,22 @@ class Parser {
                     SA -> exceptionRule or EX_RULE_SA or EX_RULE_W
                     else -> exceptionRule or EX_RULE_W
                 }
-                SPD -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
+                SPD -> { buf = if (value.toInt() > 31) continue else value.toInt().shl(SHIFT)
                     exceptionRule or EX_RULE_SPD or buf
                 }
-                SMD -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
+                SMD -> { buf = if (value.toInt() > 31) continue else value.toInt().shl(SHIFT)
                     exceptionRule or EX_RULE_SMD or buf
                 }
-                SPW -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
+                SPW -> { buf = if (value.toInt() > 31) continue else value.toInt().shl(SHIFT)
                     exceptionRule or EX_RULE_SPW or buf
                 }
-                SMW -> { buf = if (value.toInt() > 31) continue else value.toInt() shl 17
+                SMW -> { buf = if (value.toInt() > 31) continue else value.toInt().shl(SHIFT)
                     exceptionRule or EX_RULE_SMW or buf
                 }
                 "R" -> { if (keyValue.size < 3) continue
-                    buf = if (value.toInt() > 255) continue else value.toInt() shl 9
+                    buf = if (value.toInt() > 255) continue else value.toInt().shl(RANGE_FROM)
                     value = keyValue[2]
-                    buf = if (value.toInt() > 255) continue else buf or (value.toInt() shl 1)
+                    buf = if (value.toInt() > 255) continue else buf or (value.toInt().shl(RANGE_TO))
                     exceptionRule or EX_RULE_R or buf
                 }
                 else -> exceptionRule
@@ -124,20 +133,25 @@ class Parser {
                     BEFORE -> REPEAT_BEFORE_FM
                     else -> repeatRule
                 }
-                EXT -> when (value) {
-                    HOLY_NAME_JESUS -> newRepeatRule = REPEAT_HNOJ
-                    EXP -> newRepeatRule = when (repeatRule) {
+                EXT -> newRepeatRule = when (value) {
+                    HOLY_NAME_JESUS -> REPEAT_HNOJ
+                    EXP -> when (repeatRule) {
                         REPEAT_ORDER_WEEKDAY_USE_LAST -> REPEAT_ORDER_WEEKDAY_USE_LAST_W_EXCEPTION
                         REPEAT_ORDER_WEEKDAY -> REPEAT_ORDER_WEEKDAY_WITH_EXCEPTION
                         REPEAT_SAME_DAY -> REPEAT_SAME_DAY_WITH_EXCEPTION
                         else -> repeatRule
                     }
-                    FLAG_OFA -> newFlags = newFlags or FLAG_FISH_OFA
-                    FLAG_OA_TF -> newFlags = newFlags or FLAG_FISH_OA_TF
-                    FLAG_TFA -> newFlags = newFlags or FLAG_FISH_TFA
-                    FLAG_TA -> newFlags = newFlags or FLAG_FISH_TA
-                    FLAG_TFPA -> newFlags = newFlags or FLAG_FISH_TFPA
-                    else -> newRepeatRule = repeatRule
+                    DEP -> REPEAT_WEEKDAY_DEPENDENT
+                    else -> repeatRule
+                }
+                FLAG -> newFlags = when (value) {
+                    EXP -> newFlags or FLAG_EXCEPTION
+                    FLAG_OFA -> newFlags or FLAG_FISH_OFA
+                    FLAG_OA_TF -> newFlags or FLAG_FISH_OA_TF
+                    FLAG_TFA -> newFlags or FLAG_FISH_TFA
+                    FLAG_TA -> newFlags or FLAG_FISH_TA
+                    FLAG_TFPA -> newFlags or FLAG_FISH_TFPA
+                    else -> flags
                 }
                 EXCEPTION -> newExtendedRule = parseExceptionRule(value)
                 FM_PLUS_DAYS -> newRepeatRule = RULE_ADD_DAYS + value.toInt()
