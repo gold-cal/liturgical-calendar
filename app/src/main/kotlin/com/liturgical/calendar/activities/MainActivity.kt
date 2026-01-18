@@ -1409,7 +1409,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             FAQItem(R.string.faq_4_title, R.string.faq_4_text)
         )
 
-        val showItems = AboutItems(true, true, forkedFromUrl, sourceCodeUrl)
+        val showItems = AboutItems(true, true, forkedFromUrl, true, sourceCodeUrl, true)
 
         startAboutActivity(R.string.app_name, licenses, BuildConfig.VERSION_NAME, faqItems, true, showItems)
     }

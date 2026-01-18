@@ -1,5 +1,5 @@
 package com.liturgical.calendar.services
-
+/*
 import android.app.IntentService
 import android.content.Intent
 import com.liturgical.calendar.extensions.config
@@ -17,3 +17,4 @@ class SnoozeService : IntentService("Snooze") {
         }
     }
 }
+*/

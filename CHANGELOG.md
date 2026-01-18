@@ -1,6 +1,12 @@
 Changelog
 ==========
 
+Version 1.4 *(2026-01-17)*
+----------------------------
+* Fixed some theme issues
+* Updated dependencies
+* Updated some deprecated functions
+
 Version 1.3 *(2025-11-17)*
 ----------------------------
 * NEW: The calendar now has the Sundays after Epiphany and shifts them to after Pentecost when applicable

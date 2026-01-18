@@ -1,7 +1,8 @@
 package com.liturgical.calendar.services
-
+/*
 import android.app.IntentService
 import android.content.Intent
+import androidx.core.app.JobIntentService
 import com.liturgical.calendar.extensions.cancelNotification
 import com.liturgical.calendar.extensions.cancelPendingIntent
 import com.liturgical.calendar.extensions.eventsDB
@@ -24,3 +25,4 @@ class MarkCompletedService : IntentService("MarkCompleted") {
         }
     }
 }
+*/

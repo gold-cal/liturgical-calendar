@@ -38,6 +38,10 @@ import kotlin.system.exitProcess
 class SettingsActivity : SimpleActivity() {
     private val GET_RINGTONE_URI = 1
     private val PICK_IMPORT_SOURCE_INTENT = 2
+    private var backgroundColor = 0
+    private var accentColor = 0
+    private var textColor = 0
+
     private val binding by viewBinding(ActivitySettingsBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +52,9 @@ class SettingsActivity : SimpleActivity() {
     override fun onResume() {
         super.onResume()
         setupToolbar(binding.settingsToolbar, NavigationIcon.Arrow)
+        backgroundColor = getProperBackgroundColor()
+        accentColor = getProperAccentColor()
+        textColor = getProperTextColor()
         setupSettingItems()
     }
 
@@ -128,12 +135,15 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
-    private fun createHolder() = ItemSettingsHolderBinding.inflate(layoutInflater, null, false)
+    //private fun createHolder() = ItemSettingsHolderBinding.inflate(layoutInflater, null, false)
+    private fun createHolder() = ItemSettingsHolderBinding.inflate(layoutInflater, null, false).apply {
+        if (isLightBackground()) settingsWrapper.background.applyColorFilter(DARK_GREY)
+    }
 
     private fun createSettingsLabel(resId: Int): TextView {
         val labelBinding = ItemSettingsLabelBinding.inflate(layoutInflater, null, false)
         labelBinding.settingsLabel.setText(resId)
-        labelBinding.settingsLabel.setTextColor(getProperAccentColor())
+        labelBinding.settingsLabel.setTextColor(accentColor)
         // background.applyColorFilter(getProperBackgroundColor().getContrastColor())
         return labelBinding.root
     }
@@ -141,12 +151,14 @@ class SettingsActivity : SimpleActivity() {
     private fun createSettingsCheckbox(label: Int): ItemSettingsCheckboxBinding {
         val checkbox = ItemSettingsCheckboxBinding.inflate(layoutInflater, null, false)
         checkbox.settingsCheckbox.setText(label)
+        checkbox.settingsCheckbox.setColors(textColor, accentColor, backgroundColor)
         return checkbox
     }
     /** @param label: Resource id value */
     private fun createSettingsSingleView(label: Int): ItemSettingsSingleTextviewBinding {
         val view = ItemSettingsSingleTextviewBinding.inflate(layoutInflater, null, false)
         view.settingsItemLabel.setText(label)
+        view.settingsItemLabel.setTextColor(textColor)
         return view
     }
     /** @param label: Resource id value
@@ -155,6 +167,8 @@ class SettingsActivity : SimpleActivity() {
         val view = ItemSettingsDoubleTextviewBinding.inflate(layoutInflater, null, false)
         view.settingsLabel.setText(label)
         view.settingsValue.text = value
+        view.settingsLabel.setTextColor(textColor)
+        view.settingsValue.setTextColor(textColor)
         return view
     }
 
@@ -1042,7 +1056,7 @@ class SettingsActivity : SimpleActivity() {
             val configItems = LinkedHashMap<String, Any>().apply {
                 //------------ Secure Commons Options -------------------
                 put(LAST_VERSION, config.lastVersion)
-                put(IS_USING_SHARED_THEME, config.isUsingSharedTheme)
+                //put(IS_USING_SHARED_THEME, config.isUsingSharedTheme)
                 put(TEXT_COLOR, config.textColor)
                 put(BACKGROUND_COLOR, config.backgroundColor)
                 put(PRIMARY_COLOR, config.primaryColor)
@@ -1145,7 +1159,7 @@ class SettingsActivity : SimpleActivity() {
             when (key) {
                 //------ Secure Commons Options ----------------------------
                 LAST_VERSION -> config.lastVersion = value.toInt()
-                IS_USING_SHARED_THEME -> config.isUsingSharedTheme = value.toBoolean()
+                //IS_USING_SHARED_THEME -> config.isUsingSharedTheme = value.toBoolean()
                 TEXT_COLOR -> config.textColor = value.toInt()
                 BACKGROUND_COLOR -> config.backgroundColor = value.toInt()
                 PRIMARY_COLOR -> config.primaryColor = value.toInt()

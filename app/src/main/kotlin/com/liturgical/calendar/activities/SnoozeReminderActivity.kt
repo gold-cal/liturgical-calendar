@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.eventsDB
 import com.liturgical.calendar.extensions.rescheduleReminder
+import com.liturgical.calendar.helpers.ACTION_SNOOZE
 import com.liturgical.calendar.helpers.EVENT_ID
 import com.secure.commons.extensions.showPickSecondsDialogHelper
 import com.secure.commons.helpers.ensureBackgroundThread
@@ -12,6 +13,8 @@ import com.secure.commons.helpers.ensureBackgroundThread
 class SnoozeReminderActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (intent.action != ACTION_SNOOZE) return
 
         showPickSecondsDialogHelper(config.snoozeTime, true, cancelCallback = { dialogCancelled() }) {
             ensureBackgroundThread {

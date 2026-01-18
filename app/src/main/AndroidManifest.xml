@@ -20,11 +20,11 @@
         android:name="android.permission.USE_BIOMETRIC"
         tools:node="remove" /> -->
 
-    <queries>
+    <!-- <queries>
         <package android:name="org.fossify.contacts.debug" />
         <package android:name="org.fossify.contacts" />
         <package android:name="com.simplemobiletools.contacts.pro" />
-    </queries>
+    </queries> -->
 
     <uses-feature
         android:name="android.hardware.faketouch"
@@ -133,11 +133,10 @@
             android:label="@string/about"
             android:parentActivityName=".activities.MainActivity" />
 
-        <activity
+        <!--<activity
             android:name="com.secure.commons.activities.CrashActivity"
-            android:exported="true"
-            android:screenOrientation="portrait"
-            android:label="Crash Report" />
+            android:exported="false"
+            android:label="Crash Report" /> -->
 
         <activity
             android:name="com.secure.commons.activities.FAQActivity"
@@ -287,13 +286,16 @@
             android:exported="true"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
-        <service android:name=".services.SnoozeService" />
-        <service android:name=".services.MarkCompletedService" />
-
         <service
             android:name=".jobs.CalDAVUpdateListener"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver android:name=".receivers.SnoozeReceiver"
+            android:exported="false" />
+
+        <receiver android:name=".receivers.MarkCompletedReceiver"
+            android:exported="false" />
 
         <receiver
             android:name=".receivers.NotificationReceiver"

@@ -38,9 +38,9 @@ import com.liturgical.calendar.interfaces.TasksDao
 import com.liturgical.calendar.interfaces.WidgetsDao
 import com.liturgical.calendar.models.*
 import com.liturgical.calendar.receivers.CalDAVSyncReceiver
+import com.liturgical.calendar.receivers.MarkCompletedReceiver
 import com.liturgical.calendar.receivers.NotificationReceiver
-import com.liturgical.calendar.services.MarkCompletedService
-import com.liturgical.calendar.services.SnoozeService
+import com.liturgical.calendar.receivers.SnoozeReceiver
 import com.secure.commons.extensions.*
 import com.secure.commons.helpers.*
 import org.joda.time.DateTime
@@ -393,9 +393,11 @@ private fun getPendingIntent(context: Context, event: Event): PendingIntent {
 }
 
 private fun getSnoozePendingIntent(context: Context, event: Event): PendingIntent {
-    val snoozeClass = if (context.config.useSameSnooze) SnoozeService::class.java else SnoozeReminderActivity::class.java
-    val intent = Intent(context, snoozeClass).setAction("Snooze")
-    intent.putExtra(EVENT_ID, event.id)
+    val snoozeClass = if (context.config.useSameSnooze) SnoozeReceiver::class.java else SnoozeReminderActivity::class.java
+    val intent = Intent(context, snoozeClass).apply {
+        action = ACTION_SNOOZE
+        putExtra(EVENT_ID, event.id)
+    }
     return if (context.config.useSameSnooze) {
         PendingIntent.getService(context, event.id!!.toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     } else {
@@ -404,9 +406,11 @@ private fun getSnoozePendingIntent(context: Context, event: Event): PendingInten
 }
 
 private fun getMarkCompletedPendingIntent(context: Context, task: Event): PendingIntent {
-    val intent = Intent(context, MarkCompletedService::class.java).setAction(ACTION_MARK_COMPLETED)
-    intent.putExtra(EVENT_ID, task.id)
-    return PendingIntent.getService(context, task.id!!.toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    val intent = Intent(context, MarkCompletedReceiver::class.java).apply {
+        action = ACTION_MARK_COMPLETED
+        putExtra(EVENT_ID, task.id)
+    }
+    return PendingIntent.getBroadcast(context, task.id!!.toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 }
 
 fun Context.rescheduleReminder(event: Event?, minutes: Int) {

@@ -16,7 +16,7 @@ import com.secure.commons.helpers.ensureBackgroundThread
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val wakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "simplecalendar:notificationreceiver")
+        val wakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "liturgicalcalendar:notificationreceiver")
         wakelock.acquire(3000)
 
         ensureBackgroundThread {
