@@ -1,5 +1,5 @@
 # Liturgical Calendar
-<img alt="Logo" src="graphics/icon.png" width="120" />
+<img alt="Logo" src="graphics/featureGraphic.png" />
 
 liturgical Calendar 2025 is a highly customizable, offline monthly calendar app for Android. It's your agenda planner in your pocket, designed to do exactly what a personal planner should do in 2025. No complicated features, unnecessary permissions, or ads! Plus, displays all the saints of the day and holy days of obligation from the Traditional Roman Catholic Calendar. It even supports syncing events via Google Calendar
 
