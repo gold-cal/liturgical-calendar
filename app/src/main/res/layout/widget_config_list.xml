@@ -5,20 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/config_app_bar_layout"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent" >
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/config_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
+            android:layout_height="@dimen/toolbar_height"
+            android:layout_margin="@dimen/medium_margin"
+            android:background="@drawable/search_menu_background"
+            android:backgroundTint="?attr/colorPrimary"
             app:title="@string/app_launcher_name"
-            app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+            app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle"/>
 
     <RelativeLayout
         android:id="@+id/config_list_holder"
@@ -26,6 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_margin="@dimen/activity_margin"
+        android:layout_below="@id/config_toolbar"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <RelativeLayout
@@ -163,5 +163,6 @@
             android:layout_alignParentBottom="true"
             android:text="@string/ok" />
 
+    </RelativeLayout>
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

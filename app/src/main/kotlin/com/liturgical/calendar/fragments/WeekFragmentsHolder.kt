@@ -239,6 +239,7 @@ class WeekFragmentsHolder : MyFragmentHolder(), WeekFragmentListener {
 
     private fun updateDaysCount(cnt: Int) {
         weekHolder!!.weekViewDaysCount.text = requireContext().resources.getQuantityString(R.plurals.days, cnt, cnt)
+        weekHolder!!.weekViewDaysCount.setTextColor(requireContext().getProperTextColor())
     }
 
     override fun refreshEvents() {

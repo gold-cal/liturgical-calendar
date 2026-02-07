@@ -133,11 +133,6 @@
             android:label="@string/about"
             android:parentActivityName=".activities.MainActivity" />
 
-        <!--<activity
-            android:name="com.secure.commons.activities.CrashActivity"
-            android:exported="false"
-            android:label="Crash Report" /> -->
-
         <activity
             android:name="com.secure.commons.activities.FAQActivity"
             android:configChanges="orientation"
@@ -157,6 +152,12 @@
             android:exported="false"
             android:label="@string/customize_colors"
             android:parentActivityName=".activities.SettingsActivity" />
+
+        <activity
+            android:name="com.secure.commons.activities.CustomizeActionBarActivity"
+            android:exported="false"
+            android:label="@string/customize_action_bar"
+            android:parentActivityName=".activities.SettingsActivity"/>
 
         <activity
             android:name=".activities.EventActivity"

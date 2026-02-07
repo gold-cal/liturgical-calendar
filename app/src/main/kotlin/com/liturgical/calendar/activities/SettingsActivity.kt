@@ -180,10 +180,14 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupColorCustomization() {
-        val holderBinding = ItemSettingsHolderBinding.inflate(layoutInflater, null, false)
+        val holderBinding = createHolder()
         // customize colors
         var item = createSettingsSingleView(R.string.customize_colors)
         item.settingsItemHolder.setOnClickListener { startCustomizationActivity() }
+        holderBinding.settingsWrapper.addView(item.root)
+        // customize action bar style
+        item = createSettingsSingleView(R.string.action_bar_customization)
+        item.settingsItemHolder.setOnClickListener { startActionBarCustomization() }
         holderBinding.settingsWrapper.addView(item.root)
         // customize widget colors
         item = createSettingsSingleView(R.string.customize_widget_colors)
@@ -198,7 +202,7 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupGeneralSettings() {
-        val holderBinding = ItemSettingsHolderBinding.inflate(layoutInflater, null, false)
+        val holderBinding = createHolder()
         var checkbox: ItemSettingsCheckboxBinding
         val doubleView: ItemSettingsDoubleTextviewBinding
         // Use English Language
