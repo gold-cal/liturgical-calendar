@@ -5,6 +5,7 @@ import android.widget.PopupMenu
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
 import com.liturgical.calendar.databinding.ItemEventTypeBinding
+import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.interfaces.DeleteEventTypesListener
@@ -20,6 +21,8 @@ class ManageEventTypesAdapter(
     activity: SimpleActivity, val eventTypes: ArrayList<EventType>, val listener: DeleteEventTypesListener?, recyclerView: MyRecyclerView,
     itemClick: (Any) -> Unit
 ) : MyRecyclerViewAdapter(activity, recyclerView, itemClick) {
+    private var isDbg = activity.config.allowAppDbg
+
     init {
         setupDragListener(true)
     }
@@ -82,6 +85,11 @@ class ManageEventTypesAdapter(
             /*if (eventType.title == "TLC") {
                 reloadMenuItem.beVisible()
             }*/
+
+            if (isDbg) {
+                val text = "id: ${eventType.id}, type: ${eventType.type}"
+                eventTypeTitle.text = text
+            }
 
             overflowMenuIcon.drawable.apply {
                 mutate()
@@ -162,8 +170,8 @@ class ManageEventTypesAdapter(
 
         for (key in selectedKeys) {
             val type = getItemWithKey(key) ?: continue
-            if (type.id == REGULAR_EVENT_TYPE_ID ||  // TODO: Add this to vew version
-                // type.id == BIRTHDAY_EVENT_TYPE_ID || type.id == ANNI_EVENT_TYPE_ID ||
+            if (type.id == REGULAR_EVENT_TYPE_ID ||
+                type.id == BIRTHDAY_EVENT_TYPE_ID || type.id == ANNI_EVENT_TYPE_ID ||
                 type.id == LITURGICAL_EVENT_TYPE_ID || type.id == HOLY_DAY_EVENT_TYPE_ID) {
                 activity.toast(R.string.cannot_delete_default_type)
                 eventTypesToDelete.remove(type)

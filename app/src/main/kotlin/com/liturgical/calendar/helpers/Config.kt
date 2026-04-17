@@ -29,6 +29,11 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(DELETE_OLD_EVENTS, false)
         set(deleteOldEvents) = prefs.edit().putBoolean(DELETE_OLD_EVENTS, deleteOldEvents).apply()
 
+    // check for if the event types have been updated to the new ids
+    var eventTypesUpdated: Boolean
+        get() = prefs.getBoolean(EVENT_TYPES_UPDATED, false)
+        set(eventTypesUpdated) = prefs.edit().putBoolean(EVENT_TYPES_UPDATED, eventTypesUpdated).apply()
+
     var deleteEventsOlderThen: Int
         get() = prefs.getInt(DELETE_EVENTS_OLDER_THEN, 2)
         set(deleteEventsOlderThen) = prefs.edit().putInt(DELETE_EVENTS_OLDER_THEN, deleteEventsOlderThen).apply()

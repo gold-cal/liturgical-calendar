@@ -205,9 +205,11 @@ class IcsImporter(val activity: SimpleActivity) {
 
                         // repeating event exceptions can have the same import id as their parents, so pick the latest event to update
                         val eventToUpdate =
-                            existingEvents.filter { curImportId.isNotEmpty() && curImportId == it.importId }.sortedByDescending { it.lastUpdated }.firstOrNull()
+                            existingEvents.filter { curImportId.isNotEmpty() && curImportId == it.importId }
+                                .sortedByDescending { it.lastUpdated }.firstOrNull()
                         if (eventToUpdate != null && eventToUpdate.lastUpdated >= curLastModified) {
                             eventsAlreadyExist++
+                            if (liturgical) existingEvents.remove(eventToUpdate)
                             line = curLine
                             continue
                         }
@@ -222,9 +224,8 @@ class IcsImporter(val activity: SimpleActivity) {
 
                         val eventType = eventTypes.firstOrNull { it.id == curEventTypeId }
                         val source = if (liturgical) SOURCE_LITURGICAL_CALENDAR
-                                // TODO: add this to new version
-                                //else if (curEventTypeId == BIRTHDAY_EVENT_TYPE_ID) SOURCE_CONTACT_BIRTHDAY
-                                //else if (curEventTypeId == ANNI_EVENT_TYPE_ID) SOURCE_CONTACT_ANNIVERSARY
+                                else if (curEventTypeId == BIRTHDAY_EVENT_TYPE_ID) SOURCE_CONTACT_BIRTHDAY
+                                else if (curEventTypeId == ANNI_EVENT_TYPE_ID) SOURCE_CONTACT_ANNIVERSARY
                                 else if (calDAVCalendarId == 0 || eventType?.isSyncedEventType() == false) SOURCE_IMPORTED_ICS
                                 else "$CALDAV-$calDAVCalendarId"
                         val event = Event(
@@ -271,6 +272,10 @@ class IcsImporter(val activity: SimpleActivity) {
                             event.importId = event.hashCode().toString()
                             if (existingEvents.map { it.importId }.contains(event.importId)) {
                                 eventsAlreadyExist++
+                                if (liturgical) {
+                                    val eventToRemove = existingEvents.first { it.importId == event.importId }
+                                    existingEvents.remove(eventToRemove)
+                                }
                                 line = curLine
                                 continue
                             }
@@ -298,6 +303,7 @@ class IcsImporter(val activity: SimpleActivity) {
                         } else {
                             event.id = eventToUpdate.id
                             eventsHelper.updateEvent(event, true, false)
+                            if (liturgical) existingEvents.remove(eventToUpdate)
                         }
                         eventsImported++
                         resetValues()
@@ -307,6 +313,12 @@ class IcsImporter(val activity: SimpleActivity) {
             }
 
             eventsHelper.insertEvents(eventsToInsert, true)
+            if (liturgical) {
+                val eventsToDelete = existingEvents.filter { it.eventType == LITURGICAL_EVENT_TYPE_ID }.map { it.id!! }.toMutableList()
+                if (eventsToDelete.isNotEmpty()) {
+                    eventsHelper.deleteEvents(eventsToDelete, false)
+                }
+            }
         } catch (e: Exception) {
             activity.showErrorToast(e)
             eventsFailed++
@@ -368,7 +380,7 @@ class IcsImporter(val activity: SimpleActivity) {
             val newTypeColor = if (curCategoryColor == -2) activity.resources.getColor(R.color.color_primary, null) else curCategoryColor
             var type = OTHER_EVENT
             if (defaultEventTypeId == LITURGICAL_EVENT_TYPE_ID) {
-                type = HOLYDAY_EVENT
+                type = HOLY_DAY_EVENT
             }
             val eventType = EventType(null, eventTypeTitle, newTypeColor, type = type)
             eventsHelper.insertOrUpdateEventTypeSync(eventType)

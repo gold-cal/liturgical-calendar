@@ -37,4 +37,7 @@ interface EventTypesDao {
 
     @Delete
     fun deleteEventTypes(eventTypes: List<EventType>)
+
+    @Query("DELETE FROM event_types WHERE id = :id")
+    fun deleteEventTypeWithId(id: Long)
 }

@@ -44,10 +44,10 @@ abstract class EventsDatabase : RoomDatabase() {
                             .addCallback(object : Callback() {
                                 override fun onCreate(db: SupportSQLiteDatabase) {
                                     super.onCreate(db)
-                                    //insertPredefinedEventTypes(context)
-                                    insertRegularEventType(context)
+                                    insertPredefinedEventTypes(context)
+                                    //insertRegularEventType(context)
                                     //insertBirthdayEventType(context)
-                                    insertLiturgicalEventType(context)
+                                    //insertLiturgicalEventType(context)
                                     //insertAnniversaryEventType(context)
                                 }
                             })
@@ -71,30 +71,33 @@ abstract class EventsDatabase : RoomDatabase() {
             db = null
         }
 
-        /*private fun insertPredefinedEventTypes(context: Context) {
-            val ids = arrayListOf(REGULAR_EVENT_TYPE_ID, BIRTHDAY_EVENT_TYPE_ID, LITURGICAL_EVENT_TYPE_ID, ANNI_EVENT_TYPE_ID)
+        private fun insertPredefinedEventTypes(context: Context) {
+            val ids = arrayListOf(REGULAR_EVENT_TYPE_ID, BIRTHDAY_EVENT_TYPE_ID, LITURGICAL_EVENT_TYPE_ID, ANNI_EVENT_TYPE_ID, HOLY_DAY_EVENT_TYPE_ID)
             val titles = arrayListOf(context.resources.getString(R.string.regular_event), context.resources.getString(R.string.birthdays),
-                context.resources.getString(R.string.liturgical_event), context.resources.getString(R.string.anniversaries))
+                context.resources.getString(R.string.liturgical_event), context.resources.getString(R.string.anniversaries),
+                context.resources.getString(R.string.holy_day))
             val colors = arrayListOf(context.getProperPrimaryColor(), context.resources.getColor(R.color.default_birthdays_color, null),
-                context.resources.getColor(R.color.default_liturgical_color, null), context.resources.getColor(R.color.default_anniversaries_color, null))
-            val types = arrayListOf(OTHER_EVENT, BIRTHDAY_EVENT, LITURGICAL_EVENT, ANNIVERSARY_EVENT)
+                context.resources.getColor(R.color.default_liturgical_color, null), context.resources.getColor(R.color.default_anniversaries_color, null),
+                context.resources.getColor(R.color.default_holy_day_color, null))
+            val types = arrayListOf(OTHER_EVENT, BIRTHDAY_EVENT, LITURGICAL_EVENT, ANNIVERSARY_EVENT, HOLY_DAY_EVENT)
             for ((i, id) in ids.withIndex()) {
                 Executors.newSingleThreadScheduledExecutor().execute {
                     val eventType = EventType(id, titles[i], colors[i], type = types[i])
                     db!!.EventTypesDao().insertOrUpdate(eventType)
-                    if (id != LITURGICAL_EVENT_TYPE_ID) context.config.addDisplayEventType(id.toString())
+                    context.config.addDisplayEventType(id.toString())
                 }
             }
-        }*/
+            context.config.eventTypesUpdated = true
+        }
 
-        private fun insertRegularEventType(context: Context) {
+        /*private fun insertRegularEventType(context: Context) {
             Executors.newSingleThreadScheduledExecutor().execute {
                 val regularEvent = context.resources.getString(R.string.regular_event)
                 val eventType = EventType(REGULAR_EVENT_TYPE_ID, regularEvent, context.getProperPrimaryColor())
                 db!!.EventTypesDao().insertOrUpdate(eventType)
                 context.config.addDisplayEventType(REGULAR_EVENT_TYPE_ID.toString())
             }
-        }
+        }*/
 
         /*private fun insertBirthdayEventType(context: Context) {
             Executors.newSingleThreadScheduledExecutor().execute {
@@ -106,7 +109,7 @@ abstract class EventsDatabase : RoomDatabase() {
             }
         }*/
 
-        private fun insertLiturgicalEventType(context: Context) {
+        /*private fun insertLiturgicalEventType(context: Context) {
             Executors.newSingleThreadScheduledExecutor().execute {
                 val liturgicalEvent = context.resources.getString(R.string.liturgical_event)
                 val eventType = EventType(LITURGICAL_EVENT_TYPE_ID,
@@ -115,7 +118,7 @@ abstract class EventsDatabase : RoomDatabase() {
                 db!!.EventTypesDao().insertOrUpdate(eventType)
                 context.config.addDisplayEventType(LITURGICAL_EVENT_TYPE_ID.toString())
             }
-        }
+        }*/
 
         /*private fun insertAnniversaryEventType(context: Context) {
             Executors.newSingleThreadScheduledExecutor().execute {
@@ -126,6 +129,17 @@ abstract class EventsDatabase : RoomDatabase() {
                 context.config.addDisplayEventType(ANNI_EVENT_TYPE_ID.toString())
             }
         } */
+
+        /*private fun insertHolyDayEventType(context: Context) {
+            Executors.newSingleThreadScheduledExecutor().execute {
+                val holyDayEvent = context.resources.getString(R.string.holy_day)
+                val eventType = EventType(HOLY_DAY_EVENT_TYPE_ID,
+                    holyDayEvent,
+                    context.resources.getColor(R.color.default_holy_day_color, null))
+                db!!.EventTypesDao().insertOrUpdate(eventType)
+                context.config.addDisplayEventType(HOLY_DAY_EVENT_TYPE_ID.toString())
+            }
+        }*/
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {

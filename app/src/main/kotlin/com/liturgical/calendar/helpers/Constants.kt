@@ -32,16 +32,25 @@ const val CURRENT_TIME_ZONE = "current_time_zone"
 const val ALLOW_APP_DBG = "allow_app_dbg"
 const val IS_FIRST_RUN = "is_first_run"
 const val DELETE_OLD_EVENTS = "delete_old_events"
+const val EVENT_TYPES_UPDATED = "event_types_updated"
 const val DELETE_EVENTS_OLDER_THEN = "delete_events_older_then"
 const val TODAY_POSITION = "today_position"
 
 // EventType Ids
 const val REGULAR_EVENT_TYPE_ID = 1L
-// TODO: add this to new Version
-//const val BIRTHDAY_EVENT_TYPE_ID = 2L
+const val BIRTHDAY_EVENT_TYPE_ID = 2L
 const val LITURGICAL_EVENT_TYPE_ID = 3L
-//const val ANNI_EVENT_TYPE_ID = 4L
+const val ANNI_EVENT_TYPE_ID = 4L
 const val HOLY_DAY_EVENT_TYPE_ID = 5L
+
+// EventType Types
+const val OTHER_EVENT = 0
+const val BIRTHDAY_EVENT = 1
+const val ANNIVERSARY_EVENT = 2
+const val HOLIDAY_EVENT = 3
+const val LITURGICAL_EVENT = 4
+const val HOLY_DAY_EVENT = 5
+const val CONTACT_EVENT = 6
 
 // Main window view
 const val MONTHLY_VIEW = 1
@@ -54,14 +63,6 @@ const val MONTHLY_DAILY_VIEW = 7
 
 const val REMINDER_OFF = -1
 const val REMINDER_DEFAULT_VALUE = "${REMINDER_OFF},${REMINDER_OFF},${REMINDER_OFF}"
-
-const val OTHER_EVENT = 0
-const val BIRTHDAY_EVENT = 1
-const val ANNIVERSARY_EVENT = 2
-const val HOLIDAY_EVENT = 3
-const val LITURGICAL_EVENT = 4
-const val HOLYDAY_EVENT = 5
-const val CONTACT_EVENT = 6
 
 const val ITEM_EVENT = 0
 const val ITEM_SECTION_DAY = 1

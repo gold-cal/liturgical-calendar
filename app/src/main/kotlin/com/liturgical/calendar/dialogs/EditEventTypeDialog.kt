@@ -5,6 +5,7 @@ import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import com.liturgical.calendar.R
 import com.liturgical.calendar.databinding.DialogEventTypeBinding
+import com.liturgical.calendar.extensions.config
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.helpers.OTHER_EVENT
 import com.liturgical.calendar.models.EventType
@@ -14,6 +15,7 @@ import com.secure.commons.helpers.ensureBackgroundThread
 
 class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = null, val callback: (eventType: EventType) -> Unit) {
     private var isNewEvent = eventType == null
+    private var isDbg = activity.config.allowAppDbg
 
     init {
         if (eventType == null) {
@@ -38,6 +40,10 @@ class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = nu
                     }
                 }
             }
+            typeType.setText(eventType!!.type.toString())
+            if (isDbg) {
+                typeTypeHint.beVisible()
+            }
         }
 
         activity.getAlertDialogBuilder()
@@ -48,7 +54,7 @@ class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = nu
                     alertDialog.showKeyboard(binding.typeTitle)
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         ensureBackgroundThread {
-                            eventTypeConfirmed(binding.typeTitle.value, alertDialog)
+                            eventTypeConfirmed(binding.typeTitle.value, alertDialog, binding.typeType.value.toInt())
                         }
                     }
                 }
@@ -59,7 +65,7 @@ class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = nu
         view.setFillWithStroke(eventType!!.color, activity.getProperBackgroundColor())
     }
 
-    private fun eventTypeConfirmed(title: String, dialog: AlertDialog) {
+    private fun eventTypeConfirmed(title: String, dialog: AlertDialog, type: Int) {
         val eventTypeClass = eventType?.type ?: OTHER_EVENT
         val eventTypeId = if (eventTypeClass == OTHER_EVENT) {
             activity.eventsHelper.getEventTypeIdWithTitle(title)
@@ -81,6 +87,7 @@ class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = nu
         }
 
         eventType!!.title = title
+        if (isDbg) eventType!!.type = type
         if (eventType!!.caldavCalendarId != 0) {
             eventType!!.caldavDisplayName = title
         }

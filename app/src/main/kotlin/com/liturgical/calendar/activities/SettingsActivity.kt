@@ -9,6 +9,7 @@ import android.media.RingtoneManager
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import com.liturgical.calendar.R
 import com.liturgical.calendar.dialogs.SelectCalendarsDialog
 import com.liturgical.calendar.dialogs.SelectEventTypeDialog
@@ -66,6 +67,11 @@ class SettingsActivity : SimpleActivity() {
         setupColorCustomization()
         //-------- GENERAL -------------------------
         label = createSettingsLabel(R.string.general_settings)
+        label.setOnLongClickListener {
+            if (config.allowAppDbg) config.allowAppDbg = false
+            else config.allowAppDbg = true
+            true
+        }
         binding.settingsHolder.addView(label)
         setupGeneralSettings()
         //-------- REMINDERS -----------------------
@@ -123,15 +129,19 @@ class SettingsActivity : SimpleActivity() {
         config.defaultReminder3 = reminders.getOrElse(2) { REMINDER_OFF }
     }
 
+    val pickImportSourceIntent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null && result.data!!.data != null) {
+            val inputStream = contentResolver.openInputStream(result.data!!.data!!)
+            parseFile(inputStream)
+        }
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
         if (requestCode == GET_RINGTONE_URI && resultCode == RESULT_OK && resultData != null) {
             val newAlarmSound = storeNewYourAlarmSound(resultData)
             updateReminderSound(newAlarmSound)
-        } else if (requestCode == PICK_IMPORT_SOURCE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
-            val inputStream = contentResolver.openInputStream(resultData.data!!)
-            parseFile(inputStream)
         }
     }
 
@@ -280,7 +290,7 @@ class SettingsActivity : SimpleActivity() {
         holderBinding.root.addView(checkbox.root)
         holderBinding.root.addView(colorBinding.root)
         // Allow Using debug (for current instance)
-        checkbox = createSettingsCheckbox(R.string.allow_dbg)
+        /*checkbox = createSettingsCheckbox(R.string.allow_dbg)
         checkbox.apply {
             settingsCheckbox.isChecked = config.allowAppDbg
             settingsCheckboxHolder.setOnClickListener {
@@ -288,7 +298,7 @@ class SettingsActivity : SimpleActivity() {
                 config.allowAppDbg = settingsCheckbox.isChecked
             }
         }
-        holderBinding.root.addView(checkbox.root)
+        holderBinding.root.addView(checkbox.root)*/
         // Add all to main view
         binding.settingsHolder.addView(holderBinding.root)
     }
@@ -849,7 +859,8 @@ class SettingsActivity : SimpleActivity() {
                     type = "text/plain"
 
                     try {
-                        startActivityForResult(this, PICK_IMPORT_SOURCE_INTENT)
+                        pickImportSourceIntent.launch(this)
+                        //startActivityForResult(this, PICK_IMPORT_SOURCE_INTENT)
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
                     } catch (e: Exception) {

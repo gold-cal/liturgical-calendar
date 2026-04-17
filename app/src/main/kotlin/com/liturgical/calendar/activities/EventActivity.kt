@@ -95,7 +95,13 @@ class EventActivity : SimpleActivity() {
 
         val eventId = intent.getLongExtra(EVENT_ID, 0L)
         ensureBackgroundThread {
-            mStoredEventTypes = eventTypesDB.getEventTypes().toMutableList() as ArrayList<EventType>
+            // Get all event types and filter out the liturgical and holyday event types so that
+            // they are not selectable. This will make sure that they do not put personal events
+            // on them and they won't get deleted when it updates.
+            mStoredEventTypes = eventTypesDB.getEventTypes()
+                .toMutableList() as ArrayList<EventType>
+            mStoredEventTypes.remove(mStoredEventTypes.first { it.id == LITURGICAL_EVENT_TYPE_ID })
+            mStoredEventTypes.remove(mStoredEventTypes.first { it.id == HOLY_DAY_EVENT_TYPE_ID })
             val event = eventsDB.getEventWithId(eventId)
             if (eventId != 0L && event == null) {
                 hideKeyboard()
@@ -103,7 +109,9 @@ class EventActivity : SimpleActivity() {
                 return@ensureBackgroundThread
             }
 
-            val localEventType = mStoredEventTypes.firstOrNull { it.id == config.lastUsedLocalEventTypeId }
+            var localEventType = mStoredEventTypes.firstOrNull { it.id == config.lastUsedLocalEventTypeId }
+            if (localEventType == null) localEventType = mStoredEventTypes.firstOrNull {
+                it.id == config.defaultEventTypeId }
             runOnUiThread {
                 if (!isDestroyed && !isFinishing) {
                     gotEvent(savedInstanceState, localEventType, event)
@@ -123,7 +131,10 @@ class EventActivity : SimpleActivity() {
         }
 
         val isSet = setEventTypes()
-        if (!isSet) return
+        if (!isSet) {
+            finish()
+            return
+        }
 
         if (event != null) {
             mEvent = event

@@ -86,8 +86,7 @@ class EventsHelper(val context: Context) {
 
     fun deleteEventTypes(eventTypes: ArrayList<EventType>, deleteEvents: Boolean) {
         val typesToDelete = eventTypes.asSequence().filter { it.caldavCalendarId == 0 && it.id != REGULAR_EVENT_TYPE_ID
-            // TODO: add this to new version
-            //&& it.id != BIRTHDAY_EVENT_TYPE_ID && it.id != ANNI_EVENT_TYPE_ID
+            && it.id != BIRTHDAY_EVENT_TYPE_ID && it.id != ANNI_EVENT_TYPE_ID && it.id != LITURGICAL_EVENT_TYPE_ID && it.id != HOLY_DAY_EVENT_TYPE_ID
         }.toMutableList()
         val deleteIds = typesToDelete.map { it.id }.toMutableList()
         val deletedSet = deleteIds.map { it.toString() }.toHashSet()

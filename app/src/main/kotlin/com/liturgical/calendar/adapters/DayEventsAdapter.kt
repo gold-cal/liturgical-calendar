@@ -104,9 +104,9 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
             }
 
             if (isDgb) {
-                var text = "importId: " + event.importId
+                var text = "importId: ${event.importId}, source: ${event.source}"
                 eventItemTime.text = text
-                text = "source: " + event.source
+                text = "eventTypeId: ${event.eventType}"
                 eventItemDescription.text = text
             } else {
                 eventItemDescription.text = if (replaceDescriptionWithLocation) event.location else event.description.replace("\n", " ")

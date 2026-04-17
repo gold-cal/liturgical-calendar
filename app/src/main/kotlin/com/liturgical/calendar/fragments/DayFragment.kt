@@ -32,7 +32,7 @@ class DayFragment : Fragment() {
     private lateinit var mHolder: FragmentDayBinding
     private lateinit var mTopNav: TopNavigationBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         mHolder = FragmentDayBinding.inflate(inflater, container,false)
         mTopNav = TopNavigationBinding.bind(mHolder.root)
 
@@ -137,7 +137,7 @@ class DayFragment : Fragment() {
         mTopNav.apply {
             topLeftArrow.beGone()
             topRightArrow.beGone()
-            topValue.setTextColor(resources.getColor(R.color.theme_light_text_color))
+            topValue.setTextColor(resources.getColor(R.color.theme_light_text_color, null))
             (mHolder.dayEvents.adapter as? DayEventsAdapter)?.togglePrintMode()
 
             Handler(Looper.getMainLooper()).postDelayed({

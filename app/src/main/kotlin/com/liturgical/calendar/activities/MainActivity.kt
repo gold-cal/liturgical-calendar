@@ -17,6 +17,7 @@ import android.provider.ContactsContract.Data
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuItemCompat
@@ -37,10 +38,7 @@ import com.liturgical.calendar.helpers.Formatter
 import com.liturgical.calendar.helpers.IcsExporter.ExportResult
 import com.liturgical.calendar.helpers.IcsImporter.ImportResult
 import com.liturgical.calendar.jobs.CalDAVUpdateListener
-import com.liturgical.calendar.models.CheckEvent
-import com.liturgical.calendar.models.Event
-import com.liturgical.calendar.models.ListEvent
-import com.liturgical.calendar.models.TraceData
+import com.liturgical.calendar.models.*
 import com.secure.commons.dialogs.FilePickerDialog
 import com.secure.commons.dialogs.RadioGroupDialog
 import com.secure.commons.extensions.*
@@ -56,9 +54,9 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
-    private val PICK_IMPORT_SOURCE_INTENT = 1
-    private val PICK_EXPORT_FILE_INTENT = 2
-    private val PICK_TRACE_FILE_INTENT = 3
+    //private val PICK_IMPORT_SOURCE_INTENT = 1
+    //private val PICK_EXPORT_FILE_INTENT = 2
+    //private val PICK_TRACE_FILE_INTENT = 3
 
     private var showCalDAVRefreshToast = false
     private var mShouldFilterBeVisible = false
@@ -156,9 +154,11 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         // Add all the liturgical calendar stuff
         addLiturgicalCalendar()
         // Add the birthday and anniversary calendar types
-        createEventTypes()
+        //createEventTypes()
         // Check if there are old calendar items to delete
         checkDeleteOldEvents()
+        // update event types to new ids if not already done
+        updateEventTypeIds()
     }
 
     override fun onResume() {
@@ -295,7 +295,29 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         checkIsViewIntent()
     }
 
-    @Deprecated("Deprecated in Java")
+    private val pickImportSourceIntent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null && result.data!!.data != null) {
+            tryImportEventsFromFile(result.data!!.data!!)
+        }
+    }
+
+    private val pickExportFileIntent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null && result.data!!.data != null) {
+            val outputStream = contentResolver.openOutputStream(result.data!!.data!!)
+            exportEventsTo(eventTypesToExport, outputStream)
+        }
+    }
+
+    private val pickTraceFileIntent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null && result.data!!.data != null) {
+            if (traceData != "") {
+                val outputStream = contentResolver.openOutputStream(result.data!!.data!!)
+                saveTraceTo(outputStream, traceData)
+            }
+        }
+    }
+
+    /*@Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
         if (requestCode == PICK_IMPORT_SOURCE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
@@ -309,7 +331,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 saveTraceTo(outputStream, traceData)
             }
         }
-    }
+    }*/
 
     private fun storeStateVariables() {
         mStoredTextColor = getProperTextColor()
@@ -424,7 +446,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     @SuppressLint("NewApi")
     private fun getNewEventShortcut(): ShortcutInfo { // appIconColor: Int): ShortcutInfo {
         val newEvent = getString(R.string.new_event)
-        val newEventDrawable = resources.getDrawable(R.drawable.shortcut_event, theme)
+        val newEventDrawable = ResourcesCompat.getDrawable(resources, R.drawable.shortcut_event, theme)!!
         //(newEventDrawable as LayerDrawable).findDrawableByLayerId(R.id.shortcut_event_background).applyColorFilter(appIconColor)
         val newEventBitmap = newEventDrawable.convertToBitmap()
 
@@ -842,7 +864,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     addCategory(Intent.CATEGORY_OPENABLE)
 
                     try {
-                        startActivityForResult(this, PICK_TRACE_FILE_INTENT)
+                        pickTraceFileIntent.launch(this)
+                        //startActivityForResult(this, PICK_TRACE_FILE_INTENT)
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
                     } catch (e: Exception) {
@@ -1001,7 +1024,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
                     eventsFound++
                     if (!traceData.eventExists) {
-                        eventsHelper.insertEvent(event, false, false) {
+                        eventsHelper.insertEvent(event,  addToCalDAV = false, showToasts = false) {
                             eventsAdded++
                         }
                     }
@@ -1276,7 +1299,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                         type = "text/calendar"
 
                         try {
-                            startActivityForResult(this, PICK_IMPORT_SOURCE_INTENT)
+                            pickImportSourceIntent.launch(this)
+                            //startActivityForResult(this, PICK_IMPORT_SOURCE_INTENT)
                         } catch (e: ActivityNotFoundException) {
                             toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
                         } catch (e: Exception) {
@@ -1348,7 +1372,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     addCategory(Intent.CATEGORY_OPENABLE)
 
                     try {
-                        startActivityForResult(this, PICK_EXPORT_FILE_INTENT)
+                        pickExportFileIntent.launch(this)
+                        //startActivityForResult(this, PICK_EXPORT_FILE_INTENT)
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
                     } catch (e: Exception) {
@@ -1492,7 +1517,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         }
     }
 
-    private fun createEventTypes() {
+    /*private fun createEventTypes() {
         if (config.isFirstRun) {
             ensureBackgroundThread {
                 val nameB = getString(R.string.birthdays)
@@ -1504,7 +1529,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 }
             }
         }
-    }
+    }*/
 
     private fun  checkDeleteOldEvents() {
         // check if this feature has been enabled
@@ -1512,6 +1537,102 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             ensureBackgroundThread {
                 val olderThen = config.deleteEventsOlderThen
                 eventsHelper.deleteOldEvents(olderThen)
+            }
+        }
+    }
+
+    private fun updateEventTypeIds() {
+        if (!config.eventTypesUpdated) {
+            ensureBackgroundThread {
+                val types = arrayListOf(OTHER_EVENT, BIRTHDAY_EVENT, LITURGICAL_EVENT, ANNIVERSARY_EVENT, HOLY_DAY_EVENT)
+                val titles = arrayListOf(resources.getString(R.string.regular_event), resources.getString(R.string.birthdays),
+                    resources.getString(R.string.liturgical_event), resources.getString(R.string.anniversaries),
+                    resources.getString(R.string.holy_day))
+                val ids = arrayListOf(REGULAR_EVENT_TYPE_ID, BIRTHDAY_EVENT_TYPE_ID, LITURGICAL_EVENT_TYPE_ID,
+                    ANNI_EVENT_TYPE_ID, HOLY_DAY_EVENT_TYPE_ID)
+                val colors = arrayListOf(getProperPrimaryColor(), getColor(R.color.default_birthdays_color),
+                    getColor(R.color.default_liturgical_color), getColor(R.color.default_anniversaries_color),
+                    getColor(R.color.default_holy_day_color))
+                val eventTypes = eventTypesDB.getEventTypes()
+                val events = eventsDB.getAllEvents()
+                val eventTypesToDelete = ArrayList<EventType>()
+                eventTypes.forEachIndexed() { index, eventType ->
+                    val origId = eventType.id!!.toInt()
+                    if (eventType.id != REGULAR_EVENT_TYPE_ID) {
+                        var type = types.indexOf(eventType.type)
+                        val color = colors.indexOf(eventType.color)
+                        val title = titles.indexOf(eventType.title)
+                        var newId = ids.indexOf(eventType.id!!)
+                        var skip = false
+                        // if not equal then one is wrong
+                        if (origId != (type + 1)) {
+                            // if type is 0, then it is wrong
+                            if (type == 0) type = origId - 1
+                            // otherwise assume id is wrong
+                            else {
+                                if (type == color || type == title)
+                                    newId = type
+                                else {
+                                    if (types.contains(type))
+                                        newId = type
+                                    else skip = true
+                                }
+                            }
+                            if (color != -1 || title != -1) {
+                                if (type != color && color == title) {
+                                    type = color
+                                    newId = color
+                                }
+                            }
+                            if (!skip && newId != -1) {
+                                if (newId != (origId - 1)) {
+                                    val testId = ids[newId]
+                                    val eventTypeDuplicate = eventTypes.firstOrNull { it.id == testId }
+                                    if (eventTypeDuplicate != null) {
+                                        eventTypeDuplicate.id = 50L + index
+                                        eventTypesDB.insertOrUpdate(eventTypeDuplicate)
+                                        eventTypesToDelete.add(eventTypeDuplicate)
+                                        for (event in events) {
+                                            if (event.eventType == testId) {
+                                                event.eventType = eventTypeDuplicate.id!!
+                                            }
+                                        }
+                                    } else {
+                                        eventType.id = ids[newId]
+                                        eventType.type = types[type]
+                                        eventTypesDB.insertOrUpdate(eventType)
+                                        events.forEach { event ->
+                                            if (event.eventType == origId.toLong()) {
+                                                event.eventType = eventType.id!!
+                                                eventsDB.insertOrUpdate(event)
+                                            }
+                                        }
+                                        eventTypesDB.deleteEventTypeWithId(origId.toLong())
+                                        config.addDisplayEventType(eventType.id!!.toString())
+                                    }
+                                } else {
+                                    eventType.id = ids[newId]
+                                    eventType.type = types[type]
+                                    eventTypesDB.insertOrUpdate(eventType)
+                                }
+                            }
+                        }
+                    }
+                }
+                if (eventTypesToDelete.isNotEmpty()) {
+                    eventTypesToDelete.forEach { eventType ->
+                        val type = types.indexOf(eventType.type)
+                        val id = ids[type]
+                        events.forEach { event ->
+                            if (event.eventType == eventType.id) {
+                                event.eventType = id
+                                eventsDB.insertOrUpdate(event)
+                            }
+                        }
+                    }
+                    eventTypesDB.deleteEventTypes(eventTypesToDelete)
+                }
+                config.eventTypesUpdated = true
             }
         }
     }
