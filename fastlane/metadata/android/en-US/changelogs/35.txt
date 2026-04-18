@@ -1,0 +1,2 @@
+* NEW: The calendar now has the Sundays after Epiphany and shifts them to after Pentecost when applicable
+* Added some exception handling

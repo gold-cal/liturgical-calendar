@@ -1,0 +1,2 @@
+- Updated widget refresh so it works after updating app
+- Updated calendar refresh interval

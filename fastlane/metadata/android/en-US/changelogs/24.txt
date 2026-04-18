@@ -1,0 +1,1 @@
+- Fixed a bug when importing birthdays from contacts where it would duplicate the birthday

@@ -1,0 +1,2 @@
+- Calendar now automatically adds EASTER!
+- Added some new rules for yearly event repetition

@@ -1,0 +1,2 @@
+- Fixed bug where changing the default event changed the default task type
+- Updates to calendar items

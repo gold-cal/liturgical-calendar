@@ -1,0 +1,2 @@
+- Fixed bug where task icon would not resize properly
+- Fixed bug in the liturgical calendar refresh

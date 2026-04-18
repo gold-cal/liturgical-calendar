@@ -1,0 +1,3 @@
+- Improved handling of calendar ids
+- Added the Sundays after Easter
+- Removed some deprecated code

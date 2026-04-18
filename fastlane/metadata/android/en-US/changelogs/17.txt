@@ -1,0 +1,1 @@
+- Squashed some bugs and fixed some formatting issues

@@ -1,0 +1,3 @@
+- Fixed some formatting in settings
+- Added some debug information
+- Improved birthday and anniversary importing to remove duplicates

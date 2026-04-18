@@ -1,0 +1,3 @@
+- Fixed some theme issues
+- Updated Dependencies
+- Updated some deprecated functions

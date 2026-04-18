@@ -1,1 +1,1 @@
-Calendar 2022 widget for Android. Appointment scheduler, planner, and reminder
+Feature full calendar with widgets, planner, tasks and reminders for Android

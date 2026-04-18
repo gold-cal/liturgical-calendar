@@ -1,0 +1,3 @@
+- Compressed some resources to make smaller app size and improved performance
+- Added option to show description in widget view
+- Added option to unsync contact birthdays/anniversaries
