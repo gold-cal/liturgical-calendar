@@ -19,6 +19,6 @@ Never miss a birthday or anniversary with the built in event reminders. Schedule
 
 <div style="display:flex;">
 <img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="30%">
-<img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/.png" width="30%">
+<img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="30%">
 <img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="30%">
 </div>
