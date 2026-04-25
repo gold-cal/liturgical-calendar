@@ -1,5 +1,6 @@
 package com.liturgical.calendar.adapters
 
+import android.annotation.SuppressLint
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
@@ -58,7 +59,7 @@ class EventListAdapter(
         }
     }
 
-    override fun getSelectableItemCount() = listItems.filter { it is ListEvent }.size
+    override fun getSelectableItemCount() = listItems.filterIsInstance<ListEvent>().size
 
     override fun getIsItemSelectable(position: Int) = listItems[position] is ListEvent
 
@@ -81,7 +82,7 @@ class EventListAdapter(
 
     override fun onBindViewHolder(holder: MyRecyclerViewAdapter.ViewHolder, position: Int) {
         val listItem = listItems[position]
-        holder.bindView(listItem, true, allowLongClick && listItem is ListEvent) { itemView, layoutPosition ->
+        holder.bindView(listItem, true, allowLongClick && listItem is ListEvent) { itemView, _ ->
             when (listItem) {
                 is ListSectionDay -> setupListSectionDay(itemView, listItem)
                 is ListEvent -> setupListEvent(itemView, listItem)
@@ -99,11 +100,13 @@ class EventListAdapter(
         else -> ITEM_SECTION_MONTH
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun toggle24HourFormat(use24HourFormat: Boolean) {
         this.use24HourFormat = use24HourFormat
         notifyDataSetChanged()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateListItems(newListItems: ArrayList<ListItem>) {
         if (newListItems.hashCode() != currentItemsHash) {
             currentItemsHash = newListItems.hashCode()
@@ -114,6 +117,7 @@ class EventListAdapter(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun togglePrintMode() {
         isPrintVersion = !isPrintVersion
         textColor = if (isPrintVersion) {
@@ -226,7 +230,7 @@ class EventListAdapter(
 
         val hasRepeatableEvent = eventsToDelete.any { it.isRepeatable }
         DeleteEventDialog(activity, eventIds, hasRepeatableEvent) {
-            listItems.removeAll(eventsToDelete)
+            listItems.removeAll(eventsToDelete.toSet())
 
             ensureBackgroundThread {
                 val nonRepeatingEventIDs = eventsToDelete.filter { !it.isRepeatable }.mapNotNull { it.id }.toMutableList()

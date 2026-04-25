@@ -292,10 +292,10 @@ data class Event(
         var isException = false
         var date = extendedRule.getBits(XOR_RANGE_TO).ushr(RANGE_TO)
         // Check if it is a range
-        if ((extendedRule and EX_RULE_R) != 0) {
-            var from = extendedRule.getBits(XOR_RANGE_FROM).ushr(RANGE_FROM)
+        //if ((extendedRule and EX_RULE_R) != 0) {
+            //var from = extendedRule.getBits(XOR_RANGE_FROM).ushr(RANGE_FROM)
             /** TODO: Need to add range check*/
-        } else {
+        //} else {
             // check if exception day lands on the same day as newDateTime
             // these are in a specific order
             if ((extendedRule and EX_RULE_W) != 0) {
@@ -320,7 +320,7 @@ data class Event(
                 val eMW = addYearWithRepeatRule(currStart, (date or RULE_MINUS_WEEKS))
                 if (newDateTime == eMW) isException = true
             }
-        }
+        //}
         if (isException) {
             newDateTime = handleShiftBit(newDateTime)
             flags = flags or FLAG_EXCEPTION

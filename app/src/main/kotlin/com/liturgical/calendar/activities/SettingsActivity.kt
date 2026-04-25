@@ -37,8 +37,8 @@ import java.util.*
 import kotlin.system.exitProcess
 
 class SettingsActivity : SimpleActivity() {
-    private val GET_RINGTONE_URI = 1
-    private val PICK_IMPORT_SOURCE_INTENT = 2
+    //private val GET_RINGTONE_URI = 1
+    //private val PICK_IMPORT_SOURCE_INTENT = 2
     private var backgroundColor = 0
     private var accentColor = 0
     private var textColor = 0
@@ -136,16 +136,13 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
-        super.onActivityResult(requestCode, resultCode, resultData)
-        if (requestCode == GET_RINGTONE_URI && resultCode == RESULT_OK && resultData != null) {
-            val newAlarmSound = storeNewYourAlarmSound(resultData)
+    private val getRingtoneUri = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val newAlarmSound = storeNewYourAlarmSound(result.data!!)
             updateReminderSound(newAlarmSound)
         }
     }
 
-    //private fun createHolder() = ItemSettingsHolderBinding.inflate(layoutInflater, null, false)
     private fun createHolder() = ItemSettingsHolderBinding.inflate(layoutInflater, null, false).apply {
         if (isLightBackground()) settingsWrapper.background.applyColorFilter(DARK_GREY)
     }
@@ -317,7 +314,7 @@ class SettingsActivity : SimpleActivity() {
         else {
             val sound = createSettingsDoubleView(R.string.reminder_sound, config.reminderSoundTitle)
             sound.settingsDoubleViewHolder.setOnClickListener {
-                SelectAlarmSoundDialog(this, config.reminderSoundUri, config.reminderAudioStream, GET_RINGTONE_URI, RingtoneManager.TYPE_NOTIFICATION, false,
+                SelectAlarmSoundDialog(this, config.reminderSoundUri, config.reminderAudioStream, getRingtoneUri, RingtoneManager.TYPE_NOTIFICATION, false,
                     onAlarmPicked = {
                         if (it != null) {
                             updateReminderSound(it)
@@ -405,21 +402,28 @@ class SettingsActivity : SimpleActivity() {
         }
         // Manage Synced calendars
         val manageCalendars = createSettingsSingleView(R.string.manage_synced_calendars)
-        manageCalendars.settingsItemHolder.setOnClickListener {
-            showCalendarPicker()
-        }
-        // Caldav
         val caldav = createSettingsCheckbox(R.string.caldav_sync)
-        caldav.apply {
-            settingsCheckbox.isChecked = config.caldavSync
-            refresh.settingsCheckboxHolder.beVisibleIf(config.caldavSync)
-            manageCalendars.settingsItemHolder.beVisibleIf(config.caldavSync)
-            settingsCheckboxHolder.setOnClickListener {
-                if (config.caldavSync) {
-                    toggleCaldavSync(false)
+        manageCalendars.settingsItemHolder.setOnClickListener {
+            showCalendarPicker() { success ->
+                if (!success) {
                     refresh.settingsCheckboxHolder.beGone()
                     manageCalendars.settingsItemHolder.beGone()
-                    settingsCheckbox.isChecked = false
+                    caldav.settingsCheckbox.isChecked = success
+                }
+            }
+        }
+        // Caldav
+        refresh.settingsCheckboxHolder.beVisibleIf(config.caldavSync)
+        manageCalendars.settingsItemHolder.beVisibleIf(config.caldavSync)
+        caldav.apply {
+            settingsCheckbox.isChecked = config.caldavSync
+            settingsCheckboxHolder.setOnClickListener {
+                if (config.caldavSync) {
+                    toggleCaldavSync(false) {
+                        refresh.settingsCheckboxHolder.beVisibleIf(it)
+                        manageCalendars.settingsItemHolder.beVisibleIf(it)
+                        settingsCheckbox.isChecked = it
+                    }
                 } else {
                     handlePermission(PERMISSION_WRITE_CALENDAR) { haveCalenderWrite ->
                         if (haveCalenderWrite) {
@@ -427,9 +431,11 @@ class SettingsActivity : SimpleActivity() {
                                 if (it) {
                                     handleNotificationPermission { granted ->
                                         if (granted) {
-                                            val result = toggleCaldavSync(true)
-                                            refresh.settingsCheckboxHolder.beVisibleIf(result)
-                                            manageCalendars.settingsItemHolder.beVisibleIf(result)
+                                            toggleCaldavSync(true) {
+                                                refresh.settingsCheckboxHolder.beVisibleIf(it)
+                                                manageCalendars.settingsItemHolder.beVisibleIf(it)
+                                                settingsCheckbox.isChecked = it
+                                            }
                                         }
                                     }
                                 }
@@ -904,10 +910,11 @@ class SettingsActivity : SimpleActivity() {
         //binding.settingsReminderSound.text = alarmSound.title
     }
 
-    private fun toggleCaldavSync(enable: Boolean): Boolean {
-        var success = false
+    private fun toggleCaldavSync(enable: Boolean, callback: (result: Boolean) -> Unit) {
         if (enable) {
-            success = showCalendarPicker()
+            showCalendarPicker() {
+                callback(it)
+            }
         } else {
             config.caldavSync = false
 
@@ -917,16 +924,21 @@ class SettingsActivity : SimpleActivity() {
                 }
                 eventTypesDB.deleteEventTypesWithCalendarId(config.getSyncedCalendarIdsAsList())
             }
+            callback(false)
         }
-        return success
     }
 
-    private fun showCalendarPicker(): Boolean {
+    private fun showCalendarPicker(callback: (result: Boolean) -> Unit) {
         val oldCalendarIds = config.getSyncedCalendarIdsAsList()
-        var success = false
         SelectCalendarsDialog(this) {
+            var success: Boolean
             val newCalendarIds = config.getSyncedCalendarIdsAsList()
-            if (newCalendarIds.isEmpty() && !config.caldavSync) {
+            if (newCalendarIds.isEmpty()) {
+                success = false
+                if (config.caldavSync) {
+                    toggleCaldavSync(false) {}
+                }
+                callback(success)
                 return@SelectCalendarsDialog
             }
             success = newCalendarIds.isNotEmpty()
@@ -970,8 +982,8 @@ class SettingsActivity : SimpleActivity() {
                 eventTypesDB.deleteEventTypesWithCalendarId(removedCalendarIds)
                 //updateDefaultEventTypeText()
             }
+            callback(success)
         }
-        return success
     }
 
     private fun getAudioStreamText() = getString(

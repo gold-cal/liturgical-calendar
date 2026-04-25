@@ -158,7 +158,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         // Check if there are old calendar items to delete
         checkDeleteOldEvents()
         // update event types to new ids if not already done
-        updateEventTypeIds()
+        //updateEventTypeIds()
     }
 
     override fun onResume() {
@@ -675,12 +675,12 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             if (isTrue) {
                 SetRemindersDialog(this, BIRTHDAY_EVENT) { birthdayReminders ->
                     //val privateCursor = getMyContactsCursor(false, false)
-                    val eventsFound = 0
-                    val eventsAdded = 0
+                    //val eventsFound = 0
+                    //val eventsAdded = 0
                     ensureBackgroundThread {
                         //val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
                         //addPrivateEvents(true, privateContacts, birthdayReminders) { eventsFound, eventsAdded ->
-                            addContactEvents(true, birthdayReminders, eventsFound, eventsAdded) {
+                            addContactEvents(true, birthdayReminders) { //, eventsFound, eventsAdded) {
                                 when {
                                     it > 0 -> {
                                         toast(R.string.birthdays_added)
@@ -709,13 +709,13 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             if (isTrue) {
                 SetRemindersDialog(this, ANNIVERSARY_EVENT) { anniversaryReminders ->
                     //val privateCursor = getMyContactsCursor(false, false)
-                    val eventsFound = 0
-                    val eventsAdded = 0
+                    //val eventsFound = 0
+                    //val eventsAdded = 0
 
                     ensureBackgroundThread {
                         //val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
                         //addPrivateEvents(false, privateContacts, anniversaryReminders) { eventsFound, eventsAdded ->
-                            addContactEvents(false, anniversaryReminders, eventsFound, eventsAdded) {
+                            addContactEvents(false, anniversaryReminders) { //, eventsFound, eventsAdded) {
                                 when {
                                     it > 0 -> {
                                         toast(R.string.anniversaries_added)
@@ -772,14 +772,14 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         }
 
         //val privateCursor = getMyContactsCursor(false, false)
-        val eventsFound = 0
-        val eventsAdded = 0
+        //val eventsFound = 0
+        //val eventsAdded = 0
 
         ensureBackgroundThread {
             //val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
             if (config.addBirthdaysAutomatically) {
                 //addPrivateEvents(true, privateContacts, config.birthdayReminders) { eventsFound, eventsAdded ->
-                    addContactEvents(true, config.birthdayReminders, eventsFound, eventsAdded) {
+                    addContactEvents(true, config.birthdayReminders) { //, eventsFound, eventsAdded) {
                         if (it > 0) {
                             toast(R.string.birthdays_added)
                             updateViewPager()
@@ -791,7 +791,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
 
             if (config.addAnniversariesAutomatically) {
                 //addPrivateEvents(false, privateContacts, config.anniversaryReminders) { eventsFound, eventsAdded ->
-                    addContactEvents(false, config.anniversaryReminders, eventsFound, eventsAdded) {
+                    addContactEvents(false, config.anniversaryReminders) { //, eventsFound, eventsAdded) {
                         if (it > 0) {
                             toast(R.string.anniversaries_added)
                             updateViewPager()
@@ -961,10 +961,11 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         return TraceData(doesEventExist, "") // trace)
     }
 
-    private fun addContactEvents(birthdays: Boolean, reminders: ArrayList<Int>, initEventsFound: Int, initEventsAdded: Int, callback: (Int) -> Unit) {
+    private fun addContactEvents(birthdays: Boolean, reminders: ArrayList<Int>, /*initEventsFound: Int, initEventsAdded: Int,*/
+                                 callback: (Int) -> Unit) {
 
-        var eventsFound = initEventsFound
-        var eventsAdded = initEventsAdded
+        var eventsFound = 0 // initEventsFound
+        var eventsAdded = 0 // initEventsAdded
         var trace = ""
         val uri = Data.CONTENT_URI
         val projection = arrayOf(
@@ -1011,7 +1012,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                         FLAG_ALL_DAY or FLAG_MISSING_YEAR
                     }
 
-                    val timestamp = date.time / 1000L
+                    val timestamp = date!!.time / 1000L
                     val lastUpdated = cursor.getLongValue(CommonDataKinds.Event.CONTACT_LAST_UPDATED_TIMESTAMP)
                     val event = Event(
                         null, timestamp, timestamp, name, reminder1Minutes = reminders[0], reminder2Minutes = reminders[1],
@@ -1434,7 +1435,13 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
             FAQItem(R.string.faq_4_title, R.string.faq_4_text)
         )
 
-        val showItems = AboutItems(true, true, forkedFromUrl, true, sourceCodeUrl, true)
+        val showItems = AboutItems(
+            showBugReport =  false,
+            showNewFeature = false,
+            forkedFromUrl,
+            showForkedUrl = true,
+            sourceCodeUrl,
+            showCodeUrl =  true)
 
         startAboutActivity(R.string.app_name, licenses, BuildConfig.VERSION_NAME, faqItems, true, showItems)
     }
@@ -1541,7 +1548,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         }
     }
 
-    private fun updateEventTypeIds() {
+    /*private fun updateEventTypeIds() {
         if (!config.eventTypesUpdated) {
             ensureBackgroundThread {
                 val types = arrayListOf(OTHER_EVENT, BIRTHDAY_EVENT, LITURGICAL_EVENT, ANNIVERSARY_EVENT, HOLY_DAY_EVENT)
@@ -1556,7 +1563,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 val eventTypes = eventTypesDB.getEventTypes()
                 val events = eventsDB.getAllEvents()
                 val eventTypesToDelete = ArrayList<EventType>()
-                eventTypes.forEachIndexed() { index, eventType ->
+                eventTypes.forEachIndexed { index, eventType ->
                     val origId = eventType.id!!.toInt()
                     if (eventType.id != REGULAR_EVENT_TYPE_ID) {
                         var type = types.indexOf(eventType.type)
@@ -1635,7 +1642,7 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
                 config.eventTypesUpdated = true
             }
         }
-    }
+    }*/
 
     // events fetched from Thunderbird, https://www.thunderbird.net/en-US/calendar/holidays and
     // https://holidays.kayaposoft.com/public_holidays.php?year=2021

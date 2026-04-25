@@ -115,7 +115,7 @@ class WeekFragment : Fragment(), WeeklyCalendar {
             weekEventsColumnsHolder.layoutParams.height = fullHeight
 
             val scaleDetector = getViewScaleDetector()
-            scrollView.setOnTouchListener { view, motionEvent ->
+            scrollView.setOnTouchListener { _, motionEvent ->
                 scaleDetector.onTouchEvent(motionEvent)
                 if (motionEvent.action == MotionEvent.ACTION_UP && wasScaled) {
                     scrollView.isScrollable = true
@@ -226,7 +226,7 @@ class WeekFragment : Fragment(), WeeklyCalendar {
             val dayLetter = dayLetters[curDay.dayOfWeek - 1]
 
             val textColor = if (isPrintVersion) {
-                resources.getColor(R.color.theme_light_text_color)
+                resources.getColor(R.color.theme_light_text_color, null)
             } else if (todayCode == dayCode) {
                 primaryColor
             } else if (highlightWeekends && isWeekend(curDay.dayOfWeek, true)) {
@@ -236,7 +236,8 @@ class WeekFragment : Fragment(), WeeklyCalendar {
             }
 
             val label = WeeklyViewDayLetterBinding.inflate(inflater, mView.weekLettersHolder, false) // as MyTextView
-            label.root.text = "$dayLetter\n${curDay.dayOfMonth}"
+            val text = "$dayLetter\n${curDay.dayOfMonth}"
+            label.root.text = text
             label.root.setTextColor(textColor)
             if (todayCode == dayCode) {
                 todayColumnIndex = i
@@ -253,18 +254,19 @@ class WeekFragment : Fragment(), WeeklyCalendar {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initGrid() {
         (0 until config.weeklyViewDays).mapNotNull { dayColumns.getOrNull(it) }
             .forEachIndexed { index, layout ->
                 layout.removeAllViews()
                 val gestureDetector = getViewGestureDetector(layout, index)
 
-                layout.setOnTouchListener { view, motionEvent ->
+                layout.setOnTouchListener { _, motionEvent ->
                     gestureDetector.onTouchEvent(motionEvent)
                     true
                 }
 
-                layout.setOnDragListener { view, dragEvent ->
+                layout.setOnDragListener { _, dragEvent ->
                     when (dragEvent.action) {
                         DragEvent.ACTION_DRAG_STARTED -> dragEvent.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)
                         DragEvent.ACTION_DRAG_ENTERED,
@@ -560,7 +562,7 @@ class WeekFragment : Fragment(), WeeklyCalendar {
                     WeekEventMarkerBinding.inflate(inflater, null, false).apply {
                         var backgroundColor = eventTypeColors.get(event.eventType, primaryColor)
                         var textColor = backgroundColor.getContrastColor()
-                        val currentEventWeeklyView = eventTimeRanges[currentDayCode]!!.get(event.id)
+                        val currentEventWeeklyView = eventTimeRanges[currentDayCode]!![event.id]
 
                         val adjustAlpha = if (event.isTask()) {
                             dimCompletedTasks && event.isTaskCompleted()
@@ -626,7 +628,9 @@ class WeekFragment : Fragment(), WeeklyCalendar {
                             if (isNougatPlus()) {
                                 view.startDragAndDrop(clipData, shadowBuilder, null, 0)
                             } else {
-                                view.startDrag(clipData, shadowBuilder, null, 0)
+                                if (isNougatPlus())
+                                    view.startDragAndDrop(clipData, shadowBuilder, null, 0)
+                                else view.startDrag(clipData, shadowBuilder, null, 0)
                             }
                             true
                         }

@@ -9,6 +9,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Build
 import android.os.Handler
+import android.os.Looper
 import android.provider.CalendarContract
 import com.liturgical.calendar.extensions.recheckCalDAVCalendars
 
@@ -19,7 +20,7 @@ class CalDAVUpdateListener : JobService() {
         const val CALDAV_EVENT_CONTENT_JOB = 1
     }
 
-    private val mHandler = Handler()
+    private val mHandler = Handler(Looper.myLooper() ?: Looper.getMainLooper())
     private val mWorker = Runnable {
         scheduleJob(this@CalDAVUpdateListener)
         jobFinished(mRunningParams, false)

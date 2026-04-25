@@ -1,12 +1,17 @@
 package com.liturgical.calendar.interfaces
 
 import androidx.room.*
+import com.liturgical.calendar.helpers.HOLY_DAY_EVENT
+import com.liturgical.calendar.helpers.LITURGICAL_EVENT
 import com.liturgical.calendar.models.EventType
 
 @Dao
 interface EventTypesDao {
     @Query("SELECT * FROM event_types ORDER BY title ASC")
     fun getEventTypes(): List<EventType>
+
+    @Query("SELECT * FROM event_types WHERE type != $LITURGICAL_EVENT AND type != $HOLY_DAY_EVENT ORDER BY title ASC")
+    fun getAvailableEventTypes(): List<EventType>
 
     @Query("SELECT * FROM event_types WHERE id = :id")
     fun getEventTypeWithId(id: Long): EventType?

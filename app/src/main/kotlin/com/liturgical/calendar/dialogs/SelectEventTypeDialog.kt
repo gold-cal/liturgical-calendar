@@ -14,7 +14,8 @@ import com.secure.commons.extensions.*
 
 class SelectEventTypeDialog(
     val activity: Activity, val currEventType: Long, val showCalDAVCalendars: Boolean, val showNewEventTypeOption: Boolean,
-    val addLastUsedOneAsFirstOption: Boolean, val showOnlyWritable: Boolean, val callback: (eventType: EventType) -> Unit
+    val addLastUsedOneAsFirstOption: Boolean, val showOnlyWritable: Boolean, showAvailableTypeOnly: Boolean = false,
+    val callback: (eventType: EventType) -> Unit
 ) {
     private val NEW_EVENT_TYPE_ID = -2L
     private val LAST_USED_EVENT_TYPE_ID = -1L
@@ -28,8 +29,8 @@ class SelectEventTypeDialog(
         val binding = DialogSelectRadioGroupBinding.inflate(activity.layoutInflater)
         radioGroup = binding.dialogRadioGroup
 
-        activity.eventsHelper.getEventTypes(activity, showOnlyWritable) {
-            eventTypes = it
+        activity.eventsHelper.getEventTypes(activity, showOnlyWritable, showAvailableTypeOnly) { types ->
+            eventTypes = types
             activity.runOnUiThread {
                 if (addLastUsedOneAsFirstOption) {
                     val lastUsedEventType = EventType(LAST_USED_EVENT_TYPE_ID, activity.getString(R.string.last_used_one), Color.TRANSPARENT, 0)

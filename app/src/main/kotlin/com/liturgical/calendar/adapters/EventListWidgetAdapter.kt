@@ -20,10 +20,13 @@ import com.secure.commons.helpers.MEDIUM_ALPHA
 import org.joda.time.DateTime
 
 class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteViewsService.RemoteViewsFactory {
-    private val ITEM_EVENT = 0
-    private val ITEM_SECTION_DAY = 1
-    private val ITEM_SECTION_MONTH = 2
-    //private val GO_TO_TODAY = "go_to_today"
+
+    companion object {
+        private const val ITEM_EVENT = 0
+        private const val ITEM_SECTION_DAY = 1
+        private const val ITEM_SECTION_MONTH = 2
+        //private val GO_TO_TODAY = "go_to_today"
+    }
 
     private var events = ArrayList<ListItem>()
     private var textColor = context.config.widgetTextColor
@@ -111,7 +114,6 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
             remoteView.applyColorFilter(R.id.event_item_color_bar, item.color)
             setText(R.id.event_item_title, item.title)
 
-            var showItemTime = false
             var timeText = if (item.isAllDay) "" else Formatter.getTimeFromTS(context, item.startTS)
             val endText = Formatter.getTimeFromTS(context, item.endTS)
             if (item.startTS != item.endTS) {
@@ -125,7 +127,7 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
                     timeText += " (${Formatter.getDateDayTitle(endCode)})"
                 }
             }
-            showItemTime = when {
+            val showItemTime = when {
                 (showBirthAnnDes && item.isSpecialEvent) -> true
                 (showDescription && item.isAllDay) -> true
                 else -> {false}
@@ -237,7 +239,7 @@ class EventListWidgetAdapter(val context: Context, val intent: Intent) : RemoteV
         initConfigValues()
         val displayPastEvents = context.config.displayPastEvents
         //datasetChanged = displayPastEvents != 0
-        val period = intent.getIntExtra(EVENT_LIST_PERIOD, 0)
+        //val period = intent.getIntExtra(EVENT_LIST_PERIOD, 0)
         val currentDate = DateTime()
         val fromTS = currentDate.seconds() - displayPastEvents * 60
         val toTS = currentDate.plusDays(30).seconds()

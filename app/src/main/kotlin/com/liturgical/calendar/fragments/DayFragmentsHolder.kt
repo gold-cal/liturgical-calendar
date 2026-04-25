@@ -115,7 +115,7 @@ class DayFragmentsHolder : MyFragmentHolder(), NavigationListener {
 
         activity?.getAlertDialogBuilder()!!
             .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { dialog, which -> dateSelected(dateTime, dateBinding.datePicker) }
+            .setPositiveButton(R.string.ok) { _, _ -> dateSelected(dateTime, dateBinding.datePicker) }
             .apply {
                 activity?.setupDialogStuff(dateBinding.root, this)
             }

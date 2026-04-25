@@ -20,6 +20,7 @@ import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.res.ResourcesCompat
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -46,7 +47,7 @@ import kotlin.math.pow
 
 class EventActivity : SimpleActivity() {
     private val LAT_LON_PATTERN = "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)([,;])\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)\$"
-    private val SELECT_TIME_ZONE_INTENT = 1
+    //private val SELECT_TIME_ZONE_INTENT = 1
 
     private var mIsAllDayEvent = false
     private var mReminder1Minutes = REMINDER_OFF
@@ -95,13 +96,7 @@ class EventActivity : SimpleActivity() {
 
         val eventId = intent.getLongExtra(EVENT_ID, 0L)
         ensureBackgroundThread {
-            // Get all event types and filter out the liturgical and holyday event types so that
-            // they are not selectable. This will make sure that they do not put personal events
-            // on them and they won't get deleted when it updates.
-            mStoredEventTypes = eventTypesDB.getEventTypes()
-                .toMutableList() as ArrayList<EventType>
-            mStoredEventTypes.remove(mStoredEventTypes.first { it.id == LITURGICAL_EVENT_TYPE_ID })
-            mStoredEventTypes.remove(mStoredEventTypes.first { it.id == HOLY_DAY_EVENT_TYPE_ID })
+            mStoredEventTypes = eventTypesDB.getAvailableEventTypes().toMutableList() as ArrayList<EventType>
             val event = eventsDB.getEventWithId(eventId)
             if (eventId != 0L && event == null) {
                 hideKeyboard()
@@ -246,9 +241,10 @@ class EventActivity : SimpleActivity() {
         updateTextColors(binding.eventScrollview)
         updateIconColors()
         refreshMenuItems()
-        binding.eventTimeZoneDivider.beVisibleIf(config.allowChangingTimeZones)
-        binding.eventTimeZoneImage.beVisibleIf(config.allowChangingTimeZones)
-        binding.eventTimeZone.beVisibleIf(config.allowChangingTimeZones)
+        binding.eventTimeZoneHolder.beVisibleIf(config.allowChangingTimeZones)
+        //binding.eventTimeZoneDivider.beVisibleIf(config.allowChangingTimeZones)
+        //binding.eventTimeZoneImage.beVisibleIf(config.allowChangingTimeZones)
+        //binding.eventTimeZone.beVisibleIf(config.allowChangingTimeZones)
     }
 
     private fun refreshMenuItems() {
@@ -428,7 +424,15 @@ class EventActivity : SimpleActivity() {
         updateActionBarTitle()
     }
 
-    @Deprecated("Deprecated in Java")
+    private val selectTimeZoneIntent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data?.hasExtra(TIME_ZONE) == true) {
+            val timeZone = result.data?.getSerializableExtra(TIME_ZONE) as MyTimeZone
+            mEvent.timeZone = timeZone.zoneName
+            updateTimeZoneText()
+        }
+    }
+
+    /*@Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         if (requestCode == SELECT_TIME_ZONE_INTENT && resultCode == Activity.RESULT_OK && resultData?.hasExtra(TIME_ZONE) == true) {
             val timeZone = resultData.getSerializableExtra(TIME_ZONE) as MyTimeZone
@@ -436,7 +440,7 @@ class EventActivity : SimpleActivity() {
             updateTimeZoneText()
         }
         super.onActivityResult(requestCode, resultCode, resultData)
-    }
+    }*/
 
     private fun updateTexts() {
         updateRepetitionText()
@@ -458,7 +462,6 @@ class EventActivity : SimpleActivity() {
 
     // Setup a birthday or anniversary event
     private fun setupBorAEvent(newEvent: Boolean) {
-
         if (newEvent) {
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
             binding.eventTitle.requestFocus()
@@ -879,7 +882,7 @@ class EventActivity : SimpleActivity() {
 
     private fun showEventTypeDialog() {
         hideKeyboard()
-        SelectEventTypeDialog(this, mEventTypeId, false, true, false, true) {
+        SelectEventTypeDialog(this, mEventTypeId, false, true, false, true, true) {
             mEventTypeId = it.id!!
             updateEventType()
         }
@@ -1538,7 +1541,8 @@ class EventActivity : SimpleActivity() {
         hideKeyboard()
         Intent(this, SelectTimeZoneActivity::class.java).apply {
             putExtra(CURRENT_TIME_ZONE, mEvent.getTimeZoneString())
-            startActivityForResult(this, SELECT_TIME_ZONE_INTENT)
+            selectTimeZoneIntent.launch(this)
+            //startActivityForResult(this, SELECT_TIME_ZONE_INTENT)
         }
     }
 
@@ -1612,7 +1616,6 @@ class EventActivity : SimpleActivity() {
 
     private fun addAttendee(attendee: Attendee? = null) {
         val attendeeHolder = ItemAttendeeBinding.inflate(layoutInflater)
-            //layoutInflater.inflate(R.layout.item_attendee, binding.eventAttendeesHolder, false) as RelativeLayout
         val autoCompleteView = attendeeHolder.eventAttendee
         //val selectedAttendeeHolder = attendeeHolder.eventContactAttendee
         //val selectedAttendeeDismiss = attendeeHolder.eventContactDismiss

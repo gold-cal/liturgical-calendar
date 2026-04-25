@@ -1,5 +1,6 @@
 package com.liturgical.calendar.adapters
 
+import android.annotation.SuppressLint
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
@@ -61,7 +62,7 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val event = events[position]
-        holder.bindView(event, true, true) { itemView, layoutPosition ->
+        holder.bindView(event, allowSingleClick = true, allowLongClick = true) { itemView, _ ->
             setupView(itemView, event)
         }
         bindViewHolder(holder)
@@ -69,6 +70,7 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
 
     override fun getItemCount() = events.size
 
+    @SuppressLint("NotifyDataSetChanged")
     fun togglePrintMode() {
         isPrintVersion = !isPrintVersion
         textColor = if (isPrintVersion) {
@@ -152,7 +154,7 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
 
         val hasRepeatableEvent = eventsToDelete.any { it.repeatInterval > 0 }
         DeleteEventDialog(activity, eventIds, hasRepeatableEvent) { it ->
-            events.removeAll(eventsToDelete)
+            events.removeAll(eventsToDelete.toSet())
 
             ensureBackgroundThread {
                 val nonRepeatingEventIDs = eventsToDelete.asSequence().filter { it.repeatInterval == 0 }.mapNotNull { it.id }.toMutableList()

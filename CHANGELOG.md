@@ -1,5 +1,15 @@
 Changelog
 ==========
+Version 1.6 *(2026-04-17)*
+----------------------------
+* Improved handling of calendar ids
+* Added the Sundays after Easter
+* Removed some deprecated code
+
+Version 1.5 *(2026-02-06)*
+----------------------------
+* Fixed some theme issues
+* Some minor code improvements
 
 Version 1.4 *(2026-01-17)*
 ----------------------------

@@ -1,5 +1,6 @@
 package com.liturgical.calendar.fragments
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.DatePicker
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.MainActivity
@@ -72,11 +74,12 @@ class WeekFragmentsHolder : MyFragmentHolder(), WeekFragmentListener {
         setupSeekbar()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupFragment() {
         addHours()
         setupWeeklyViewPager()
 
-        weekHolder!!.weekViewHoursScrollview.setOnTouchListener { view, motionEvent -> true }
+        weekHolder!!.weekViewHoursScrollview.setOnTouchListener { _, _ -> true }
 
         weekHolder!!.weekViewSeekbar.apply {
             progress = context?.config?.weeklyViewDays ?: 7
@@ -96,7 +99,7 @@ class WeekFragmentsHolder : MyFragmentHolder(), WeekFragmentListener {
 
     private fun setupWeeklyViewPager() {
         val weekTSs = getWeekTimestamps(currentWeekTS)
-        val weeklyAdapter = MyWeekPagerAdapter(requireActivity().supportFragmentManager, weekTSs, this)
+        val weeklyAdapter = MyWeekPagerAdapter(requireActivity().supportFragmentManager, lifecycle, weekTSs, this)
 
         defaultWeeklyPage = weekTSs.size / 2
 
@@ -189,7 +192,7 @@ class WeekFragmentsHolder : MyFragmentHolder(), WeekFragmentListener {
 
         activity?.getAlertDialogBuilder()!!
             .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { dialog, which -> dateSelected(dateTime, view.datePicker) }
+            .setPositiveButton(R.string.ok) { _, _ -> dateSelected(dateTime, view.datePicker) }
             .apply {
                 activity?.setupDialogStuff(view.root, this)
             }

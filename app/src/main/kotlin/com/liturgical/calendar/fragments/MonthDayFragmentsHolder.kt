@@ -114,7 +114,7 @@ class MonthDayFragmentsHolder : MyFragmentHolder(), NavigationListener {
 
         activity?.getAlertDialogBuilder()!!
             .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.ok) { dialog, which -> datePicked(dateTime, dateBinding.datePicker) }
+            .setPositiveButton(R.string.ok) { _, _ -> datePicked(dateTime, dateBinding.datePicker) }
             .apply {
                 activity?.setupDialogStuff(dateBinding.root, this)
             }

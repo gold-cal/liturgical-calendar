@@ -68,7 +68,7 @@ class TaskActivity : SimpleActivity() {
                 return@ensureBackgroundThread
             }
 
-            val storedEventTypes = eventTypesDB.getEventTypes().toMutableList() as ArrayList<EventType>
+            val storedEventTypes = eventTypesDB.getAvailableEventTypes().toMutableList() as ArrayList<EventType>
             val localTaskType = storedEventTypes.firstOrNull { it.id == config.lastUsedTaskTypeId }
             runOnUiThread {
                 if (!isDestroyed && !isFinishing) {
@@ -703,7 +703,8 @@ class TaskActivity : SimpleActivity() {
             showCalDAVCalendars = false,
             showNewEventTypeOption = true,
             addLastUsedOneAsFirstOption = false,
-            showOnlyWritable = true
+            showOnlyWritable = true,
+            showAvailableTypeOnly = true
         ) {
             mTaskTypeId = it.id!!
             updateTaskType()

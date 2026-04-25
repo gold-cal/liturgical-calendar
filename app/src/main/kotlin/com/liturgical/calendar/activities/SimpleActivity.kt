@@ -3,6 +3,7 @@ package com.liturgical.calendar.activities
 import android.content.Context
 import android.database.ContentObserver
 import android.os.Handler
+import android.os.Looper
 import android.provider.CalendarContract
 import androidx.core.app.NotificationManagerCompat
 import com.liturgical.calendar.R
@@ -15,7 +16,7 @@ import com.secure.commons.helpers.ensureBackgroundThread
 
 open class SimpleActivity : BaseSimpleActivity() {
     val CALDAV_REFRESH_DELAY = 3000L
-    val calDAVRefreshHandler = Handler()
+    val calDAVRefreshHandler = Handler(Looper.getMainLooper())
     var calDAVRefreshCallback: (() -> Unit)? = null
 
     override fun getAppIconIDs() = arrayListOf(R.mipmap.ic_launcher)
@@ -33,7 +34,7 @@ open class SimpleActivity : BaseSimpleActivity() {
     }
 
     // caldav refresh content observer triggers multiple times in a row at updating, so call the callback only a few seconds after the (hopefully) last one
-    private val calDAVSyncObserver = object : ContentObserver(Handler()) {
+    private val calDAVSyncObserver = object : ContentObserver(Handler(Looper.myLooper()!!)) {
         override fun onChange(selfChange: Boolean) {
             super.onChange(selfChange)
             if (!selfChange) {

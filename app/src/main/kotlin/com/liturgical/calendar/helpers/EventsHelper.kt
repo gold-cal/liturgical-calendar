@@ -19,11 +19,12 @@ class EventsHelper(val context: Context) {
     private val eventsDB = context.eventsDB
     private val eventTypesDB = context.eventTypesDB
 
-    fun getEventTypes(activity: Activity, showWritableOnly: Boolean, callback: (eventTypes: ArrayList<EventType>) -> Unit) {
+    fun getEventTypes(activity: Activity, showWritableOnly: Boolean, showAvailableOnly: Boolean = false, callback: (eventTypes: ArrayList<EventType>) -> Unit) {
         ensureBackgroundThread {
             var eventTypes = ArrayList<EventType>()
             try {
-                eventTypes = eventTypesDB.getEventTypes().toMutableList() as ArrayList<EventType>
+                eventTypes = if (showAvailableOnly) getAvailableEventTypes()
+                             else getEventTypesSync()
             } catch (ignored: Exception) {
             }
 
@@ -39,6 +40,8 @@ class EventsHelper(val context: Context) {
             }
         }
     }
+
+    private fun getAvailableEventTypes() = eventTypesDB.getAvailableEventTypes().toMutableList() as ArrayList<EventType>
 
     fun getEventTypesSync() = eventTypesDB.getEventTypes().toMutableList() as ArrayList<EventType>
 
@@ -80,7 +83,7 @@ class EventsHelper(val context: Context) {
 
     private fun getLocalEventTypeIdWithTitle(title: String) = eventTypesDB.getLocalEventTypeIdWithTitle(title) ?: -1L
 
-    private fun getLocalEventTypeIdWithClass(classId: Int) = eventTypesDB.getLocalEventTypeIdWithClass(classId) ?: -1L
+    //private fun getLocalEventTypeIdWithClass(classId: Int) = eventTypesDB.getLocalEventTypeIdWithClass(classId) ?: -1L
 
     fun getEventTypeWithCalDAVCalendarId(calendarId: Int) = eventTypesDB.getEventTypeWithCalDAVCalendarId(calendarId)
 

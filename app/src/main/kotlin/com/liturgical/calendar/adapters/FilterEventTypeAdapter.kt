@@ -16,7 +16,7 @@ class FilterEventTypeAdapter(val activity: SimpleActivity, val eventTypes: List<
     private val selectedKeys = HashSet<Long>()
 
     init {
-        eventTypes.forEachIndexed { index, eventType ->
+        eventTypes.forEachIndexed { _, eventType ->
             if (displayEventTypes.contains(eventType.id.toString())) {
                 selectedKeys.add(eventType.id!!)
             }
@@ -61,7 +61,7 @@ class FilterEventTypeAdapter(val activity: SimpleActivity, val eventTypes: List<
         }
 
         private fun viewClicked(select: Boolean, eventType: EventType) {
-            toggleItemSelection(select, eventType, adapterPosition)
+            toggleItemSelection(select, eventType, bindingAdapterPosition)
         }
     }
 }
