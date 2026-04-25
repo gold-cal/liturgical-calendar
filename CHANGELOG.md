@@ -2,6 +2,13 @@ Changelog
 ==========
 Version 1.6 *(2026-04-17)*
 ----------------------------
+* Updated gradle scripts
+* Updated some Deprecated code
+* Refreshed the readme
+* Reduced code size
+
+Version 1.6 *(2026-04-17)*
+----------------------------
 * Improved handling of calendar ids
 * Added the Sundays after Easter
 * Removed some deprecated code

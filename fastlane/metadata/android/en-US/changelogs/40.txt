@@ -1,0 +1,4 @@
+- Updated gradle scripts
+- Updated some Deprecated code
+- Refreshed the readme
+- Reduced code size
