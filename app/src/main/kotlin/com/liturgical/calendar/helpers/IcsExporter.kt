@@ -7,12 +7,15 @@ import com.liturgical.calendar.extensions.eventTypesDB
 import com.liturgical.calendar.helpers.IcsExporter.ExportResult.*
 import com.liturgical.calendar.models.CalDAVCalendar
 import com.liturgical.calendar.models.Event
+import com.liturgical.calendar.models.Task
 import com.secure.commons.activities.BaseSimpleActivity
 import com.secure.commons.extensions.toast
 import com.secure.commons.extensions.writeLn
 import com.secure.commons.helpers.ensureBackgroundThread
 import java.io.BufferedWriter
 import java.io.OutputStream
+import java.text.Normalizer.Form
+import kotlin.math.abs
 
 class IcsExporter {
     enum class ExportResult {
@@ -28,6 +31,7 @@ class IcsExporter {
         activity: BaseSimpleActivity,
         outputStream: OutputStream?,
         events: ArrayList<Event>,
+        tasks: ArrayList<Task>,
         showExportingToast: Boolean,
         callback: (result: ExportResult) -> Unit
     ) {
@@ -76,6 +80,23 @@ class IcsExporter {
                     fillReminders(event, out, reminderLabel)
                     fillIgnoredOccurrences(event, out)
 
+                    if (event.isTask()) {
+                        out.writeLn("$EXTYPE$TASK")
+                        if (tasks.isNotEmpty()) {
+                            tasks.forEach { task ->
+                                if (task.task_id == event.id) {
+                                    out.writeLn(BEGIN_TASK)
+                                    if (event.getIsAllDay())
+                                        out.writeLn("$DTSTART;$VALUE=$DATE:${Formatter.getDayCodeFromTS(task.startTS)}")
+                                    else
+                                        task.startTS.let { out.writeLn("$DTSTART:${Formatter.getExportedTime(it * 1000L)}") }
+                                    out.writeLn("$TASK:$COMP")
+                                    out.writeLn(END_TASK)
+                                }
+                            }
+                        }
+                    }
+
                     eventsExported++
                     out.writeLn(END_EVENT)
                 }
@@ -93,8 +114,7 @@ class IcsExporter {
     }
 
     private fun fillReminders(event: Event, out: BufferedWriter, reminderLabel: String) {
-        event.getReminders().forEach {
-            val reminder = it
+        event.getReminders().forEach { reminder ->
             out.apply {
                 writeLn(BEGIN_ALARM)
                 writeLn("$DESCRIPTION$reminderLabel")
@@ -109,7 +129,7 @@ class IcsExporter {
                 }
 
                 val sign = if (reminder.minutes < -1) "" else "-"
-                writeLn("$TRIGGER:$sign${Parser().getDurationCode(Math.abs(reminder.minutes.toLong()))}")
+                writeLn("$TRIGGER:$sign${Parser().getDurationCode(abs(reminder.minutes.toLong()))}")
                 writeLn(END_ALARM)
             }
         }
@@ -126,7 +146,7 @@ class IcsExporter {
         var isFirstLine = true
 
         while (index < description.length) {
-            val substring = description.substring(index, Math.min(index + MAX_LINE_LENGTH, description.length))
+            val substring = description.substring(index, (index + MAX_LINE_LENGTH).coerceAtMost(description.length))
             if (isFirstLine) {
                 out.writeLn("$DESCRIPTION$substring")
             } else {

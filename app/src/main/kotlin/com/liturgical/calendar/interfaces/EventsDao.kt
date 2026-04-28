@@ -15,6 +15,9 @@ interface EventsDao {
     @Query("SELECT * FROM events WHERE event_type IN (:eventTypeIds) AND type = $TYPE_EVENT")
     fun getAllEventsWithTypes(eventTypeIds: List<Long>): List<Event>
 
+    @Query("SELECT * FROM events WHERE event_type IN (:eventTypeIds)")
+    fun getEveryItemWithTypes(eventTypeIds: List<Long>): List<Event>
+
     @Query("SELECT * FROM events WHERE event_type = :eventType AND type = $TYPE_EVENT")
     fun getAllEventsWithType(eventType: Long): List<Event>
 
@@ -45,8 +48,8 @@ interface EventsDao {
     @Query("SELECT * FROM events WHERE start_ts <= :toTS AND end_ts >= :fromTS AND start_ts != 0 AND repeat_interval = 0 AND event_type IN (:eventTypeIds) AND (type = $TYPE_EVENT OR type = $TYPE_TASK)")
     fun getOneTimeEventsFromToWithTypes(toTS: Long, fromTS: Long, eventTypeIds: List<Long>): List<Event>
 
-    @Query("SELECT * FROM events WHERE end_ts > :toTS AND repeat_interval = 0 AND event_type IN (:eventTypeIds) AND type = $TYPE_EVENT")
-    fun getOneTimeFutureEventsWithTypes(toTS: Long, eventTypeIds: List<Long>): List<Event>
+    @Query("SELECT * FROM events WHERE end_ts > :toTS AND repeat_interval = 0 AND event_type IN (:eventTypeIds) AND type IN (:types)")
+    fun getOneTimeFutureEventsWithTypes(toTS: Long, eventTypeIds: List<Long>, types: List<Int>): List<Event>
 
     @Query("SELECT * FROM events WHERE start_ts <= :toTS AND repeat_interval != 0 AND (type = $TYPE_EVENT OR type = $TYPE_TASK)")
     fun getRepeatableEventsOrTasksWithTypes(toTS: Long): List<Event>
@@ -57,8 +60,8 @@ interface EventsDao {
     @Query("SELECT * FROM events WHERE start_ts <= :toTS AND start_ts != 0 AND repeat_interval != 0 AND event_type IN (:eventTypeIds) AND (type = $TYPE_EVENT OR type = $TYPE_TASK)")
     fun getRepeatableEventsOrTasksWithTypes(toTS: Long, eventTypeIds: List<Long>): List<Event>
 
-    @Query("SELECT * FROM events WHERE repeat_interval != 0 AND (repeat_limit == 0 OR repeat_limit > :currTS) AND event_type IN (:eventTypeIds) AND type = $TYPE_EVENT")
-    fun getRepeatableFutureEventsWithTypes(currTS: Long, eventTypeIds: List<Long>): List<Event>
+    @Query("SELECT * FROM events WHERE repeat_interval != 0 AND (repeat_limit == 0 OR repeat_limit > :currTS) AND event_type IN (:eventTypeIds) AND type IN (:types)")
+    fun getRepeatableFutureEventsWithTypes(currTS: Long, eventTypeIds: List<Long>, types: List<Int>): List<Event>
 
     @Query("SELECT * FROM events WHERE id IN (:ids) AND import_id != \"\" AND type = $TYPE_EVENT")
     fun getEventsByIdsWithImportIds(ids: List<Long>): List<Event>
@@ -78,7 +81,7 @@ interface EventsDao {
     /*@Query("SELECT * FROM events WHERE source = \'$SOURCE_CONTACT_ANNIVERSARY\' AND type = $TYPE_EVENT")
     fun getAnniversaries(): List<Event>*/
 
-    @Query("SELECT * FROM events WHERE import_id != \"\" AND type = $TYPE_EVENT")
+    @Query("SELECT * FROM events WHERE import_id != \"\"")
     fun getEventsWithImportIds(): List<Event>
 
     @Query("SELECT * FROM events WHERE source = :source AND type = $TYPE_EVENT")

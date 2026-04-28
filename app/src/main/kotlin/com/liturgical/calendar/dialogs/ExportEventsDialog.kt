@@ -30,6 +30,11 @@ class ExportEventsDialog(
                 exportPastEventsCheckbox.toggle()
             }
 
+            exportTasksCheckbox.isChecked = config.exportTasks
+            exportTasksCheckboxHolder.setOnClickListener {
+                exportTasksCheckbox.toggle()
+            }
+
             if (hidePath) {
                 exportEventsFolderHint.beGone()
                 exportEventsFolder.beGone()
@@ -43,7 +48,7 @@ class ExportEventsDialog(
                 }
             }
 
-            activity.eventsHelper.getEventTypes(activity, false) { eventTypeArrayList ->
+            activity.eventsHelper.getEventTypes(activity, false, true) { eventTypeArrayList ->
                 val eventTypes = HashSet<String>()
                 eventTypeArrayList.mapTo(eventTypes) { it.id.toString() }
 
@@ -73,6 +78,7 @@ class ExportEventsDialog(
                                 ensureBackgroundThread {
                                     config.lastExportPath = file.absolutePath.getParentPath()
                                     config.exportPastEvents = binding.exportPastEventsCheckbox.isChecked
+                                    config.exportTasks = binding.exportTasksCheckbox.isChecked
 
                                     val eventTypes = (binding.exportEventsTypesList.adapter as FilterEventTypeAdapter).getSelectedItemsList()
                                     callback(file, eventTypes)

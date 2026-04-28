@@ -980,7 +980,8 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
         //val type = if (birthdays) CommonDataKinds.Event.TYPE_BIRTHDAY else if (custom) CommonDataKinds.Event.TYPE_CUSTOM else CommonDataKinds.Event.TYPE_ANNIVERSARY
         val selectionArgs = arrayOf(CommonDataKinds.Event.CONTENT_ITEM_TYPE, type.toString())
 
-        val eventTypeId = if (birthdays) eventsHelper.getBirthdaysEventTypeId() else eventsHelper.getAnniversariesEventTypeId()
+        val eventTypeId = if (birthdays) BIRTHDAY_EVENT_TYPE_ID else ANNI_EVENT_TYPE_ID
+            //eventsHelper.getBirthdaysEventTypeId() else eventsHelper.getAnniversariesEventTypeId()
         val dateFormats = getDateFormats()
         val yearDateFormats = getDateFormatsWithYear()
         val existingEvents = if (birthdays) eventsDB.getAllEventsWithType(eventTypeId)
@@ -1398,10 +1399,12 @@ class MainActivity : SimpleActivity(), RefreshRecyclerViewListener {
     private fun exportEventsTo(eventTypes: ArrayList<Long>, outputStream: OutputStream?) {
         ensureBackgroundThread {
             val events = eventsHelper.getEventsToExport(eventTypes)
+            val tasks = if(config.exportTasks) completedTasksDB.getAllCompletedTasks() as ArrayList<Task>
+                        else ArrayList()
             if (events.isEmpty()) {
                 toast(R.string.no_entries_for_exporting)
             } else {
-                IcsExporter().exportEvents(this, outputStream, events, true) {
+                IcsExporter().exportEvents(this, outputStream, events, tasks, true) {
                     toast(
                         when (it) {
                             ExportResult.EXPORT_OK -> R.string.exporting_successful

@@ -70,6 +70,27 @@
 
         </RelativeLayout>
 
+        <RelativeLayout
+            android:id="@+id/export_tasks_checkbox_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:paddingStart="@dimen/normal_margin"
+            android:paddingTop="@dimen/medium_margin"
+            android:paddingEnd="@dimen/activity_margin"
+            android:paddingBottom="@dimen/normal_margin">
+
+            <com.secure.commons.views.MyAppCompatCheckbox
+                android:id="@+id/export_tasks_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:clickable="false"
+                android:layoutDirection="rtl"
+                android:padding="@dimen/medium_margin"
+                android:text="@string/export_tasks_too"/>
+        </RelativeLayout>
+
         <LinearLayout
             android:id="@+id/export_events_pick_types"
             android:layout_width="match_parent"

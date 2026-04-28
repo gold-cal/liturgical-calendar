@@ -18,6 +18,7 @@ class EventsHelper(val context: Context) {
     private val config = context.config
     private val eventsDB = context.eventsDB
     private val eventTypesDB = context.eventTypesDB
+    private val completedTasksDB = context.completedTasksDB
 
     fun getEventTypes(activity: Activity, showWritableOnly: Boolean, showAvailableOnly: Boolean = false, callback: (eventTypes: ArrayList<EventType>) -> Unit) {
         ensureBackgroundThread {
@@ -177,8 +178,10 @@ class EventsHelper(val context: Context) {
     /* Deletes all events in the calendar */
     fun deleteAllEvents() {
         ensureBackgroundThread {
+            // delete events
             val eventIds = eventsDB.getEventIds().toMutableList()
             deleteEvents(eventIds, true)
+
             config.isFirstRun = true // set to true so it re-imports the liturgical calendar
         }
     }
@@ -193,6 +196,7 @@ class EventsHelper(val context: Context) {
         ids.chunked(CHOPPED_LIST_DEFAULT_SIZE).forEach { longs ->
             val eventsWithImportId = eventsDB.getEventsByIdsWithImportIds(longs)
             eventsDB.deleteEvents(longs)
+            completedTasksDB.deleteTasks(longs)
 
             longs.forEach {
                 context.cancelNotification(it)
@@ -220,7 +224,6 @@ class EventsHelper(val context: Context) {
     private fun deleteEventsWithType(eventTypeId: Long) {
         val eventIds = eventsDB.getEventIdsByEventType(eventTypeId).toMutableList()
         deleteEvents(eventIds, true)
-        config.isFirstRun = true
     }
 
     fun addEventRepeatLimit(eventId: Long, limitTS: Long) {
@@ -288,6 +291,7 @@ class EventsHelper(val context: Context) {
             val occurrenceDayCode = Formatter.getDayCodeFromTS(occurrenceTS)
             parentEvent.addRepetitionException(occurrenceDayCode)
             eventsDB.updateEventRepetitionExceptions(parentEvent.repetitionExceptions.toString(), parentEventId)
+            completedTasksDB.deleteTaskWithIdAndTs(parentEventId, occurrenceTS)
             context.scheduleNextEventReminder(parentEvent, false)
 
             if (addToCalDAV && config.caldavSync) {
@@ -303,8 +307,8 @@ class EventsHelper(val context: Context) {
     }
 
     fun getEventsSync(fromTS: Long, toTS: Long, eventId: Long = -1L, applyTypeFilter: Boolean, callback: (events: ArrayList<Event>) -> Unit) {
-        val birthDayEventId = getBirthdaysEventTypeId(createIfNotExists = false)
-        val anniversaryEventId = getAnniversariesEventTypeId(createIfNotExists = false)
+        val birthDayEventId = BIRTHDAY_EVENT_TYPE_ID // getBirthdaysEventTypeId(createIfNotExists = false)
+        val anniversaryEventId = ANNI_EVENT_TYPE_ID // getAnniversariesEventTypeId(createIfNotExists = false)
 
         var events = ArrayList<Event>()
         if (applyTypeFilter) {
@@ -350,8 +354,8 @@ class EventsHelper(val context: Context) {
             it.updateIsPastEvent()
             val originalEvent = eventsDB.getEventWithId(it.id!!)
             if (originalEvent != null &&
-                (birthDayEventId != -1L && it.eventType == birthDayEventId) or
-                (anniversaryEventId != -1L && it.eventType == anniversaryEventId)
+                (/*birthDayEventId != -1L &&*/ it.eventType == birthDayEventId) or
+                (/*anniversaryEventId != -1L &&*/ it.eventType == anniversaryEventId)
             ) {
                 val eventStartDate = Formatter.getDateFromTS(it.startTS)
                 val originalEventStartDate = Formatter.getDateFromTS(originalEvent.startTS)
@@ -390,6 +394,7 @@ class EventsHelper(val context: Context) {
         eventsDB.deleteEvents(eventIDs.toMutableList())
     }
 
+    @Deprecated("This Function will be removed in future release")
     fun createPredefinedEventType(title: String, @ColorRes colorResId: Int, type: Int, caldav: Boolean = false): Long {
         val eventType = EventType(id = null, title = title, color = context.resources.getColor(colorResId, null), type = type)
 
@@ -410,23 +415,23 @@ class EventsHelper(val context: Context) {
 
     //fun getHolydayEventTypeId(): Long {return getLocalEventTypeIdWithClass(HOLYDAY_EVENT)}
 
-    fun getBirthdaysEventTypeId(createIfNotExists: Boolean = true): Long {
+    /*fun getBirthdaysEventTypeId(createIfNotExists: Boolean = true): Long {
         var eventTypeId = getEventTypeIdWithClass(BIRTHDAY_EVENT)
         if (eventTypeId == -1L && createIfNotExists) {
             val birthdays = context.getString(R.string.birthdays)
             eventTypeId = createPredefinedEventType(birthdays, R.color.default_birthdays_color, BIRTHDAY_EVENT)
         }
         return eventTypeId
-    }
+    }*/
 
-    fun getAnniversariesEventTypeId(createIfNotExists: Boolean = true): Long {
+    /*fun getAnniversariesEventTypeId(createIfNotExists: Boolean = true): Long {
         var eventTypeId = getEventTypeIdWithClass(ANNIVERSARY_EVENT)
         if (eventTypeId == -1L && createIfNotExists) {
             val anniversaries = context.getString(R.string.anniversaries)
             eventTypeId = createPredefinedEventType(anniversaries, R.color.default_anniversaries_color, ANNIVERSARY_EVENT)
         }
         return eventTypeId
-    }
+    }*/
 
     fun getRepeatableEventsFor(fromTS: Long, toTS: Long, eventId: Long = -1L, applyTypeFilter: Boolean = false): List<Event> {
         val events = if (applyTypeFilter) {
@@ -570,17 +575,22 @@ class EventsHelper(val context: Context) {
     fun getEventsToExport(eventTypes: ArrayList<Long>): ArrayList<Event> {
         val currTS = getNowSeconds()
         var events = ArrayList<Event>()
+        val exportTasks = config.exportTasks
         if (config.exportPastEvents) {
-            events.addAll(eventsDB.getAllEventsWithTypes(eventTypes))
+            if (exportTasks) {
+                events.addAll(eventsDB.getEveryItemWithTypes(eventTypes))
+            }
+            else events.addAll(eventsDB.getAllEventsWithTypes(eventTypes))
         } else {
-            events.addAll(eventsDB.getOneTimeFutureEventsWithTypes(currTS, eventTypes))
-            events.addAll(eventsDB.getRepeatableFutureEventsWithTypes(currTS, eventTypes))
+            val types = arrayListOf(TYPE_EVENT)
+            if (exportTasks) {
+                types.add(TYPE_TASK)
+            }
+            events.addAll(eventsDB.getOneTimeFutureEventsWithTypes(currTS, eventTypes, types))
+            events.addAll(eventsDB.getRepeatableFutureEventsWithTypes(currTS, eventTypes, types))
         }
 
         events = events.distinctBy { it.id } as ArrayList<Event>
         return events
     }
-
-    // Calculate the time of Easter
-
 }

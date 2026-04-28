@@ -6,6 +6,7 @@ import com.liturgical.calendar.R
 import com.liturgical.calendar.dialogs.CustomEventRepeatIntervalDialog
 import com.liturgical.calendar.helpers.*
 import com.liturgical.calendar.models.Event
+import com.liturgical.calendar.models.Task
 import com.secure.commons.activities.BaseSimpleActivity
 import com.secure.commons.dialogs.RadioGroupDialog
 import com.secure.commons.extensions.*
@@ -24,12 +25,13 @@ fun BaseSimpleActivity.shareEvents(ids: List<Long>) {
         }
 
         val events = eventsDB.getEventsWithIds(ids) as ArrayList<Event>
+        val tasks = ArrayList<Task>()
         if (events.isEmpty()) {
             toast(R.string.no_items_found)
         }
 
         getFileOutputStream(file.toFileDirItem(this), true) {
-            IcsExporter().exportEvents(this, it, events, false) { result ->
+            IcsExporter().exportEvents(this, it, events, tasks, false) { result ->
                 if (result == IcsExporter.ExportResult.EXPORT_OK) {
                     sharePathIntent(file.absolutePath, BuildConfig.APPLICATION_ID)
                 }

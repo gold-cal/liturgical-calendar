@@ -1,7 +1,9 @@
 Changelog
 ==========
-Version 1.6 *(2026-04-17)*
+
+Version 2.0 *(2026-04-29)*
 ----------------------------
+* NEW: The calendar can now imports and exports tasks (importing into other apps not supported)
 * Updated gradle scripts
 * Updated some Deprecated code
 * Refreshed the readme

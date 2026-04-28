@@ -5,7 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.liturgical.calendar.R
 import com.liturgical.calendar.extensions.config
@@ -21,7 +20,7 @@ import com.liturgical.calendar.models.Widget
 import com.secure.commons.extensions.getProperPrimaryColor
 import java.util.concurrent.Executors
 
-@Database(entities = [Event::class, EventType::class, Widget::class, Task::class], version = 9, exportSchema = false)
+@Database(entities = [Event::class, EventType::class, Widget::class, Task::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class EventsDatabase : RoomDatabase() {
 
@@ -51,14 +50,14 @@ abstract class EventsDatabase : RoomDatabase() {
                                     //insertAnniversaryEventType(context)
                                 }
                             })
-                            .addMigrations(MIGRATION_1_2)
-                            .addMigrations(MIGRATION_2_3)
-                            .addMigrations(MIGRATION_3_4)
-                            .addMigrations(MIGRATION_4_5)
-                            .addMigrations(MIGRATION_5_6)
-                            .addMigrations(MIGRATION_6_7)
-                            .addMigrations(MIGRATION_7_8)
-                            .addMigrations(MIGRATION_8_9)
+                            //.addMigrations(MIGRATION_1_2)
+                            //.addMigrations(MIGRATION_2_3)
+                            //.addMigrations(MIGRATION_3_4)
+                            //.addMigrations(MIGRATION_4_5)
+                            //.addMigrations(MIGRATION_5_6)
+                            //.addMigrations(MIGRATION_6_7)
+                            //.addMigrations(MIGRATION_7_8)
+                            //.addMigrations(MIGRATION_8_9)
                             .build()
                         db!!.openHelper.setWriteAheadLoggingEnabled(true)
                     }
@@ -85,6 +84,8 @@ abstract class EventsDatabase : RoomDatabase() {
                     val eventType = EventType(id, titles[i], colors[i], type = types[i])
                     db!!.EventTypesDao().insertOrUpdate(eventType)
                     context.config.addDisplayEventType(id.toString())
+                    if (eventType.id != ids[2] && eventType.id != ids[4])
+                        context.config.addQuickFilterEventType(eventType.id.toString())
                 }
             }
             context.config.eventTypesUpdated = true
@@ -141,7 +142,7 @@ abstract class EventsDatabase : RoomDatabase() {
             }
         }*/
 
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
+        /*private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.apply {
                     execSQL("ALTER TABLE events ADD COLUMN reminder_1_type INTEGER NOT NULL DEFAULT 0")
@@ -208,6 +209,6 @@ abstract class EventsDatabase : RoomDatabase() {
                     execSQL("ALTER TABLE events ADD COLUMN extended_rule INTERGER NOT NULL DEFAULT 0")
                 }
             }
-        }
+        }*/
     }
 }

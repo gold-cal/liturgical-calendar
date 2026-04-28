@@ -3,6 +3,7 @@ package com.liturgical.calendar.helpers
 import android.provider.CalendarContract.Events
 import com.liturgical.calendar.R
 import com.liturgical.calendar.activities.SimpleActivity
+import com.liturgical.calendar.extensions.completedTasksDB
 import com.liturgical.calendar.extensions.eventsDB
 import com.liturgical.calendar.extensions.eventsHelper
 import com.liturgical.calendar.extensions.isXYearlyRepetition
@@ -10,10 +11,7 @@ import com.liturgical.calendar.helpers.IcsImporter.ImportResult.IMPORT_FAIL
 import com.liturgical.calendar.helpers.IcsImporter.ImportResult.IMPORT_NOTHING_NEW
 import com.liturgical.calendar.helpers.IcsImporter.ImportResult.IMPORT_OK
 import com.liturgical.calendar.helpers.IcsImporter.ImportResult.IMPORT_PARTIAL
-import com.liturgical.calendar.models.Event
-import com.liturgical.calendar.models.EventRepetition
-import com.liturgical.calendar.models.EventType
-import com.liturgical.calendar.models.Reminder
+import com.liturgical.calendar.models.*
 import com.secure.commons.extensions.areDigitsOnly
 import com.secure.commons.extensions.showErrorToast
 import com.secure.commons.helpers.HOUR_SECONDS
@@ -45,6 +43,7 @@ class IcsImporter(val activity: SimpleActivity) {
     private var curLastModified = 0L
     private var curCategoryColor = -2
     private var curExtendedRule = 0
+    private var curType = TYPE_EVENT
     private var curAvailability = Events.AVAILABILITY_BUSY
     private var isNotificationDescription = false
     private var isProperReminderAction = false
@@ -53,6 +52,12 @@ class IcsImporter(val activity: SimpleActivity) {
     private var curReminderTriggerMinutes = REMINDER_OFF
     private var curReminderTriggerAction = REMINDER_NOTIFICATION
     private val eventsHelper = activity.eventsHelper
+
+    // tasks
+    private var isParsingTask = false
+    private var curTaskEventId = -1L
+    private var curTaskFlags = 0
+    private var curTaskStartTS = -1L
 
     private var eventsImported = 0
     private var eventsFailed = 0
@@ -69,6 +74,8 @@ class IcsImporter(val activity: SimpleActivity) {
         try {
             val eventTypes = eventsHelper.getEventTypesSync()
             val existingEvents = activity.eventsDB.getEventsWithImportIds().toMutableList() as ArrayList<Event>
+            val tasksCompleted = activity.completedTasksDB.getAllCompletedTasks() as ArrayList<Task>
+            val tasksToUpdate = ArrayList<Task>()
             val eventsToInsert = ArrayList<Event>()
             var line = ""
 
@@ -92,14 +99,19 @@ class IcsImporter(val activity: SimpleActivity) {
 
                     if (line.trim() == BEGIN_EVENT) {
                         resetValues()
+                        resetTasks()
+                        tasksToUpdate.clear()
                         curEventTypeId = defaultEventTypeId
                         isParsingEvent = true
                     } else if (line.startsWith(DTSTART)) {
-                        if (isParsingEvent) {
+                        if (isParsingEvent && !isParsingTask) {
                             curStart = getTimestamp(line.substring(DTSTART.length))
 
                             if (curRrule != "") parseRepeatRule()
                             if (curExRrule != "") parseExtendedRule()
+                        }
+                        if (isParsingTask) {
+                            curTaskStartTS = getTimestamp(line.substring(DTSTART.length))
                         }
                     } else if (line.startsWith(DTEND)) {
                         curEnd = getTimestamp(line.substring(DTEND.length))
@@ -192,6 +204,21 @@ class IcsImporter(val activity: SimpleActivity) {
                             curReminderActions.add(curReminderTriggerAction)
                         }
                         isNotificationDescription = false
+                    } else if (line.trim() == BEGIN_TASK) {
+                        isParsingTask = true
+                    } else if (line.startsWith(EXTYPE)) {
+                        line.substring(EXTYPE.length).let { if (it == TASK) curType = TYPE_TASK }
+                    } else if (line.startsWith("$TASK:")) {
+                        line.substring("$TASK:".length).let { if (it == COMP) curTaskFlags = curFlags or FLAG_TASK_COMPLETED }
+                    } else if (line.trim() == END_TASK) {
+                        isParsingTask = false
+                        val task = Task(
+                            null,
+                            curTaskEventId,
+                            curTaskStartTS,
+                            curTaskFlags
+                        )
+                        tasksToUpdate.add(task)
                     } else if (line.trim() == END_EVENT) {
                         isParsingEvent = false
                         if (curStart != -1L && curEnd == -1L) {
@@ -254,6 +281,7 @@ class IcsImporter(val activity: SimpleActivity) {
                             curLastModified,
                             source,
                             curAvailability,
+                            type = curType,
                             extendedRule = curExtendedRule
                         )
 
@@ -276,6 +304,12 @@ class IcsImporter(val activity: SimpleActivity) {
                                     val eventToRemove = existingEvents.first { it.importId == event.importId }
                                     existingEvents.remove(eventToRemove)
                                 }
+                                if (tasksToUpdate.isNotEmpty()) {
+                                    val task = existingEvents.firstOrNull { it.importId == event.importId }
+                                    if (task != null)
+                                        curTaskEventId = task.id!!
+                                    updateTasks(tasksToUpdate, tasksCompleted)
+                                }
                                 line = curLine
                                 continue
                             }
@@ -297,6 +331,9 @@ class IcsImporter(val activity: SimpleActivity) {
                                         eventsToInsert.add(event)
                                     }
                                 }
+                            } else if (curType == TYPE_TASK) {
+                                curTaskEventId = activity.eventsDB.insertOrUpdate(event)
+                                updateTasks(tasksToUpdate, tasksCompleted)
                             } else {
                                 eventsToInsert.add(event)
                             }
@@ -304,9 +341,14 @@ class IcsImporter(val activity: SimpleActivity) {
                             event.id = eventToUpdate.id
                             eventsHelper.updateEvent(event, true, false)
                             if (liturgical) existingEvents.remove(eventToUpdate)
+                            if (curType == TYPE_TASK) {
+                                curTaskEventId = event.id!!
+                                updateTasks(tasksToUpdate, tasksCompleted)
+                            }
                         }
                         eventsImported++
                         resetValues()
+
                     }
                     line = curLine
                 }
@@ -334,6 +376,18 @@ class IcsImporter(val activity: SimpleActivity) {
             }
             eventsFailed > 0 -> IMPORT_PARTIAL
             else -> IMPORT_OK
+        }
+    }
+
+    private fun updateTasks(tasksToUpdate: ArrayList<Task>, existingTasks: ArrayList<Task>) {
+        if (tasksToUpdate.isNotEmpty()) {
+            tasksToUpdate.forEach { task ->
+                task.task_id = curTaskEventId
+                val existingTask = existingTasks.firstOrNull { it.task_id == curTaskEventId && it.startTS == task.startTS }
+                if (existingTask == null) {
+                    activity.completedTasksDB.insertOrUpdate(task)
+                }
+            }
         }
     }
 
@@ -437,5 +491,11 @@ class IcsImporter(val activity: SimpleActivity) {
         isParsingEvent = false
         curReminderTriggerMinutes = REMINDER_OFF
         curReminderTriggerAction = REMINDER_NOTIFICATION
+    }
+
+    private fun resetTasks() {
+        curTaskEventId = -1L
+        curTaskStartTS = -1L
+        curTaskFlags = 0
     }
 }

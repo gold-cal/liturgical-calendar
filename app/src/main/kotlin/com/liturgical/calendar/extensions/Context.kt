@@ -723,6 +723,8 @@ fun Context.isTaskCompleted(event: Event): Boolean {
     return originalEvent?.isTaskCompleted() == true || task?.isTaskCompleted() == true
 }
 
+// ToDo: Tasks db does not remove items when associated event is deleted
+// This will cause garbage data to collect in the database and take up space in storage
 fun Context.updateTaskCompletion(event: Event, completed: Boolean) {
     if (completed) {
         event.flags = event.flags or FLAG_TASK_COMPLETED

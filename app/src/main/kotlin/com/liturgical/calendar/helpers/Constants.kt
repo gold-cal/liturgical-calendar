@@ -138,6 +138,7 @@ const val ANNIVERSARY_REMINDERS = "anniversary_reminders"
 const val CUSTOM_EVENT_REMINDERS = "custom_event_reminders"
 const val LAST_EXPORT_PATH = "last_export_path"
 const val EXPORT_PAST_EVENTS = "export_past_events"
+const val EXPORT_TASKS = "export_tasks"
 const val WEEKLY_VIEW_ITEM_HEIGHT_MULTIPLIER = "weekly_view_item_height_multiplier"
 const val WEEKLY_VIEW_DAYS = "weekly_view_days"
 const val HIGHLIGHT_WEEKENDS = "highlight_weekends"
@@ -286,12 +287,19 @@ const val LOCATION = "LOCATION"
 const val RECURRENCE_ID = "RECURRENCE-ID"
 const val SEQUENCE = "SEQUENCE"
 
-// this tag isn't a standard ICS tag, but there's no official way of adding a category color in an ics file
+// these tags are not a standard ICS tag, but there's no official way of adding a category color in an ics file
 const val CATEGORY_COLOR = "X-SMT-CATEGORY-COLOR:"
 const val CATEGORY_COLOR_LEGACY = "CATEGORY_COLOR:"
 const val MISSING_YEAR = "X-SMT-MISSING-YEAR:"
 const val EXRRULE = "EXRRULE:"
+const val EXTYPE = "EXTYPE:"
+const val BEGIN_TASK = "BEGIN:VTASK"
+const val END_TASK = "END:VTASK"
 //const val NID = "NID:" // New Id for calendar event
+
+// EXTYPE properties
+//const val TASK = "TASK" Already defined
+const val COMP = "COMP"
 
 // RRule properties
 const val DISPLAY = "DISPLAY"

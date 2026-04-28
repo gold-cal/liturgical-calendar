@@ -11,6 +11,12 @@ interface TasksDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOrUpdate(task: Task): Long
 
+    @Query("SELECT * FROM tasks")
+    fun getAllCompletedTasks(): List<Task>
+
+    /*@Query("SELECT id FROM tasks")
+    fun getTaskIds(): List<Long>*/
+
     @Query("SELECT * FROM tasks WHERE task_id = :id AND start_ts = :startTs")
     fun getTaskWithIdAndTs(id: Long, startTs: Long): Task?
 
@@ -19,4 +25,7 @@ interface TasksDao {
 
     @Query("DELETE FROM tasks WHERE task_id = :id AND start_ts = :startTs")
     fun deleteTaskWithIdAndTs(id: Long, startTs: Long)
+
+    @Query("DELETE FROM tasks WHERE task_id IN (:ids)")
+    fun deleteTasks(ids: List<Long>)
 }

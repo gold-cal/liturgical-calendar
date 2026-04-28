@@ -298,28 +298,28 @@ data class Event(
         //} else {
             // check if exception day lands on the same day as newDateTime
             // these are in a specific order
-            if ((extendedRule and EX_RULE_W) != 0) {
-                if (date == 0) date = 7
-                if (newDateTime.dayOfWeek == date) isException = true
-            } else if ((extendedRule and EX_RULE_DM) != 0) {
-                if ((extendedRule and EX_RULE_GT) != 0) {
-                    if (newDateTime.dayOfMonth > date) isException = true
-                } else if ((extendedRule and EX_RULE_LT) != 0) {
-                    if (newDateTime.dayOfMonth < date) isException = true
-                } else if (newDateTime.dayOfMonth == date) isException = true
-            } else if ((extendedRule and EX_RULE_EPD) != 0) {
-                val ePD = addYearWithRepeatRule(currStart, (date or RULE_ADD_DAYS))
-                if (newDateTime == ePD) isException = true
-            } else if ((extendedRule and EX_RULE_EMD) != 0) {
-                val eMD = addYearWithRepeatRule(currStart, (date or RULE_MINUS_DAYS))
-                if (newDateTime == eMD) isException = true
-            } else if ((extendedRule and EX_RULE_EPW) != 0) {
-                val ePW = addYearWithRepeatRule(currStart, (date or RULE_ADD_WEEKS))
-                if (newDateTime == ePW) isException = true
-            } else if ((extendedRule and EX_RULE_EMW) != 0) {
-                val eMW = addYearWithRepeatRule(currStart, (date or RULE_MINUS_WEEKS))
-                if (newDateTime == eMW) isException = true
-            }
+        if ((extendedRule and EX_RULE_W) != 0) {
+            if (date == 0) date = 7
+            if (newDateTime.dayOfWeek == date) isException = true
+        } else if ((extendedRule and EX_RULE_DM) != 0) {
+            if ((extendedRule and EX_RULE_GT) != 0) {
+                if (newDateTime.dayOfMonth > date) isException = true
+            } else if ((extendedRule and EX_RULE_LT) != 0) {
+                if (newDateTime.dayOfMonth < date) isException = true
+            } else if (newDateTime.dayOfMonth == date) isException = true
+        } else if ((extendedRule and EX_RULE_EPD) != 0) {
+            val ePD = addYearWithRepeatRule(currStart, (date or RULE_ADD_DAYS))
+            if (newDateTime == ePD) isException = true
+        } else if ((extendedRule and EX_RULE_EMD) != 0) {
+            val eMD = addYearWithRepeatRule(currStart, (date or RULE_MINUS_DAYS))
+            if (newDateTime == eMD) isException = true
+        } else if ((extendedRule and EX_RULE_EPW) != 0) {
+            val ePW = addYearWithRepeatRule(currStart, (date or RULE_ADD_WEEKS))
+            if (newDateTime == ePW) isException = true
+        } else if ((extendedRule and EX_RULE_EMW) != 0) {
+            val eMW = addYearWithRepeatRule(currStart, (date or RULE_MINUS_WEEKS))
+            if (newDateTime == eMW) isException = true
+        }
         //}
         if (isException) {
             newDateTime = handleShiftBit(newDateTime)
